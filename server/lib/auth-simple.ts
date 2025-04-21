@@ -463,95 +463,50 @@ export async function loginUser(email: string, password: string) {
     
     if (!user) {
       console.log(`No user found with email: ${email}`);
-      throw new Error('Incorrect email or password');
+      throw new Error('Invalid email or password');
     }
     
-    // Verify password
-    const isValid = await bcrypt.compare(password, user.password);
-    console.log(`Password validation result for ${email}: ${isValid}`);
-    
-    if (!isValid) {
-      throw new Error('Incorrect email or password');
+    // Compare passwords
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      console.log(`Password mismatch for user ${email}`);
+      throw new Error('Invalid email or password');
     }
     
-    // Update last login
-    await storage.updateUser(user.id, { lastLogin: new Date() });
-    console.log(`Authentication successful for ${email}, user ID: ${user.id}`);
+    // Update last login time
+    await storage.updateLastLogin(user.id);
     
-    // Generate a token with 7-day expiration
-    const token = generateToken();
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7);
+    console.log(`User ${email} authenticated successfully`);
     
-    // Store the token in memory
-    activeTokens.set(token, {
-      userId: user.id,
-      expiresAt
-    });
+    // Generate and register token
+    const token = await registerToken(user);
     
-    // Also persist to database
-    await pool.query(
-      'INSERT INTO auth_tokens (token, user_id, expires_at) VALUES ($1, $2, $3) ON CONFLICT (token) DO UPDATE SET expires_at = $3, user_id = $2',
-      [token, user.id, expiresAt]
-    );
-    
-    console.log(`Token generated for user ${email}: ${token.substring(0, 10)}...`);
-    console.log(`Token will expire at: ${expiresAt.toISOString()}`);
-    console.log(`Current active tokens count: ${activeTokens.size}`);
-    
-    // For security reasons, don't include the password in the response
-    const safeUserData = {
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      displayName: user.displayName,
-      createdAt: user.createdAt,
-      lastLogin: user.lastLogin,
-      isAdmin: user.isAdmin,
-      coins: user.coins,
-      profession: user.profession
-    };
-    
-    return {
-      ...safeUserData,
-      token,
-      expiresAt
-    };
+    return { user, token };
   } catch (error) {
-    console.error(`Authentication error:`, error);
     throw error;
   }
 }
 
-// Logout a user by invalidating their token
+// Logout a user
 export async function logoutUser(token: string) {
   try {
-    // Remove token from memory
-    if (activeTokens.has(token)) {
-      console.log(`Invalidating token: ${token.substring(0, 10)}...`);
-      activeTokens.delete(token);
+    // Check if token exists in active tokens
+    if (!activeTokens.has(token)) {
+      return false;
     }
     
-    // Also remove from database
-    const result = await pool.query(
-      'DELETE FROM auth_tokens WHERE token = $1 RETURNING token',
+    // Remove from memory
+    activeTokens.delete(token);
+    
+    // Remove from database
+    await pool.query(
+      'DELETE FROM auth_tokens WHERE token = $1',
       [token]
     );
     
-    // Check if any rows were affected by the delete operation
-    const rowsDeleted = result?.rowCount ?? 0;
-    const removed = rowsDeleted > 0 || activeTokens.has(token);
-    
-    if (removed) {
-      console.log(`Token successfully invalidated: ${token.substring(0, 10)}...`);
-      return true;
-    } else {
-      console.log(`Token not found for logout: ${token.substring(0, 10)}...`);
-      return false;
-    }
-  } catch (error) {
-    console.error(`Error during logout:`, error);
-    // Still return true to allow the client to clear their token
     return true;
+  } catch (error) {
+    console.error("Error during logout:", error);
+    return false;
   }
 }
