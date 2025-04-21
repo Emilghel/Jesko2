@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Videos API Test</title>
+</head>
+<body>
+    <h1>Stock Videos API Test</h1>
+    <button id="testBtn">Test API</button>
+    <pre id="result" style="background-color: #f0f0f0; padding: 10px; margin-top: 20px;"></pre>
+
+    <script>
+        document.getElementById('testBtn').addEventListener('click', async () => {
+            const resultElement = document.getElementById('result');
+            resultElement.textContent = 'Loading...';
+            
+            try {
+                const response = await fetch('/api/stock-videos?page=1&limit=50');
+                const responseText = await response.text();
+                
+                resultElement.textContent = `Status: ${response.status} ${response.statusText}\n\nResponse:\n${responseText}`;
+                
+                try {
+                    // Try to parse as JSON to pretty print
+                    const jsonData = JSON.parse(responseText);
+                    resultElement.textContent = `Status: ${response.status} ${response.statusText}\n\nResponse:\n${JSON.stringify(jsonData, null, 2)}`;
+                } catch (e) {
+                    // Keep as text if not valid JSON
+                }
+            } catch (error) {
+                resultElement.textContent = `Error: ${error.message}`;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "prompt": "Camera zooms out to reveal a mountain landscape with snow peaks",
+  "negative_prompt": "blurry, ugly, low quality",
+  "model": "gen-2",
+  "image": "https://images.unsplash.com/photo-1519681393784-d120267933ba",
+  "num_frames": 24,
+  "fps": 8,
+  "output_format": "mp4"
+}
