@@ -1,9 +1,9 @@
 services:
   - type: web
-    name: jesko-ai
+    name: jesko-ai-platform
     env: node
-    buildCommand: npm install && npm run build
-    startCommand: ./start-render.sh
+    buildCommand: npm install
+    startCommand: node server-production.js
     envVars:
       - key: NODE_ENV
         value: production
@@ -12,10 +12,4 @@ services:
       - key: JWT_SECRET
         sync: false
       - key: OPENAI_API_KEY
-        sync: false
-      - key: ELEVENLABS_API_KEY
-        sync: false
-      - key: RUNWAY_API_KEY
-        sync: false
-      - key: ANTHROPIC_API_KEY
         sync: false
