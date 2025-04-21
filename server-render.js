@@ -6,14 +6,17 @@
  */
 
 import express from 'express';
+import { createServer } from 'http';
 import cors from 'cors';
 import pg from 'pg';
 const { Pool } = pg;
-const app = express();
 
-// Apply middleware
+// Setup basic Express app
+const app = express();
 app.use(cors());
 app.use(express.json());
+
+console.log('Starting Jesko AI fallback server...');
 
 // Define a pool for database connections
 let pool;
@@ -24,6 +27,15 @@ try {
       ssl: { rejectUnauthorized: false }
     });
     console.log('PostgreSQL connection pool created');
+    
+    // Test the database connection
+    pool.query('SELECT NOW()', (err, result) => {
+      if (err) {
+        console.error('Database connection error:', err);
+      } else {
+        console.log('Database connected successfully:', result.rows[0].now);
+      }
+    });
   } else {
     console.log('No DATABASE_URL provided, running without database');
   }
@@ -74,7 +86,7 @@ app.get('/', (req, res) => {
       <body>
         <div class="container">
           <h1>Jesko AI Platform</h1>
-          <p>Welcome to the Jesko AI Platform. This is a temporary landing page while the full application is being prepared for deployment.</p>
+          <p>Welcome to the Jesko AI Platform. This is the fallback server running while the full application is being prepared for deployment.</p>
           
           <div class="status">
             <h2>Server Status</h2>
@@ -92,7 +104,7 @@ app.get('/', (req, res) => {
 
 // Catch-all route for non-existing endpoints
 app.get('*', (req, res) => {
-  res.send(`
+  res.status(404).send(`
     <html>
       <head>
         <title>Jesko AI - Page Not Found</title>
@@ -115,6 +127,7 @@ app.get('*', (req, res) => {
 
 // Start the server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+const server = createServer(app);
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`Fallback server running on port ${PORT}`);
 });
