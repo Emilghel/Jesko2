@@ -1,12 +1,17 @@
 /**
  * Production Server for Jesko AI Platform
- * This imports your actual application code and avoids ESM issues
+ * This imports your actual application code and uses ES Module syntax
  */
 
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
-const fs = require('fs');
+import express from 'express';
+import cors from 'cors';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+// Get the directory name in ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Create Express app
 const app = express();
@@ -21,14 +26,12 @@ const PORT = process.env.PORT || 3000;
 console.log(`Starting Jesko AI Platform on port ${PORT}...`);
 console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
 console.log('Current directory:', process.cwd());
+console.log('__dirname:', __dirname);
 
 // Try to import route files
 try {
   // If we have a proper build, try to load it
   console.log('Checking for server routes...');
-  
-  // Import route files directly - these will be the actual routes from your application
-  let routeModules = {};
   
   // List all files in server directory
   const serverDir = path.join(process.cwd(), 'server');
@@ -70,21 +73,21 @@ try {
     });
   });
   
-  // Attempt to import main routes
+  // Attempt to import main routes using dynamic import for ES modules
   try {
     if (fs.existsSync(path.join(process.cwd(), 'routes.js'))) {
       console.log('Found routes.js in root directory');
-      const routes = require('./routes');
-      if (typeof routes === 'function') {
-        routes(app);
+      const routesModule = await import('./routes.js');
+      if (typeof routesModule.default === 'function') {
+        routesModule.default(app);
         console.log('Routes successfully loaded from routes.js');
       }
     }
     else if (fs.existsSync(path.join(process.cwd(), 'server', 'routes.js'))) {
       console.log('Found routes.js in server directory');
-      const routes = require('./server/routes');
-      if (typeof routes === 'function') {
-        routes(app);
+      const routesModule = await import('./server/routes.js');
+      if (typeof routesModule.default === 'function') {
+        routesModule.default(app);
         console.log('Routes successfully loaded from server/routes.js');
       }
     }
