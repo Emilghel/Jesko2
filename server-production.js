@@ -1,30 +1,21 @@
 /**
  * Production Server Entry Point for Render.com
  * 
- * This file serves as the entry point for the deployed application on Render.com.
- * It loads the compiled server code or falls back to direct TypeScript execution
- * with ts-node if necessary.
+ * This file serves as a simplified production server for the Jesko AI application.
  */
 
 import express from 'express';
-import path from 'path';
+import { createServer } from 'http';
 import cors from 'cors';
-import { fileURLToPath } from 'url';
-import fs from 'fs';
 import pg from 'pg';
 const { Pool } = pg;
+
+console.log('Starting Jesko AI production server...');
 
 // Setup basic Express app
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
-
-// Get directory name in ESM
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-console.log('Starting Jesko AI production server...');
-console.log('Current directory:', __dirname);
 
 // Create connection pool if database URL is provided
 let pool;
@@ -90,116 +81,65 @@ app.get('/api/environment', (req, res) => {
   });
 });
 
-// Check for built server file
-const distServerPath = path.join(__dirname, 'dist', 'server', 'index.js');
-const serverEntryPath = path.join(__dirname, 'server', 'index.ts');
+// Home page
+app.get('/', (req, res) => {
+  res.send(`
+    <html>
+      <head>
+        <title>Jesko AI</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
+          h1 { color: #333; }
+          .container { max-width: 800px; margin: 0 auto; }
+          .status { padding: 15px; background: #f8f9fa; border-radius: 5px; margin: 20px 0; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h1>Jesko AI Platform</h1>
+          <p>Welcome to the Jesko AI Platform. This is the production server.</p>
+          
+          <div class="status">
+            <h2>Server Status</h2>
+            <p>Server is running in production mode.</p>
+            <p>Current time: ${new Date().toLocaleString()}</p>
+          </div>
+          
+          <p>For API status, visit the <a href="/health">/health</a> endpoint.</p>
+          <p>To check database connectivity, visit the <a href="/test-db">/test-db</a> endpoint.</p>
+          <p>For environment information, visit <a href="/api/environment">/api/environment</a>.</p>
+        </div>
+      </body>
+    </html>
+  `);
+});
 
-if (fs.existsSync(distServerPath)) {
-  console.log('Found built server, loading from:', distServerPath);
-  import(distServerPath).catch(err => {
-    console.error('Error loading built server:', err);
-    startFallbackServer();
-  });
-} else if (fs.existsSync(serverEntryPath)) {
-  console.log('No built server found, attempting to run TypeScript directly');
-  
-  // Try to dynamically import ts-node and run the TypeScript file
-  import('ts-node').then(tsNode => {
-    tsNode.register({
-      transpileOnly: true,
-      compilerOptions: {
-        module: 'ESNext',
-        moduleResolution: 'Node',
-        target: 'ES2020'
-      }
-    });
+// Catch-all route for non-existing endpoints
+app.get('*', (req, res) => {
+  res.status(404).send(`
+    <html>
+      <head>
+        <title>Jesko AI - Page Not Found</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; text-align: center; }
+          h1 { color: #333; }
+          .container { max-width: 600px; margin: 0 auto; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h1>Page Not Found</h1>
+          <p>The page you are looking for does not exist.</p>
+          <p><a href="/">Return to Home</a></p>
+        </div>
+      </body>
+    </html>
+  `);
+});
 
-    import(serverEntryPath).catch(err => {
-      console.error('Error running TypeScript server:', err);
-      startFallbackServer();
-    });
-  }).catch(err => {
-    console.error('Error loading ts-node:', err);
-    startFallbackServer();
-  });
-} else {
-  console.log('No server files found, starting fallback server');
-  startFallbackServer();
-}
-
-function startFallbackServer() {
-  console.log('Starting fallback server mode');
-  
-  // Serve static files if the dist/client directory exists
-  const clientDistPath = path.join(__dirname, 'dist', 'client');
-  if (fs.existsSync(clientDistPath)) {
-    console.log('Serving static files from:', clientDistPath);
-    app.use(express.static(clientDistPath));
-    
-    // Serve index.html for any unmatched routes (for SPA)
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(clientDistPath, 'index.html'));
-    });
-  } else {
-    // If no client files, serve a basic HTML page
-    app.get('/', (req, res) => {
-      res.send(`
-        <html>
-          <head>
-            <title>Jesko AI</title>
-            <style>
-              body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
-              h1 { color: #333; }
-              .container { max-width: 800px; margin: 0 auto; }
-              .status { padding: 15px; background: #f8f9fa; border-radius: 5px; margin: 20px 0; }
-            </style>
-          </head>
-          <body>
-            <div class="container">
-              <h1>Jesko AI Platform</h1>
-              <p>Welcome to the Jesko AI Platform. This is a fallback mode while the full application is being initialized.</p>
-              
-              <div class="status">
-                <h2>Server Status</h2>
-                <p>Server is running in fallback mode.</p>
-                <p>Current time: ${new Date().toLocaleString()}</p>
-              </div>
-              
-              <p>For API status, visit the <a href="/health">/health</a> endpoint.</p>
-              <p>To check database connectivity, visit the <a href="/test-db">/test-db</a> endpoint.</p>
-            </div>
-          </body>
-        </html>
-      `);
-    });
-    
-    // Catch-all route for non-existing endpoints
-    app.get('*', (req, res) => {
-      res.send(`
-        <html>
-          <head>
-            <title>Jesko AI - Page Not Found</title>
-            <style>
-              body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; text-align: center; }
-              h1 { color: #333; }
-              .container { max-width: 600px; margin: 0 auto; }
-            </style>
-          </head>
-          <body>
-            <div class="container">
-              <h1>Page Not Found</h1>
-              <p>The page you are looking for does not exist.</p>
-              <p><a href="/">Return to Home</a></p>
-            </div>
-          </body>
-        </html>
-      `);
-    });
-  }
-  
-  // Start the server on the specified port
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Fallback server running on port ${PORT}`);
-  });
-}
+// Start the server
+const PORT = process.env.PORT || 3000;
+const server = createServer(app);
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`Production server running on port ${PORT}`);
+});
