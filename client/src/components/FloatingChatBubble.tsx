@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { Mic, MicOff, X, MinusCircle, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import bubbleGifPath from '@assets/bubble.gif';
-
+// Directly use static directory path which is properly included in deployment
+const bubbleGifPath = '/static/bubble.gif';
 export function FloatingChatBubble() {
   const [isOpen, setIsOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
@@ -263,4 +263,4 @@ export function FloatingChatBubble() {
       )}
     </>
   );
-}
+} "Fix: Update bubbleGifPath to resolve Render build issue"
