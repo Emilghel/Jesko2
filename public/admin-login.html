@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Direct Login</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    
+    .login-container {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      padding: 40px;
+      width: 100%;
+      max-width: 400px;
+    }
+    
+    h1 {
+      margin-top: 0;
+      margin-bottom: 24px;
+      color: #2563eb;
+      text-align: center;
+    }
+    
+    .input-group {
+      margin-bottom: 20px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #374151;
+    }
+    
+    input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+    
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: 12px;
+    }
+    
+    button:hover {
+      background-color: #1d4ed8;
+    }
+    
+    .error {
+      color: #ef4444;
+      margin-top: 16px;
+      text-align: center;
+    }
+    
+    .info {
+      background-color: #f3f4f6;
+      border-left: 4px solid #3b82f6;
+      padding: 12px;
+      margin-top: 24px;
+      font-size: 14px;
+    }
+    
+    .info p {
+      margin: 0;
+      line-height: 1.5;
+    }
+    
+    .status {
+      display: none;
+      margin-top: 20px;
+      padding: 10px;
+      border-radius: 4px;
+      text-align: center;
+    }
+    
+    .status.success {
+      background-color: #dcfce7;
+      color: #16a34a;
+      display: block;
+    }
+    
+    .status.error {
+      background-color: #fee2e2;
+      color: #dc2626;
+      display: block;
+    }
+    
+    .link {
+      display: block;
+      text-align: center;
+      margin-top: 20px;
+      color: #2563eb;
+      text-decoration: none;
+    }
+    
+    .link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h1>WarmLeadNetwork Admin</h1>
+    
+    <form id="loginForm">
+      <div class="input-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="admin@warmleadnetwork.com" required>
+      </div>
+      
+      <div class="input-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Enter your password" required>
+      </div>
+      
+      <button type="submit">Login as Administrator</button>
+      
+      <div id="status" class="status"></div>
+    </form>
+    
+    <div class="info">
+      <p>This direct login makes sure your admin privileges are preserved when accessing the admin panels.</p>
+      <p>If you experience any issues, please use the <a href="/admin-access.html">Admin Access Portal</a>.</p>
+    </div>
+    
+    <a href="/" class="link">Return to Homepage</a>
+  </div>
+  
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const statusEl = document.getElementById('status');
+      
+      // Clear previous status
+      statusEl.className = 'status';
+      statusEl.textContent = '';
+      
+      try {
+        statusEl.textContent = 'Authenticating...';
+        statusEl.className = 'status';
+        
+        // First try authenticating with the regular login endpoint
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email, password })
+        });
+        
+        if (!response.ok) {
+          throw new Error('Invalid credentials. Please try again.');
+        }
+        
+        const data = await response.json();
+        
+        // Check if the user is an admin
+        if (!data.isAdmin) {
+          throw new Error('This account does not have administrator privileges.');
+        }
+        
+        // Store the token and user data
+        const { token } = data;
+        
+        // Clear any existing tokens
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('partnerToken');
+        
+        // Set the auth token
+        localStorage.setItem('auth_token', token);
+        
+        // Also set in cookie for systems that check cookies
+        document.cookie = `auth_token=${token}; path=/; max-age=${60*60*24*7}`;
+        
+        // Ensure we store user data with isAdmin flag set to true
+        const adminUser = {
+          ...data,
+          isAdmin: true,
+          role: "admin"
+        };
+        localStorage.setItem('auth_user', JSON.stringify(adminUser));
+        
+        // Show success message
+        statusEl.textContent = 'Login successful! Redirecting to admin panel...';
+        statusEl.className = 'status success';
+        
+        // Redirect to admin panel
+        setTimeout(() => {
+          window.location.href = '/admin-panel-1';
+        }, 1500);
+        
+      } catch (error) {
+        statusEl.textContent = error.message;
+        statusEl.className = 'status error';
+        console.error('Login error:', error);
+      }
+    });
+  </script>
+</body>
+</html>

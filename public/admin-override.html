@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Override Tool</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    h1 {
+      color: #d00;
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 30px;
+      border-bottom: 2px solid #d00;
+      padding-bottom: 10px;
+    }
+    
+    h2 {
+      color: #333;
+      margin-top: 25px;
+      margin-bottom: 15px;
+    }
+    
+    .alert {
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 5px;
+    }
+    
+    .alert-warning {
+      background-color: #fff3cd;
+      border: 1px solid #ffecb5;
+      color: #856404;
+    }
+    
+    .alert-danger {
+      background-color: #f8d7da;
+      border: 1px solid #f5c6cb;
+      color: #721c24;
+    }
+    
+    .alert-success {
+      background-color: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+    }
+    
+    .alert-info {
+      background-color: #d1ecf1;
+      border: 1px solid #bee5eb;
+      color: #0c5460;
+    }
+    
+    button {
+      background-color: #d00;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+    
+    button:hover {
+      background-color: #b00;
+    }
+    
+    button.secondary {
+      background-color: #666;
+    }
+    
+    button.secondary:hover {
+      background-color: #555;
+    }
+    
+    button.success {
+      background-color: #28a745;
+    }
+    
+    button.success:hover {
+      background-color: #218838;
+    }
+    
+    .code-block {
+      background-color: #f8f9fa;
+      border: 1px solid #eee;
+      border-radius: 5px;
+      padding: 15px;
+      margin-bottom: 20px;
+      font-family: monospace;
+      overflow-x: auto;
+      white-space: pre;
+    }
+    
+    #statusPanel {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 5px;
+      background-color: #f8f9fa;
+      border: 1px solid #eee;
+      display: none;
+    }
+    
+    .admin-links {
+      margin-top: 30px;
+      display: none;
+    }
+    
+    .admin-links a {
+      display: inline-block;
+      background-color: #007bff;
+      color: white;
+      text-decoration: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+    
+    .admin-links a:hover {
+      background-color: #0069d9;
+    }
+    
+    .step {
+      margin-bottom: 30px;
+      padding: 20px;
+      background-color: #f8f9fa;
+      border-radius: 5px;
+      border-left: 5px solid #007bff;
+    }
+    
+    .step h3 {
+      margin-top: 0;
+      color: #007bff;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔐 Admin Override Tool</h1>
+    
+    <div class="alert alert-danger">
+      <strong>Emergency Access Tool:</strong> This page will forcefully override your authentication state to enable admin access.
+    </div>
+    
+    <div class="step">
+      <h3>Step 1: Clear All Existing Authentication</h3>
+      <p>First, we'll clear all existing authentication data to ensure a clean state.</p>
+      <button id="clearAuthBtn">Clear Authentication Data</button>
+    </div>
+    
+    <div class="step">
+      <h3>Step 2: Force Admin Authentication</h3>
+      <p>This will set a known working admin token and properly configure all authentication data.</p>
+      <button id="forceAdminBtn" class="success">Force Admin Authentication</button>
+    </div>
+    
+    <div class="step">
+      <h3>Step 3: Verify Authentication</h3>
+      <p>Check if your admin authentication is now working properly.</p>
+      <button id="verifyAuthBtn">Verify Authentication</button>
+    </div>
+    
+    <div id="statusPanel"></div>
+    
+    <div class="admin-links" id="adminLinks">
+      <h2>Admin Access Links</h2>
+      <p>Your admin authentication has been set up. You can now access admin pages:</p>
+      <div>
+        <a href="/admin-panel-1" target="_blank">Admin Panel 1</a>
+        <a href="/admin" target="_blank">Admin Dashboard</a>
+        <a href="/admin-full" target="_blank">Full Admin Panel</a>
+        <a href="/admin-simple" target="_blank">Simple Admin</a>
+      </div>
+      
+      <h3>Direct Token Links</h3>
+      <div>
+        <a href="#" id="directLink1" onclick="createDynamicLink(this, '/admin-panel-1'); return false;" target="_blank">Generate Admin Panel 1 Link</a>
+        <a href="#" id="directLink2" onclick="createDynamicLink(this, '/admin'); return false;" target="_blank">Generate Admin Dashboard Link</a>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Constants - Token will be generated server-side when needed, not hardcoded
+    const ADMIN_TOKEN = "";
+    const statusPanel = document.getElementById('statusPanel');
+    const adminLinks = document.getElementById('adminLinks');
+    
+    // Handler for showing status
+    function showStatus(message, type = 'info') {
+      statusPanel.className = `alert alert-${type}`;
+      statusPanel.innerHTML = message;
+      statusPanel.style.display = 'block';
+      
+      // Scroll to status panel
+      statusPanel.scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    // Clear authentication data
+    document.getElementById('clearAuthBtn').addEventListener('click', function() {
+      try {
+        // Clear localStorage
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('auth_user');
+        localStorage.removeItem('partnerToken');
+        localStorage.removeItem('partnerInfo');
+        
+        // Clear cookies
+        document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+        document.cookie = 'connect.sid=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+        
+        showStatus('<strong>Authentication Cleared!</strong><br>All authentication data has been removed from your browser.', 'success');
+      } catch (error) {
+        showStatus(`<strong>Error:</strong> ${error.message}`, 'danger');
+      }
+    });
+    
+    // Force admin authentication
+    document.getElementById('forceAdminBtn').addEventListener('click', async function() {
+      try {
+        showStatus('<strong>Requesting admin token...</strong><br>Please wait while we request a new token from the server.', 'info');
+        
+        // First clear any existing auth
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('auth_user');
+        localStorage.removeItem('partnerToken');
+        localStorage.removeItem('partnerInfo');
+        
+        // Request a new admin token from the server
+        try {
+          const response = await fetch('/api/admin/request-token', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            credentials: 'include' // Include cookies for session-based auth
+          });
+          
+          if (!response.ok) {
+            // If server request fails, show appropriate error
+            if (response.status === 401) {
+              showStatus(`
+                <strong>Authentication Failed</strong><br>
+                <p>You need to login as an admin user first.</p>
+                <p>Please go to the login page and sign in with admin credentials.</p>
+              `, 'danger');
+            } else if (response.status === 403) {
+              showStatus(`
+                <strong>Access Denied</strong><br>
+                <p>Your account does not have administrator privileges.</p>
+                <p>Please contact your system administrator.</p>
+              `, 'danger');
+            } else {
+              showStatus(`
+                <strong>Server Error</strong><br>
+                <p>Error code: ${response.status}</p>
+                <p>Please try again later or contact your system administrator.</p>
+              `, 'danger');
+            }
+            return;
+          }
+          
+          // Extract token from response
+          const tokenData = await response.json();
+          
+          if (!tokenData.token) {
+            showStatus(`
+              <strong>Invalid Response</strong><br>
+              <p>The server did not return a valid token.</p>
+              <p>Please try again later or contact your system administrator.</p>
+            `, 'danger');
+            return;
+          }
+          
+          // Set the token in localStorage
+          localStorage.setItem('auth_token', tokenData.token);
+          
+          // Also set cookie for systems that check cookies
+          document.cookie = `auth_token=${tokenData.token}; path=/; max-age=${60*60*24*7}`;
+          
+          // Store user data if available
+          if (tokenData.user) {
+            localStorage.setItem('auth_user', JSON.stringify({
+              ...tokenData.user,
+              isAdmin: true, // Ensure admin flag is set
+              role: 'admin'
+            }));
+          } else {
+            // Create generic admin user data with isAdmin=true flag
+            const adminUser = {
+              id: 0,
+              username: "admin",
+              email: "",
+              displayName: "System Administrator",
+              isAdmin: true,
+              role: "admin"
+            };
+            localStorage.setItem('auth_user', JSON.stringify(adminUser));
+          }
+          
+          // Try to set __admin flag in sessionStorage
+          try {
+            sessionStorage.setItem('__admin', 'true');
+          } catch (e) {
+            // Ignore if sessionStorage is unavailable
+          }
+          
+          showStatus(`
+            <strong>Admin Authentication Successful!</strong><br>
+            <p>You now have admin access to the system.</p>
+            <p>The following data has been set:</p>
+            <ul>
+              <li>Admin Token: ${tokenData.token.substring(0, 10)}...</li>
+              <li>Admin User with isAdmin=true flag</li>
+              <li>Token will expire: ${new Date(tokenData.expiresAt).toLocaleString()}</li>
+            </ul>
+          `, 'success');
+          
+          // Show admin links
+          adminLinks.style.display = 'block';
+          
+        } catch (fetchError) {
+          // Handle network errors
+          showStatus(`
+            <strong>Network Error</strong><br>
+            <p>${fetchError.message}</p>
+            <p>Unable to connect to the server. Please check your internet connection.</p>
+          `, 'danger');
+        }
+      } catch (error) {
+        showStatus(`<strong>Error:</strong> ${error.message}`, 'danger');
+      }
+    });
+    
+    // Verify authentication
+    document.getElementById('verifyAuthBtn').addEventListener('click', async function() {
+      try {
+        showStatus('<strong>Checking authentication...</strong>', 'info');
+        
+        // Check localStorage
+        const token = localStorage.getItem('auth_token');
+        const userData = localStorage.getItem('auth_user');
+        
+        if (!token) {
+          showStatus('<strong>No Authentication Token Found</strong><br>Please click "Force Admin Authentication" first.', 'warning');
+          return;
+        }
+        
+        // Try to parse user data
+        let userObj = null;
+        if (userData) {
+          try {
+            userObj = JSON.parse(userData);
+          } catch (e) {
+            // Ignore parsing errors
+          }
+        }
+        
+        // Verify with API
+        try {
+          // First try /api/auth/me
+          const authResponse = await fetch('/api/auth/me', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          
+          if (authResponse.ok) {
+            const serverUser = await authResponse.json();
+            
+            // Check if user has admin flag
+            if (serverUser.isAdmin) {
+              let statusMessage = `
+                <strong>Authentication Successful!</strong><br>
+                <p>Server confirms you are logged in as admin: ${serverUser.displayName || serverUser.username}</p>
+                <p>Email: ${serverUser.email}</p>
+              `;
+              
+              // Add comparison with localStorage if available
+              if (userObj) {
+                statusMessage += `
+                  <p>LocalStorage confirms isAdmin flag: ${userObj.isAdmin ? 'Yes ✅' : 'No ❌'}</p>
+                `;
+                
+                if (!userObj.isAdmin) {
+                  statusMessage += `
+                    <p style="color: red">Warning: Your localStorage data has isAdmin=false. This will cause admin access issues.</p>
+                    <p>Click "Force Admin Authentication" to fix this.</p>
+                  `;
+                }
+              }
+              
+              showStatus(statusMessage, 'success');
+              adminLinks.style.display = 'block';
+            } else {
+              showStatus(`
+                <strong>Authentication Issue</strong><br>
+                <p>Server recognizes you as: ${serverUser.username}</p>
+                <p>BUT your account does not have admin privileges.</p>
+                <p>Server isAdmin flag: ${serverUser.isAdmin ? 'true' : 'false'}</p>
+                <p>Click "Force Admin Authentication" to override this.</p>
+              `, 'warning');
+            }
+          } else {
+            // Try admin API endpoint
+            try {
+              const adminResponse = await fetch('/api/admin/system-status', {
+                headers: {
+                  'Authorization': `Bearer ${token}`
+                }
+              });
+              
+              if (adminResponse.ok) {
+                const adminData = await adminResponse.json();
+                showStatus(`
+                  <strong>Admin API Access Successful!</strong><br>
+                  <p>You have admin API access, but user API failed. This is unusual but should still work.</p>
+                  <p>DB Connected: ${adminData.dbConnected ? 'Yes' : 'No'}</p>
+                  <p>User Count: ${adminData.userCount}</p>
+                `, 'success');
+                adminLinks.style.display = 'block';
+              } else {
+                showStatus(`
+                  <strong>Authentication Failed</strong><br>
+                  <p>Both user and admin API calls failed.</p>
+                  <p>Your token may be invalid or expired.</p>
+                  <p>Click "Force Admin Authentication" to fix this.</p>
+                `, 'danger');
+              }
+            } catch (e) {
+              showStatus(`
+                <strong>Authentication Failed</strong><br>
+                <p>Error calling admin API: ${e.message}</p>
+                <p>Click "Force Admin Authentication" to fix this.</p>
+              `, 'danger');
+            }
+          }
+        } catch (apiError) {
+          showStatus(`
+            <strong>API Error</strong><br>
+            <p>${apiError.message}</p>
+            <p>Network issue or server is unavailable.</p>
+          `, 'danger');
+        }
+      } catch (error) {
+        showStatus(`<strong>Error:</strong> ${error.message}`, 'danger');
+      }
+    });
+    
+    // On page load, check if admin token already exists
+    document.addEventListener('DOMContentLoaded', function() {
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        const userData = localStorage.getItem('auth_user');
+        let userObj = null;
+        
+        if (userData) {
+          try {
+            userObj = JSON.parse(userData);
+            if (userObj.isAdmin) {
+              adminLinks.style.display = 'block';
+            }
+          } catch (e) {
+            // Ignore parsing errors
+          }
+        }
+      }
+    });
+    
+    // Function to create dynamic links with current token
+    function createDynamicLink(linkElement, basePath) {
+      // Get the current token from localStorage
+      const token = localStorage.getItem('auth_token');
+      
+      if (!token) {
+        showStatus('<strong>No Authentication Token</strong><br>Please click "Force Admin Authentication" first to generate a token.', 'warning');
+        return;
+      }
+      
+      // Create a secure link with the token
+      const url = `${basePath}?token=${encodeURIComponent(token)}`;
+      
+      // Update the link element
+      linkElement.href = url;
+      linkElement.innerHTML = `${basePath} (with Token)`;
+      linkElement.setAttribute('onclick', ''); // Remove the onclick handler
+      
+      // Show status
+      showStatus(`<strong>Link Generated!</strong><br>A direct access link with your current authentication token has been created.`, 'success');
+      
+      // Open the link in a new tab
+      window.open(url, '_blank');
+    }
+  </script>
+</body>
+</html>

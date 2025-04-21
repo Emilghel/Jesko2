@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Master Portal</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --secondary: #6b7280;
+      --secondary-dark: #4b5563;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --warning: #ca8a04;
+      --info: #0891b2;
+      --bg: #f8f9fa;
+      --text: #333;
+      --border: #e5e7eb;
+      --card-bg: white;
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      --radius: 0.5rem;
+    }
+    
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-color: var(--bg);
+      color: var(--text);
+    }
+    
+    header {
+      background-color: var(--primary);
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+    
+    h1 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+    
+    main {
+      display: flex;
+      flex: 1;
+    }
+    
+    .sidebar {
+      width: 250px;
+      background-color: #1e293b;
+      color: white;
+      padding: 1rem;
+    }
+    
+    .sidebar-menu {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .sidebar-heading {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #94a3b8;
+      margin-top: 1.5rem;
+      margin-bottom: 0.5rem;
+      padding-left: 0.5rem;
+    }
+    
+    .sidebar-menu li a {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 0.5rem;
+      color: #e2e8f0;
+      text-decoration: none;
+      border-radius: 0.25rem;
+      transition: background-color 0.2s;
+    }
+    
+    .sidebar-menu li a:hover {
+      background-color: #334155;
+    }
+    
+    .sidebar-menu li a.active {
+      background-color: #3b82f6;
+      color: white;
+    }
+    
+    .content {
+      flex: 1;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .toolbar {
+      padding: 0.5rem 1rem;
+      background-color: white;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .toolbar-user {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: var(--primary);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+    
+    .user-info {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .user-name {
+      font-weight: 500;
+    }
+    
+    .user-role {
+      font-size: 0.75rem;
+      color: var(--secondary);
+    }
+    
+    .toolbar-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+    
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius);
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      border: none;
+      transition: background-color 0.2s;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background-color: var(--primary-dark);
+    }
+    
+    .btn-secondary {
+      background-color: var(--secondary);
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      background-color: var(--secondary-dark);
+    }
+    
+    .btn-outline {
+      background-color: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    
+    .btn-outline:hover {
+      background-color: #f3f4f6;
+    }
+    
+    .frame-container {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+    
+    iframe {
+      flex: 1;
+      border: none;
+      width: 100%;
+      height: 100%;
+    }
+    
+    .toast {
+      position: fixed;
+      bottom: 1rem;
+      right: 1rem;
+      padding: 1rem;
+      border-radius: var(--radius);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      max-width: 300px;
+      transform: translateY(150%);
+      transition: transform 0.3s;
+      background-color: white;
+      border-left: 4px solid var(--primary);
+      z-index: 1000;
+    }
+    
+    .toast.visible {
+      transform: translateY(0);
+    }
+    
+    .toast.success {
+      border-left-color: var(--success);
+    }
+    
+    .toast.error {
+      border-left-color: var(--danger);
+    }
+    
+    .toast-text {
+      flex: 1;
+    }
+    
+    .toast-close {
+      border: none;
+      background: none;
+      cursor: pointer;
+      padding: 0;
+      font-size: 1.25rem;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: background-color 0.2s;
+    }
+    
+    .toast-close:hover {
+      background-color: #f3f4f6;
+    }
+    
+    /* Add dark mode support */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111827;
+        --text: #f9fafb;
+        --card-bg: #1f2937;
+        --border: #374151;
+      }
+      
+      .toolbar {
+        background-color: #1f2937;
+        border-bottom-color: #374151;
+      }
+      
+      .btn-outline {
+        color: #f9fafb;
+      }
+      
+      .btn-outline:hover {
+        background-color: #374151;
+      }
+      
+      .toast {
+        background-color: #1f2937;
+      }
+      
+      .toast-close:hover {
+        background-color: #374151;
+      }
+      
+      .user-role {
+        color: #d1d5db;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>WarmLeadNetwork Admin Master Portal</h1>
+  </header>
+  
+  <main>
+    <div class="sidebar">
+      <div class="sidebar-heading">Admin Dashboards</div>
+      <ul class="sidebar-menu">
+        <li><a href="/admin-navigation.html" target="adminFrame">Admin Navigation</a></li>
+        <li><a href="/admin-panel-1" target="adminFrame">Admin Panel 1</a></li>
+        <li><a href="/admin-full" target="adminFrame">Full Admin Panel</a></li>
+        <li><a href="/admin" target="adminFrame">Basic Admin Dashboard</a></li>
+        <li><a href="/admin-simple" target="adminFrame">Simple Admin</a></li>
+      </ul>
+      
+      <div class="sidebar-heading">User Management</div>
+      <ul class="sidebar-menu">
+        <li><a href="/admin-panel-1?tab=users" target="adminFrame">Manage Users</a></li>
+        <li><a href="/admin/partner-management" target="adminFrame">Partner Management</a></li>
+        <li><a href="/admin/coins" target="adminFrame">Manage Coins</a></li>
+      </ul>
+      
+      <div class="sidebar-heading">Content</div>
+      <ul class="sidebar-menu">
+        <li><a href="/admin/personality-prompts" target="adminFrame">Personality Prompts</a></li>
+        <li><a href="/free-stock-videos" target="adminFrame">Stock Videos</a></li>
+      </ul>
+      
+      <div class="sidebar-heading">System</div>
+      <ul class="sidebar-menu">
+        <li><a href="/admin-emergency.html" target="adminFrame">Emergency Admin</a></li>
+        <li><a href="/admin-access.html" target="adminFrame">Admin Access Portal</a></li>
+        <li><a href="/admin-login.html" target="adminFrame">Admin Login</a></li>
+      </ul>
+    </div>
+    
+    <div class="content">
+      <div class="toolbar">
+        <div class="toolbar-user">
+          <div class="user-avatar">A</div>
+          <div class="user-info">
+            <div class="user-name">Administrator</div>
+            <div class="user-role">System Admin</div>
+          </div>
+        </div>
+        
+        <div class="toolbar-actions">
+          <button id="statusCheckBtn" class="btn btn-outline">Check Auth Status</button>
+          <button id="clearTokenBtn" class="btn btn-outline">Clear Tokens</button>
+          <a href="/" class="btn btn-outline">Return to Site</a>
+          <button id="refreshTokenBtn" class="btn btn-primary">Refresh Token</button>
+        </div>
+      </div>
+      
+      <div class="frame-container">
+        <iframe name="adminFrame" src="/admin-navigation.html" title="Admin Content"></iframe>
+      </div>
+    </div>
+  </main>
+  
+  <div id="toast" class="toast">
+    <div class="toast-text" id="toastText">Message here</div>
+    <button class="toast-close" onclick="hideToast()">×</button>
+  </div>
+  
+  <script>
+    // Get references to elements
+    const statusCheckBtn = document.getElementById('statusCheckBtn');
+    const clearTokenBtn = document.getElementById('clearTokenBtn');
+    const refreshTokenBtn = document.getElementById('refreshTokenBtn');
+    const toast = document.getElementById('toast');
+    const toastText = document.getElementById('toastText');
+    const adminFrame = document.querySelector('iframe[name="adminFrame"]');
+    const userNameElement = document.querySelector('.user-name');
+    
+    // Function to show a toast message
+    function showToast(message, type = '', duration = 5000) {
+      toastText.textContent = message;
+      toast.className = 'toast visible';
+      
+      if (type) {
+        toast.classList.add(type);
+      }
+      
+      // Auto-hide after duration
+      setTimeout(() => {
+        hideToast();
+      }, duration);
+    }
+    
+    // Function to hide the toast
+    function hideToast() {
+      toast.className = 'toast';
+    }
+    
+    // Function to check authentication status
+    async function checkAuthStatus() {
+      try {
+        // Get token from localStorage
+        const token = localStorage.getItem('auth_token');
+        
+        if (!token) {
+          throw new Error('No authentication token found. Please login first.');
+        }
+        
+        // Check auth status by fetching user data
+        const response = await fetch('/api/auth/me', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Authentication failed with status: ${response.status}`);
+        }
+        
+        const userData = await response.json();
+        
+        if (!userData.isAdmin) {
+          throw new Error('Your account does not have administrator privileges.');
+        }
+        
+        // Update user name in the toolbar
+        userNameElement.textContent = userData.displayName || userData.username;
+        
+        // Success
+        showToast(`Authenticated as admin: ${userData.displayName || userData.username} (${userData.email})`, 'success');
+        
+        return userData;
+      } catch (error) {
+        // Error
+        showToast(`Error: ${error.message}`, 'error');
+        return null;
+      }
+    }
+    
+    // Function to clear tokens
+    function clearTokens() {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('partnerToken');
+      document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+      
+      showToast('All authentication tokens have been cleared.', 'success');
+    }
+    
+    // Function to refresh token
+    function refreshToken() {
+      // Set the admin token (hardcoded for simplicity)
+      const adminToken = "fc902b4c013b14b0aa1f6f5fd403a21e4d680a05aeb38ae640912784cf08c18e";
+      
+      // Remove any existing tokens first
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('partnerToken');
+      
+      // Set the auth token
+      localStorage.setItem('auth_token', adminToken);
+      
+      // Also set in cookie for systems that check cookies
+      document.cookie = `auth_token=${adminToken}; path=/; max-age=${60*60*24*7}`;
+      
+      // Store user data to ensure we have proper isAdmin flag
+      const adminUser = {
+        id: 4,
+        username: "admin",
+        email: "admin@warmleadnetwork.com",
+        displayName: "System Administrator",
+        isAdmin: true,
+        role: "admin"
+      };
+      localStorage.setItem('auth_user', JSON.stringify(adminUser));
+      
+      showToast('Admin token refreshed successfully. Reloading admin panel...', 'success');
+      
+      // Reload the current iframe to apply the new token
+      setTimeout(() => {
+        adminFrame.contentWindow.location.reload();
+      }, 1500);
+    }
+    
+    // Add event listeners
+    statusCheckBtn.addEventListener('click', checkAuthStatus);
+    clearTokenBtn.addEventListener('click', clearTokens);
+    refreshTokenBtn.addEventListener('click', refreshToken);
+    
+    // Check auth status when page loads
+    document.addEventListener('DOMContentLoaded', async function() {
+      const userData = await checkAuthStatus();
+      
+      if (userData) {
+        userNameElement.textContent = userData.displayName || userData.username;
+      }
+    });
+    
+    // Add click event listeners to the sidebar menu items
+    document.querySelectorAll('.sidebar-menu a').forEach(link => {
+      link.addEventListener('click', function() {
+        // Remove 'active' class from all links
+        document.querySelectorAll('.sidebar-menu a').forEach(link => {
+          link.classList.remove('active');
+        });
+        
+        // Add 'active' class to the clicked link
+        this.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

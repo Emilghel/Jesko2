@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard Access</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #0A0F1D;
+      color: #E2E8F0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+    .card {
+      background-color: #162033;
+      border-radius: 8px;
+      padding: 30px;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+    }
+    h1 {
+      color: #33C3BD;
+      margin-top: 0;
+      text-align: center;
+    }
+    .loader {
+      border: 5px solid rgba(51, 195, 189, 0.1);
+      border-radius: 50%;
+      border-top: 5px solid #33C3BD;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .message {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .url {
+      background-color: rgba(255,255,255,0.1);
+      padding: 12px;
+      border-radius: 4px;
+      font-family: monospace;
+      word-break: break-all;
+      margin: 20px 0;
+    }
+    .info {
+      background-color: rgba(255,255,255,0.05);
+      padding: 15px;
+      border-radius: 4px;
+      margin-top: 30px;
+      font-size: 14px;
+    }
+    .button {
+      display: block;
+      background-color: #33C3BD;
+      color: #0A0F1D;
+      text-align: center;
+      padding: 12px;
+      border-radius: 4px;
+      text-decoration: none;
+      font-weight: bold;
+      margin-top: 20px;
+      transition: all 0.2s ease;
+    }
+    .button:hover {
+      background-color: #2AB1AB;
+      transform: translateY(-2px);
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Admin Dashboard Access</h1>
+    <div class="loader"></div>
+    <div class="message">Redirecting you to the correct admin dashboard URL...</div>
+    <div class="url" id="correct-url"></div>
+    <div class="info">
+      <p><strong>Note:</strong> You appear to be using an incorrect URL format. The URL should not include "your-domain.com" in the path.</p>
+      <p>If the automatic redirect doesn't work, please click the button below.</p>
+    </div>
+    <a href="/admin-dashboard-v2.html" class="button">Open Admin Dashboard</a>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Get the current hostname (domain)
+      const hostname = window.location.hostname;
+      
+      // Set the correct URL
+      const correctURL = `https://${hostname}/admin-dashboard-v2.html`;
+      document.getElementById('correct-url').textContent = correctURL;
+      
+      // Redirect after a short delay
+      setTimeout(function() {
+        window.location.href = '/admin-dashboard-v2.html';
+      }, 3000);
+    });
+  </script>
+</body>
+</html>

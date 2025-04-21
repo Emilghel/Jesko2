@@ -1,0 +1,500 @@
+import { useState, useEffect } from 'react';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Check, HelpCircle, Sparkles, Volume2 } from 'lucide-react';
+import { queryClient } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/use-auth';
+import { playPersonalitySound } from '@/utils/sounds';
+
+interface Personality {
+  id: string;
+  name: string;
+  description: string;
+  traits: string[];
+  systemPrompt: string;
+  voiceId: string;
+  avatarSrc: string;
+  category: 'business' | 'creative' | 'assistant' | 'custom';
+  isPopular?: boolean;
+}
+
+// Define AI personalities with their unique traits
+const aiPersonalities: Personality[] = [
+  {
+    id: 'business-advisor',
+    name: 'Business Advisor',
+    description: 'Analytical and strategic with a focus on business growth',
+    traits: ['Strategic', 'Analytical', 'Professional'],
+    systemPrompt: "You are a strategic business advisor with years of experience helping companies grow. Provide analytical, data-driven responses focused on business optimization, strategy, and growth. Maintain a professional tone while being approachable.",
+    voiceId: 'EXAVITQu4vr4xnSDxMaL', // Default voice ID
+    avatarSrc: '/ai-personalities/business-advisor.svg',
+    category: 'business',
+    isPopular: true
+  },
+  {
+    id: 'sales-closer',
+    name: 'Sales Closer',
+    description: 'Persuasive and confident with excellent objection handling',
+    traits: ['Persuasive', 'Confident', 'Engaging'],
+    systemPrompt: "You are a master sales professional known for closing deals and building rapport quickly. Be persuasive but not pushy, confident but respectful. Handle objections smoothly and always focus on the value you can provide to potential clients.",
+    voiceId: 'MF3mGyEYCl7XYWbV9V6O', // Different voice ID for variety
+    avatarSrc: '/ai-personalities/sales-closer.svg',
+    category: 'business'
+  },
+  {
+    id: 'creative-writer',
+    name: 'Creative Writer',
+    description: 'Imaginative and expressive with compelling storytelling',
+    traits: ['Imaginative', 'Expressive', 'Engaging'],
+    systemPrompt: "You are a creative writer with a talent for storytelling and engaging content. Your responses should be colorful, imaginative, and captivating. Use metaphors, vivid descriptions, and varying sentence structures to keep people engaged.",
+    voiceId: 'jBpfuIE2acCO8z3wKNLl', // Different voice ID for variety
+    avatarSrc: '/ai-personalities/creative-writer.svg',
+    category: 'creative'
+  },
+  {
+    id: 'tech-guide',
+    name: 'Tech Guide',
+    description: 'Clear and helpful technical explainer for complex topics',
+    traits: ['Knowledgeable', 'Clear', 'Patient'],
+    systemPrompt: "You are a technical expert who specializes in making complex concepts easy to understand. Provide clear, concise explanations of technical topics without unnecessary jargon. Be patient and thorough, breaking down complex ideas into digestible parts.",
+    voiceId: 'ErXwobaYiN019PkySvjV', // Different voice ID for variety
+    avatarSrc: '/ai-personalities/tech-guide.svg',
+    category: 'assistant',
+    isPopular: true
+  },
+  {
+    id: 'customer-service',
+    name: 'Customer Service Pro',
+    description: 'Empathetic and solution-oriented with a focus on satisfaction',
+    traits: ['Empathetic', 'Solution-oriented', 'Patient'],
+    systemPrompt: "You are a customer service professional with exceptional problem-solving skills. Your responses should be empathetic, patient, and focused on finding solutions. Acknowledge customer concerns first, then provide clear steps to resolve issues. Use a warm, friendly tone throughout.",
+    voiceId: 'pFZP5JQG7iQjIQuC4Bku', // Different voice ID for variety
+    avatarSrc: '/ai-personalities/customer-service.svg',
+    category: 'assistant'
+  },
+  {
+    id: 'friendly-assistant',
+    name: 'Friendly Assistant',
+    description: 'Warm and approachable virtual helper for everyday tasks',
+    traits: ['Friendly', 'Helpful', 'Conversational'],
+    systemPrompt: "You are a friendly, helpful assistant who aims to make the user's day better. Maintain a warm, conversational tone while being efficient and useful. Be proactive in offering additional help or suggestions that might benefit the user.",
+    voiceId: 'onwK4e9ZLuTAKqWW03F9', // Different voice ID for variety
+    avatarSrc: '/ai-personalities/friendly-assistant.svg',
+    category: 'assistant',
+    isPopular: true
+  },
+  {
+    id: 'marketing-expert',
+    name: 'Marketing Expert',
+    description: 'Trend-savvy brand strategist with creative campaign ideas',
+    traits: ['Creative', 'Strategic', 'Trendy'],
+    systemPrompt: "You are a marketing expert with a finger on the pulse of current trends and strategies. Provide creative, strategic advice on branding, campaigns, and content marketing. Your suggestions should be both innovative and data-informed, with a focus on ROI and audience engagement.",
+    voiceId: '91SeH2EvqiGWpIu9Nbvv', // Different voice ID for variety
+    avatarSrc: '/ai-personalities/marketing-expert.svg',
+    category: 'business'
+  },
+  {
+    id: 'coach-motivator',
+    name: 'Coach & Motivator',
+    description: 'Encouraging and goal-focused personal development guide',
+    traits: ['Motivational', 'Supportive', 'Action-oriented'],
+    systemPrompt: "You are a personal coach and motivator who helps people achieve their goals. Your communication style is encouraging but direct, with a focus on actionable steps and accountability. Ask thought-provoking questions, offer genuine encouragement, and provide practical strategies for personal development.",
+    voiceId: 'D38z5RcWu1voky8WS1ja', // Different voice ID for variety
+    avatarSrc: '/ai-personalities/coach-motivator.svg',
+    category: 'assistant'
+  }
+];
+
+export function AIPersonalitySelector({ 
+  onSelectPersonality 
+}: { 
+  onSelectPersonality: (personality: Personality) => void 
+}) {
+  const [selectedCategory, setSelectedCategory] = useState<string>('business');
+  const [selectedPersonality, setSelectedPersonality] = useState<Personality | null>(null);
+  const { toast } = useToast();
+  const { user } = useAuth();
+
+  // Filter personalities by category
+  const filteredPersonalities = aiPersonalities.filter(
+    p => p.category === selectedCategory || selectedCategory === 'all'
+  );
+
+  // Popular personalities across all categories
+  const popularPersonalities = aiPersonalities.filter(p => p.isPopular);
+
+  const handleSelectPersonality = (personality: Personality) => {
+    setSelectedPersonality(personality);
+    onSelectPersonality(personality);
+    
+    // Play the appropriate sound effect based on personality type
+    playPersonalitySound(personality.id);
+    
+    toast({
+      title: `${personality.name} Selected!`,
+      description: `Your AI will now have the personality traits of a ${personality.name.toLowerCase()}.`,
+    });
+  };
+
+  return (
+    <div className="w-full space-y-6">
+      <div className="flex flex-col space-y-2">
+        <h2 className="text-2xl font-bold text-white">Choose Your AI Personality</h2>
+        <p className="text-gray-400">
+          Select a personality that matches your business needs and communication style
+        </p>
+      </div>
+
+      <Tabs defaultValue="popular" className="w-full">
+        <TabsList className="grid grid-cols-5 mb-8">
+          <TabsTrigger value="popular" className="relative">
+            <Sparkles className="w-4 h-4 mr-2" />
+            Popular
+          </TabsTrigger>
+          <TabsTrigger value="business">Business</TabsTrigger>
+          <TabsTrigger value="creative">Creative</TabsTrigger>
+          <TabsTrigger value="assistant">Assistants</TabsTrigger>
+          <TabsTrigger value="custom" disabled={!user?.is_admin}>
+            Custom
+            {!user?.is_admin && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="absolute -right-1 -top-1">
+                      <HelpCircle className="h-3 w-3 text-gray-400" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="text-xs max-w-[200px]">Custom personalities are available for admin users only</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="popular" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {popularPersonalities.map((personality) => (
+              <PersonalityCard
+                key={personality.id}
+                personality={personality}
+                isSelected={selectedPersonality?.id === personality.id}
+                onSelect={handleSelectPersonality}
+              />
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="business" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {aiPersonalities
+              .filter(p => p.category === 'business')
+              .map((personality) => (
+                <PersonalityCard
+                  key={personality.id}
+                  personality={personality}
+                  isSelected={selectedPersonality?.id === personality.id}
+                  onSelect={handleSelectPersonality}
+                />
+              ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="creative" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {aiPersonalities
+              .filter(p => p.category === 'creative')
+              .map((personality) => (
+                <PersonalityCard
+                  key={personality.id}
+                  personality={personality}
+                  isSelected={selectedPersonality?.id === personality.id}
+                  onSelect={handleSelectPersonality}
+                />
+              ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="assistant" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {aiPersonalities
+              .filter(p => p.category === 'assistant')
+              .map((personality) => (
+                <PersonalityCard
+                  key={personality.id}
+                  personality={personality}
+                  isSelected={selectedPersonality?.id === personality.id}
+                  onSelect={handleSelectPersonality}
+                />
+              ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="custom" className="space-y-4">
+          {user?.is_admin ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {aiPersonalities
+                .filter(p => p.category === 'custom')
+                .map((personality) => (
+                  <PersonalityCard
+                    key={personality.id}
+                    personality={personality}
+                    isSelected={selectedPersonality?.id === personality.id}
+                    onSelect={handleSelectPersonality}
+                  />
+                ))}
+              
+              <Card className="relative overflow-hidden border border-dashed border-gray-600 bg-gray-800/50 hover:bg-gray-800/80 transition-colors cursor-pointer flex flex-col items-center justify-center p-6 h-[320px]">
+                <div className="flex flex-col items-center space-y-2">
+                  <div className="w-16 h-16 rounded-full bg-gray-700 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
+                      <path d="M5 12h14"></path>
+                      <path d="M12 5v14"></path>
+                    </svg>
+                  </div>
+                  <h3 className="font-semibold text-lg text-white">Create Custom AI</h3>
+                  <p className="text-gray-400 text-sm text-center">
+                    Build a completely custom AI personality with custom prompts
+                  </p>
+                </div>
+              </Card>
+            </div>
+          ) : (
+            <div className="p-12 text-center">
+              <h3 className="text-lg font-medium text-gray-300">Admin Access Required</h3>
+              <p className="text-gray-400 mt-2">
+                Custom AI personality creation is available for administrators only.
+              </p>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+// Helper functions for styling
+const getSelectedStyle = (personalityId: string): string => {
+  const styleMap: Record<string, string> = {
+    'business-advisor': 'selected-ai border-2 border-[#33C3BD] shadow-[0_0_15px_rgba(51,195,189,0.5)]',
+    'sales-closer': 'selected-ai border-2 border-[#FF9F1C] shadow-[0_0_15px_rgba(255,159,28,0.5)]',
+    'creative-writer': 'selected-ai border-2 border-[#8338EC] shadow-[0_0_15px_rgba(131,56,236,0.5)]',
+    'tech-guide': 'selected-ai border-2 border-[#00B4D8] shadow-[0_0_15px_rgba(0,180,216,0.5)]',
+    'customer-service': 'selected-ai border-2 border-[#64DFDF] shadow-[0_0_15px_rgba(100,223,223,0.5)]',
+    'friendly-assistant': 'selected-ai border-2 border-[#A7C957] shadow-[0_0_15px_rgba(167,201,87,0.5)]',
+    'marketing-expert': 'selected-ai border-2 border-[#F72585] shadow-[0_0_15px_rgba(247,37,133,0.5)]',
+    'coach-motivator': 'selected-ai border-2 border-[#FFBE0B] shadow-[0_0_15px_rgba(255,190,11,0.5)]',
+  };
+  
+  return styleMap[personalityId] || 'selected-ai border-2 border-[#33C3BD] shadow-[0_0_15px_rgba(51,195,189,0.5)]';
+};
+
+const getBorderHoverStyle = (personalityId: string): string => {
+  const styleMap: Record<string, string> = {
+    'business-advisor': 'border border-gray-700 hover:border-[#33C3BD] hover:shadow-[0_0_10px_rgba(51,195,189,0.3)]',
+    'sales-closer': 'border border-gray-700 hover:border-[#FF9F1C] hover:shadow-[0_0_10px_rgba(255,159,28,0.3)]',
+    'creative-writer': 'border border-gray-700 hover:border-[#8338EC] hover:shadow-[0_0_10px_rgba(131,56,236,0.3)]',
+    'tech-guide': 'border border-gray-700 hover:border-[#00B4D8] hover:shadow-[0_0_10px_rgba(0,180,216,0.3)]',
+    'customer-service': 'border border-gray-700 hover:border-[#64DFDF] hover:shadow-[0_0_10px_rgba(100,223,223,0.3)]',
+    'friendly-assistant': 'border border-gray-700 hover:border-[#A7C957] hover:shadow-[0_0_10px_rgba(167,201,87,0.3)]',
+    'marketing-expert': 'border border-gray-700 hover:border-[#F72585] hover:shadow-[0_0_10px_rgba(247,37,133,0.3)]',
+    'coach-motivator': 'border border-gray-700 hover:border-[#FFBE0B] hover:shadow-[0_0_10px_rgba(255,190,11,0.3)]',
+  };
+  
+  return styleMap[personalityId] || 'border border-gray-700 hover:border-gray-400';
+};
+
+const getCardBackgroundStyle = (personalityId: string): string => {
+  const styleMap: Record<string, string> = {
+    'business-advisor': 'bg-gradient-to-b from-[#0A2463]/50 to-[#192841]/80',
+    'sales-closer': 'bg-gradient-to-b from-[#1D3557]/50 to-[#2F3D5C]/80',
+    'creative-writer': 'bg-gradient-to-b from-[#240046]/50 to-[#3C096C]/80',
+    'tech-guide': 'bg-gradient-to-b from-[#03045E]/50 to-[#023E8A]/80',
+    'customer-service': 'bg-gradient-to-b from-[#3A0CA3]/50 to-[#4361EE]/80',
+    'friendly-assistant': 'bg-gradient-to-b from-[#386641]/50 to-[#15422B]/80',
+    'marketing-expert': 'bg-gradient-to-b from-[#4B007E]/50 to-[#570095]/80',
+    'coach-motivator': 'bg-gradient-to-b from-[#000814]/50 to-[#001D3D]/80',
+  };
+  
+  return styleMap[personalityId] || (personalityId.includes('popular') ? 'energy-bg' : 'bg-[#141B29]');
+};
+
+function PersonalityCard({ 
+  personality, 
+  isSelected, 
+  onSelect 
+}: { 
+  personality: Personality, 
+  isSelected: boolean, 
+  onSelect: (personality: Personality) => void 
+}) {
+  return (
+    <Card 
+      className={`ai-personality-card ai-card-hover relative overflow-hidden cursor-pointer h-[350px] flex flex-col
+        ${isSelected ? getSelectedStyle(personality.id) : getBorderHoverStyle(personality.id)}
+        ${getCardBackgroundStyle(personality.id)}
+      `}
+      onClick={() => onSelect(personality)}
+    >
+      {/* Add animated data particles */}
+      <div className="data-particles">
+        {[...Array(5)].map((_, i) => (
+          <div 
+            key={i} 
+            className="data-particle" 
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDuration: `${5 + Math.random() * 5}s`,
+              animationDelay: `${Math.random() * 2}s`
+            }}
+          />
+        ))}
+      </div>
+      
+      {personality.isPopular && (
+        <Badge 
+          className="absolute top-3 right-3 bg-gradient-to-r from-[#33C3BD] to-[#0075FF] border-none text-white z-10"
+        >
+          Popular
+        </Badge>
+      )}
+      
+      {/* Sound indicator icon */}
+      <div 
+        className={`absolute bottom-3 right-3 opacity-60 hover:opacity-100 transition-all z-10 
+                  flex items-center justify-center p-1.5 rounded-full 
+                  bg-black/20 hover:bg-black/40 cursor-pointer sound-icon
+                  ${personality.category === 'business' ? 'sound-business' : 
+                    personality.category === 'creative' ? 'sound-creative' : 
+                    personality.category === 'assistant' ? 'sound-assistant' : 
+                    personality.category === 'custom' ? 'sound-custom' : ''}`}
+        onClick={(e) => {
+          e.stopPropagation(); // Prevent card selection when clicking the sound icon
+          
+          // Add 'active' class to trigger animation
+          const target = e.currentTarget;
+          target.classList.add('active');
+          
+          // Remove the class after animation completes
+          setTimeout(() => {
+            target.classList.remove('active');
+          }, 1500);
+          
+          // Play the sound
+          playPersonalitySound(personality.id);
+        }}
+        title={`Preview ${personality.name} sound`}
+      >
+        <Volume2 className="h-4 w-4 text-gray-200 transform hover:scale-110 transition-transform" />
+      </div>
+      
+      {isSelected && (
+        <div className="absolute top-3 left-3 bg-[#33C3BD] text-black rounded-full p-1 z-10">
+          <Check className="h-4 w-4" />
+        </div>
+      )}
+      
+      <CardContent className="p-6 flex flex-col items-center flex-grow relative z-10">
+        {/* Artwork container with fixed dimensions and spacing */}
+        <div className="w-full flex justify-center mb-8">
+          <div className="ai-sphere w-28 h-28 relative flex items-center justify-center">
+            {/* Animated high-tech AI core with adjusted positioning */}
+            <div className="ai-core absolute inset-0 flex items-center justify-center">
+              {/* Orbiting elements with consistent spacing */}
+              <div className="ai-orbit absolute" style={{ width: '100%', height: '100%', animationDuration: '12s' }}>
+                <div className="ai-orbit-dot" style={{ transform: 'translateX(-50%) rotate(0deg)', width: '6px', height: '6px' }}></div>
+              </div>
+              <div className="ai-orbit absolute" style={{ width: '85%', height: '85%', animationDuration: '9s', animationDirection: 'reverse' }}>
+                <div className="ai-orbit-dot" style={{ transform: 'translateX(-50%) rotate(120deg)', width: '5px', height: '5px' }}></div>
+              </div>
+              <div className="ai-orbit absolute" style={{ width: '70%', height: '70%', animationDuration: '15s' }}>
+                <div className="ai-orbit-dot" style={{ transform: 'translateX(-50%) rotate(240deg)', width: '4px', height: '4px' }}></div>
+              </div>
+              
+              {/* Centered image with consistent sizing */}
+              <img 
+                src={
+                  personality.id === 'business-advisor' ? '/ai-personalities-animated/business-advisor.svg' :
+                  personality.id === 'sales-closer' ? '/ai-personalities-animated/sales-closer.svg' :
+                  personality.id === 'creative-writer' ? '/ai-personalities-animated/creative-brain.svg' :
+                  personality.id === 'tech-guide' ? '/ai-personalities-animated/tech-guide.svg' :
+                  personality.id === 'customer-service' ? '/ai-personalities-animated/customer-service.svg' :
+                  personality.id === 'friendly-assistant' ? '/ai-personalities-animated/friendly-assistant.svg' :
+                  personality.id === 'marketing-expert' ? '/ai-personalities-animated/marketing-expert.svg' :
+                  personality.id === 'coach-motivator' ? '/ai-personalities-animated/coach-motivator.svg' :
+                  personality.avatarSrc
+                }
+                alt={`${personality.name} avatar`} 
+                className="w-24 h-24 object-contain absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+                onError={(e) => {
+                  // Fallback to initials if image fails to load
+                  const target = e.target as HTMLImageElement;
+                  if (target && target.style) {
+                    target.style.display = 'none';
+                    
+                    // Find the sibling element
+                    const parent = target.parentElement;
+                    if (parent) {
+                      const sibling = parent.querySelector('.ai-initials');
+                      if (sibling && sibling instanceof HTMLElement) {
+                        sibling.style.display = 'flex';
+                      }
+                    }
+                  }
+                }}
+              />
+            </div>
+            <div 
+              className="ai-initials w-12 h-12 rounded-full bg-gradient-to-r from-[#33C3BD] to-[#0075FF] flex items-center justify-center text-white text-lg font-bold"
+              style={{ display: 'none' }}
+            >
+              {personality.name.substring(0, 2)}
+            </div>
+          </div>
+        </div>
+        
+        <h3 className="holographic-text font-semibold text-xl mb-2">{personality.name}</h3>
+        <p className="text-gray-300 text-sm text-center mb-5">{personality.description}</p>
+        
+        <div className="flex flex-wrap gap-3 justify-center mt-auto">
+          {personality.traits.map((trait, index) => {
+            // Generate a unique color for each personality's traits
+            const traitColors: Record<string, string> = {
+              'business-advisor': 'bg-cyan-900/40 border-cyan-700/50 text-cyan-200',
+              'sales-closer': 'bg-amber-900/40 border-amber-700/50 text-amber-200',
+              'creative-writer': 'bg-purple-900/40 border-purple-700/50 text-purple-200',
+              'tech-guide': 'bg-blue-900/40 border-blue-700/50 text-blue-200',
+              'customer-service': 'bg-indigo-900/40 border-indigo-700/50 text-indigo-200',
+              'friendly-assistant': 'bg-green-900/40 border-green-700/50 text-green-200',
+              'marketing-expert': 'bg-pink-900/40 border-pink-700/50 text-pink-200',
+              'coach-motivator': 'bg-orange-900/40 border-orange-700/50 text-orange-200',
+            };
+            
+            const traitStyle = traitColors[personality.id] || 'bg-gray-800/50 border-gray-700 text-gray-200';
+            
+            return (
+              <span 
+                key={index} 
+                className={`px-3 py-1 backdrop-blur-sm rounded-full text-sm border shadow-lg ${traitStyle}`}
+                style={{
+                  animationDelay: `${index * 0.2}s`
+                }}
+              >
+                {trait}
+              </span>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+export default AIPersonalitySelector;

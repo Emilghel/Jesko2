@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard API Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+      color: #333;
+    }
+    h1 {
+      color: #2c3e50;
+      margin-bottom: 20px;
+    }
+    .test-container {
+      background-color: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    h2 {
+      color: #3498db;
+      margin-top: 0;
+    }
+    button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    pre {
+      background-color: #f8f9fa;
+      padding: 15px;
+      border-radius: 4px;
+      overflow: auto;
+      max-height: 300px;
+      margin-top: 15px;
+    }
+    .success {
+      color: #27ae60;
+    }
+    .error {
+      color: #e74c3c;
+    }
+  </style>
+</head>
+<body>
+  <h1>Admin Dashboard API Test</h1>
+  
+  <div class="test-container">
+    <h2>Dashboard Stats</h2>
+    <button onclick="testDashboardStats()">Test Dashboard Stats</button>
+    <pre id="dashboard-stats-result">Click the button to test...</pre>
+  </div>
+  
+  <div class="test-container">
+    <h2>Dashboard Overview</h2>
+    <button onclick="testDashboard()">Test Dashboard Overview</button>
+    <pre id="dashboard-result">Click the button to test...</pre>
+  </div>
+  
+  <div class="test-container">
+    <h2>Recent Activities</h2>
+    <button onclick="testRecentActivities()">Test Recent Activities</button>
+    <pre id="recent-activities-result">Click the button to test...</pre>
+  </div>
+  
+  <div class="test-container">
+    <h2>Users</h2>
+    <button onclick="testUsers()">Test Users</button>
+    <pre id="users-result">Click the button to test...</pre>
+  </div>
+  
+  <div class="test-container">
+    <h2>Partners</h2>
+    <button onclick="testPartners()">Test Partners</button>
+    <pre id="partners-result">Click the button to test...</pre>
+  </div>
+  
+  <div class="test-container">
+    <h2>AI Models</h2>
+    <button onclick="testAIModels()">Test AI Models</button>
+    <pre id="ai-models-result">Click the button to test...</pre>
+  </div>
+
+  <script>
+    // Set the authorization header for all requests
+    const authHeader = 'Basic YWRtaW46YWRtaW4yMDI1c2VjdXJl';
+    
+    // Function to make an API request
+    async function makeRequest(endpoint) {
+      try {
+        const response = await fetch(endpoint, {
+          headers: {
+            'Authorization': authHeader
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        
+        return await response.json();
+      } catch (error) {
+        console.error(`Error fetching ${endpoint}:`, error);
+        return { error: error.message };
+      }
+    }
+    
+    // Format the result for display
+    function formatResult(result, elementId) {
+      const element = document.getElementById(elementId);
+      
+      if (result.error) {
+        element.className = 'error';
+        element.textContent = `Error: ${result.error}`;
+      } else {
+        element.className = 'success';
+        element.textContent = JSON.stringify(result, null, 2);
+      }
+    }
+    
+    // Test functions
+    async function testDashboardStats() {
+      const result = await makeRequest('/api/admin/dashboard/stats');
+      formatResult(result, 'dashboard-stats-result');
+    }
+    
+    async function testDashboard() {
+      const result = await makeRequest('/api/admin/dashboard');
+      formatResult(result, 'dashboard-result');
+    }
+    
+    async function testRecentActivities() {
+      const result = await makeRequest('/api/admin/recent-activities');
+      formatResult(result, 'recent-activities-result');
+    }
+    
+    async function testUsers() {
+      const result = await makeRequest('/api/admin/users');
+      formatResult(result, 'users-result');
+    }
+    
+    async function testPartners() {
+      const result = await makeRequest('/api/admin/partners');
+      formatResult(result, 'partners-result');
+    }
+    
+    async function testAIModels() {
+      const result = await makeRequest('/api/admin/ai-models');
+      formatResult(result, 'ai-models-result');
+    }
+  </script>
+</body>
+</html>

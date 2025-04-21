@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redirecting...</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(to bottom, #0A0F1D, #162033);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    
+    .container {
+      text-align: center;
+      max-width: 600px;
+    }
+    
+    h1 {
+      font-size: 1.6rem;
+      margin-bottom: 0.5rem;
+      color: #33C3BD;
+    }
+    
+    p {
+      margin-bottom: 2rem;
+      opacity: 0.8;
+    }
+    
+    .loader {
+      width: 48px;
+      height: 48px;
+      border: 5px solid rgba(51, 195, 189, 0.3);
+      border-radius: 50%;
+      border-top-color: #33C3BD;
+      animation: spin 1s ease-in-out infinite;
+      margin: 0 auto 1.5rem;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+  <script>
+    // Immediate redirect - no delay
+    window.location.replace('/character-selection-3d');
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="loader"></div>
+    <h1>Redirecting to 3D Character Selection</h1>
+    <p>If you are not redirected automatically, <a href="/character-selection-3d" style="color: #33C3BD;">click here</a>.</p>
+  </div>
+</body>
+</html>

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Access Links</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #0A0F1D;
+      color: #E2E8F0;
+      padding: 2rem;
+      line-height: 1.6;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: #162033;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    h1 {
+      color: #33C3BD;
+      margin-top: 0;
+      border-bottom: 1px solid #33C3BD;
+      padding-bottom: 10px;
+    }
+    
+    .card {
+      background-color: #1e293b;
+      border-radius: 6px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .card h2 {
+      margin-top: 0;
+      color: #33C3BD;
+    }
+    
+    ul {
+      padding-left: 1.5rem;
+    }
+    
+    li {
+      margin-bottom: 0.75rem;
+    }
+    
+    a {
+      color: #6366F1;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+    
+    a:hover {
+      color: #33C3BD;
+      text-decoration: underline;
+    }
+    
+    .btn {
+      display: inline-block;
+      background-color: #33C3BD;
+      color: #0A0F1D;
+      font-weight: bold;
+      padding: 0.75rem 1.5rem;
+      border-radius: 4px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      margin-right: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .btn:hover {
+      background-color: #2AB1AB;
+      transform: translateY(-2px);
+      text-decoration: none;
+    }
+    
+    .btn-secondary {
+      background-color: transparent;
+      border: 1px solid #33C3BD;
+      color: #33C3BD;
+    }
+    
+    .btn-secondary:hover {
+      background-color: rgba(51, 195, 189, 0.1);
+    }
+    
+    .credentials {
+      background-color: #0A0F1D;
+      padding: 1rem;
+      border-radius: 4px;
+      font-family: monospace;
+      margin-top: 1rem;
+    }
+    
+    .note {
+      border-left: 4px solid #F59E0B;
+      padding-left: 1rem;
+      margin: 1.5rem 0;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>WarmLeadNetwork Admin Access Links</h1>
+    
+    <div class="card">
+      <h2>Admin Dashboard</h2>
+      <p>This is the main admin dashboard for system administration:</p>
+      <a href="/admin-dashboard-v2.html" class="btn">Open Admin Dashboard</a>
+      
+      <div class="credentials">
+        <h3>Login Credentials</h3>
+        <p><strong>Option 1:</strong></p>
+        <p>Username: admin</p>
+        <p>Password: admin2025secure</p>
+        <p><strong>Option 2:</strong></p>
+        <p>Username: replit</p>
+        <p>Password: testing</p>
+        <p><strong>Security Access Code:</strong> WarmLead-Admin-2025</p>
+      </div>
+      
+      <div class="note">
+        <p>Note: If you encounter a 404 error, make sure you're accessing the correct URL:
+           <code>https://(your-replit-domain)/admin-dashboard-v2.html</code> directly.</p>
+      </div>
+    </div>
+    
+    <div class="card">
+      <h2>Direct API Endpoints</h2>
+      <p>These API endpoints can be accessed directly:</p>
+      <ul>
+        <li><a href="/api/admin/system-status">/api/admin/system-status</a> - Get system status</li>
+        <li><a href="/api/admin/dashboard">/api/admin/dashboard</a> - Dashboard overview</li>
+        <li><a href="/api/admin/users">/api/admin/users</a> - Users list</li>
+        <li><a href="/api/admin/recent-activities">/api/admin/recent-activities</a> - Recent activities</li>
+      </ul>
+    </div>
+    
+    <div class="card">
+      <h2>Homepage and Regular Admin Area</h2>
+      <p>Access the main application:</p>
+      <a href="/" class="btn btn-secondary">Homepage</a>
+      <a href="/home" class="btn btn-secondary">Home Dashboard</a>
+      <a href="/admin-link.html" class="btn btn-secondary">Admin Quick Link</a>
+    </div>
+  </div>
+</body>
+</html>

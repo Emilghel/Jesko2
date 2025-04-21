@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Direct Admin Panel</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      line-height: 1.6;
+      color: #333;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    h1, h2, h3 {
+      color: #2c3e50;
+    }
+    button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    input, select {
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      width: 100%;
+      margin-bottom: 15px;
+      box-sizing: border-box;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    th, td {
+      text-align: left;
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    .error {
+      color: #e74c3c;
+      background-color: #fadbd8;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+      display: none;
+    }
+    .success {
+      color: #27ae60;
+      background-color: #d4efdf;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+      display: none;
+    }
+    .tab {
+      padding: 10px 15px;
+      background-color: #f2f2f2;
+      display: inline-block;
+      border-radius: 4px 4px 0 0;
+      margin-right: 5px;
+      cursor: pointer;
+    }
+    .tab.active {
+      background-color: #3498db;
+      color: white;
+    }
+    .tab-content {
+      display: none;
+      padding: 20px;
+      background-color: white;
+      border-radius: 0 0 4px 4px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    .tab-content.active {
+      display: block;
+    }
+    #withdrawalRequestsTable tbody tr:hover {
+      background-color: #f5f5f5;
+      cursor: pointer;
+    }
+    .action-btn-approve {
+      background-color: #27ae60;
+    }
+    .action-btn-approve:hover {
+      background-color: #219955;
+    }
+    .action-btn-reject {
+      background-color: #e74c3c;
+    }
+    .action-btn-reject:hover {
+      background-color: #c0392b;
+    }
+    .logout-btn {
+      background-color: #e74c3c;
+      float: right;
+    }
+    .logout-btn:hover {
+      background-color: #c0392b;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .status-pending {
+      background-color: #f39c12;
+      color: white;
+    }
+    .status-approved {
+      background-color: #27ae60;
+      color: white;
+    }
+    .status-rejected {
+      background-color: #e74c3c;
+      color: white;
+    }
+    .status-paid {
+      background-color: #3498db;
+      color: white;
+    }
+    #loginForm {
+      max-width: 400px;
+      margin: 100px auto;
+      padding: 30px;
+      background: white;
+      border-radius: 5px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+    }
+    .modal-content {
+      background-color: white;
+      margin: 100px auto;
+      padding: 20px;
+      width: 80%;
+      max-width: 500px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    .close {
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .close:hover {
+      color: #e74c3c;
+    }
+  </style>
+</head>
+<body>
+  <div id="loginSection">
+    <form id="loginForm">
+      <h2>Emergency Admin Login</h2>
+      <div id="loginError" class="error"></div>
+      <div>
+        <label for="username">Email:</label>
+        <input type="email" id="username" required placeholder="Enter admin email">
+      </div>
+      <div>
+        <label for="password">Password:</label>
+        <input type="password" id="password" required placeholder="Enter password">
+      </div>
+      <button type="submit">Login</button>
+      <p><a href="/" id="returnHome">Return to Home</a></p>
+    </form>
+  </div>
+
+  <div id="adminSection" style="display: none;">
+    <div class="container">
+      <h1>Direct Emergency Admin Panel</h1>
+      <p>This is a standalone HTML file that communicates directly with the API endpoints.</p>
+      <button id="logoutBtn" class="logout-btn">Logout</button>
+      
+      <div class="tab-container">
+        <div class="tab active" data-tab="withdrawals">Partner Withdrawals</div>
+        <div class="tab" data-tab="system">System Status</div>
+      </div>
+      
+      <div id="withdrawalsTab" class="tab-content active">
+        <h2>Partner Withdrawal Requests</h2>
+        <div id="withdrawalError" class="error"></div>
+        <div id="withdrawalSuccess" class="success"></div>
+        
+        <table id="withdrawalRequestsTable">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Partner</th>
+              <th>Amount</th>
+              <th>Method</th>
+              <th>Status</th>
+              <th>Requested</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="withdrawalRequestsBody">
+            <!-- Data will be loaded here -->
+          </tbody>
+        </table>
+      </div>
+      
+      <div id="systemTab" class="tab-content">
+        <h2>System Status</h2>
+        <div id="systemError" class="error"></div>
+        <div id="systemSuccess" class="success"></div>
+        
+        <div>
+          <h3>API Keys</h3>
+          <table id="apiKeysTable">
+            <thead>
+              <tr>
+                <th>Service</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>OpenAI</td>
+                <td id="openaiStatus">Checking...</td>
+              </tr>
+              <tr>
+                <td>ElevenLabs</td>
+                <td id="elevenlabsStatus">Checking...</td>
+              </tr>
+              <tr>
+                <td>Twilio</td>
+                <td id="twilioStatus">Checking...</td>
+              </tr>
+              <tr>
+                <td>Stripe</td>
+                <td id="stripeStatus">Checking...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <div>
+          <h3>Server Info</h3>
+          <table>
+            <tr>
+              <td>Server Uptime:</td>
+              <td id="serverUptime">Checking...</td>
+            </tr>
+            <tr>
+              <td>Environment:</td>
+              <td id="environment">Checking...</td>
+            </tr>
+            <tr>
+              <td>Database Connections:</td>
+              <td id="dbConnections">Checking...</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Withdrawal Details Modal -->
+  <div id="withdrawalModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Withdrawal Details</h2>
+      <div id="modalError" class="error"></div>
+      <div id="modalSuccess" class="success"></div>
+      
+      <table id="withdrawalDetailsTable">
+        <tr>
+          <td>ID:</td>
+          <td id="modal-id"></td>
+        </tr>
+        <tr>
+          <td>Partner:</td>
+          <td id="modal-partner"></td>
+        </tr>
+        <tr>
+          <td>Amount:</td>
+          <td id="modal-amount"></td>
+        </tr>
+        <tr>
+          <td>Method:</td>
+          <td id="modal-method"></td>
+        </tr>
+        <tr>
+          <td>Payment Details:</td>
+          <td id="modal-details"></td>
+        </tr>
+        <tr>
+          <td>Status:</td>
+          <td id="modal-status"></td>
+        </tr>
+        <tr>
+          <td>Requested:</td>
+          <td id="modal-requested"></td>
+        </tr>
+        <tr>
+          <td>Updated:</td>
+          <td id="modal-updated"></td>
+        </tr>
+      </table>
+      
+      <div id="actionButtons">
+        <button id="approveBtn" class="action-btn-approve">Approve</button>
+        <button id="rejectBtn" class="action-btn-reject">Reject</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Global variables
+    let authToken = localStorage.getItem('admin_auth_token');
+    let withdrawalData = [];
+    let selectedWithdrawalId = null;
+    
+    // DOM elements
+    const loginSection = document.getElementById('loginSection');
+    const adminSection = document.getElementById('adminSection');
+    const loginForm = document.getElementById('loginForm');
+    const loginError = document.getElementById('loginError');
+    const withdrawalRequestsBody = document.getElementById('withdrawalRequestsBody');
+    const withdrawalError = document.getElementById('withdrawalError');
+    const withdrawalSuccess = document.getElementById('withdrawalSuccess');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const systemError = document.getElementById('systemError');
+    const systemSuccess = document.getElementById('systemSuccess');
+    const modal = document.getElementById('withdrawalModal');
+    const modalClose = document.querySelector('.close');
+    const approveBtn = document.getElementById('approveBtn');
+    const rejectBtn = document.getElementById('rejectBtn');
+    const modalError = document.getElementById('modalError');
+    const modalSuccess = document.getElementById('modalSuccess');
+    const tabs = document.querySelectorAll('.tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    // API endpoint base URL - changes based on environment
+    const apiBase = window.location.origin;
+    
+    // Initialize the page
+    document.addEventListener('DOMContentLoaded', init);
+    
+    function init() {
+      // Check authentication
+      if (authToken) {
+        // Try to use the saved token
+        verifyToken()
+          .then(isValid => {
+            if (isValid) {
+              showAdminPanel();
+              loadSystemStatus();
+              loadWithdrawalRequests();
+            } else {
+              showLoginForm();
+            }
+          })
+          .catch(() => showLoginForm());
+      } else {
+        showLoginForm();
+      }
+      
+      // Set up event listeners
+      loginForm.addEventListener('submit', handleLogin);
+      logoutBtn.addEventListener('click', handleLogout);
+      modalClose.addEventListener('click', closeModal);
+      approveBtn.addEventListener('click', () => approveWithdrawal(selectedWithdrawalId));
+      rejectBtn.addEventListener('click', () => rejectWithdrawal(selectedWithdrawalId));
+      
+      // Tab navigation
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          const tabId = tab.getAttribute('data-tab');
+          
+          // Update active tab
+          tabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          
+          // Show active content
+          tabContents.forEach(content => {
+            content.classList.remove('active');
+          });
+          document.getElementById(`${tabId}Tab`).classList.add('active');
+        });
+      });
+    }
+    
+    // Authentication functions
+    async function handleLogin(event) {
+      event.preventDefault();
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      
+      try {
+        loginError.style.display = 'none';
+        const response = await fetch(`${apiBase}/api/admin-emergency/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: username, password })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.token) {
+          authToken = data.token;
+          localStorage.setItem('admin_auth_token', authToken);
+          showAdminPanel();
+          loadSystemStatus();
+          loadWithdrawalRequests();
+        } else {
+          loginError.textContent = data.error || 'Invalid credentials. Please try again.';
+          loginError.style.display = 'block';
+        }
+      } catch (error) {
+        loginError.textContent = 'Server error. Please try again later.';
+        loginError.style.display = 'block';
+        console.error('Login error:', error);
+      }
+    }
+    
+    async function verifyToken() {
+      try {
+        const response = await fetch(`${apiBase}/api/admin-emergency/verify`, {
+          headers: { 
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        return response.ok;
+      } catch (error) {
+        console.error('Token verification error:', error);
+        return false;
+      }
+    }
+    
+    function handleLogout() {
+      localStorage.removeItem('admin_auth_token');
+      authToken = null;
+      showLoginForm();
+    }
+    
+    // UI functions
+    function showLoginForm() {
+      loginSection.style.display = 'block';
+      adminSection.style.display = 'none';
+    }
+    
+    function showAdminPanel() {
+      loginSection.style.display = 'none';
+      adminSection.style.display = 'block';
+    }
+    
+    // Data loading functions
+    async function loadWithdrawalRequests() {
+      try {
+        withdrawalError.style.display = 'none';
+        const response = await fetch(`${apiBase}/api/admin-emergency/withdrawal-requests`, {
+          headers: { 
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to load withdrawal requests');
+        }
+        
+        withdrawalData = await response.json();
+        displayWithdrawalRequests(withdrawalData);
+        
+        // Set up click handlers for withdrawal rows
+        const rows = document.querySelectorAll('#withdrawalRequestsTable tbody tr');
+        rows.forEach(row => {
+          row.addEventListener('click', () => {
+            const id = parseInt(row.getAttribute('data-id'));
+            openWithdrawalDetails(id);
+          });
+        });
+      } catch (error) {
+        withdrawalError.textContent = `Error: ${error.message}`;
+        withdrawalError.style.display = 'block';
+        console.error('Error loading withdrawal requests:', error);
+      }
+    }
+    
+    function displayWithdrawalRequests(withdrawals) {
+      withdrawalRequestsBody.innerHTML = '';
+      
+      if (withdrawals.length === 0) {
+        const row = document.createElement('tr');
+        row.innerHTML = '<td colspan="7" style="text-align: center;">No withdrawal requests found</td>';
+        withdrawalRequestsBody.appendChild(row);
+        return;
+      }
+      
+      withdrawals.forEach(withdrawal => {
+        const row = document.createElement('tr');
+        row.setAttribute('data-id', withdrawal.id);
+        
+        // Format date
+        const requestDate = new Date(withdrawal.created_at);
+        const formattedDate = requestDate.toLocaleDateString() + ' ' + requestDate.toLocaleTimeString();
+        
+        // Create status badge class
+        const statusClass = `status-badge status-${withdrawal.status.toLowerCase()}`;
+        
+        row.innerHTML = `
+          <td>${withdrawal.id}</td>
+          <td>${withdrawal.partner_name || 'Unknown'}</td>
+          <td>$${parseFloat(withdrawal.amount).toFixed(2)}</td>
+          <td>${withdrawal.payment_method}</td>
+          <td><span class="${statusClass}">${withdrawal.status}</span></td>
+          <td>${formattedDate}</td>
+          <td>
+            ${withdrawal.status === 'PENDING' ? `
+              <button class="action-btn-approve" onclick="event.stopPropagation(); approveWithdrawal(${withdrawal.id})">Approve</button>
+              <button class="action-btn-reject" onclick="event.stopPropagation(); rejectWithdrawal(${withdrawal.id})">Reject</button>
+            ` : ''}
+          </td>
+        `;
+        
+        withdrawalRequestsBody.appendChild(row);
+      });
+    }
+    
+    async function loadSystemStatus() {
+      try {
+        systemError.style.display = 'none';
+        const response = await fetch(`${apiBase}/api/admin-emergency/system-status`, {
+          headers: { 
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to load system status');
+        }
+        
+        const data = await response.json();
+        
+        // Update API key statuses
+        document.getElementById('openaiStatus').textContent = data.services.openai ? '✓ Active' : '✗ Inactive';
+        document.getElementById('elevenlabsStatus').textContent = data.services.elevenlabs ? '✓ Active' : '✗ Inactive';
+        document.getElementById('twilioStatus').textContent = data.services.twilio ? '✓ Active' : '✗ Inactive';
+        document.getElementById('stripeStatus').textContent = data.services.stripe ? '✓ Active' : '✗ Inactive';
+        
+        // Update server info
+        document.getElementById('serverUptime').textContent = data.uptime;
+        document.getElementById('environment').textContent = data.environment;
+        document.getElementById('dbConnections').textContent = data.dbStatus ? 'Connected' : 'Disconnected';
+        
+      } catch (error) {
+        systemError.textContent = `Error: ${error.message}`;
+        systemError.style.display = 'block';
+        console.error('Error loading system status:', error);
+      }
+    }
+    
+    // Withdrawal actions
+    function openWithdrawalDetails(id) {
+      const withdrawal = withdrawalData.find(w => w.id === id);
+      if (!withdrawal) return;
+      
+      selectedWithdrawalId = id;
+      
+      // Populate modal with withdrawal details
+      document.getElementById('modal-id').textContent = withdrawal.id;
+      document.getElementById('modal-partner').textContent = withdrawal.partner_name || 'Unknown';
+      document.getElementById('modal-amount').textContent = `$${parseFloat(withdrawal.amount).toFixed(2)}`;
+      document.getElementById('modal-method').textContent = withdrawal.payment_method;
+      document.getElementById('modal-details').textContent = withdrawal.payment_details || 'None provided';
+      
+      const statusClass = `status-badge status-${withdrawal.status.toLowerCase()}`;
+      document.getElementById('modal-status').innerHTML = `<span class="${statusClass}">${withdrawal.status}</span>`;
+      
+      const requestDate = new Date(withdrawal.created_at);
+      document.getElementById('modal-requested').textContent = requestDate.toLocaleDateString() + ' ' + requestDate.toLocaleTimeString();
+      
+      const updatedDate = withdrawal.updated_at ? new Date(withdrawal.updated_at) : null;
+      document.getElementById('modal-updated').textContent = updatedDate 
+        ? updatedDate.toLocaleDateString() + ' ' + updatedDate.toLocaleTimeString() 
+        : 'Not yet updated';
+      
+      // Show/hide action buttons based on status
+      const actionButtons = document.getElementById('actionButtons');
+      if (withdrawal.status === 'PENDING') {
+        actionButtons.style.display = 'block';
+      } else {
+        actionButtons.style.display = 'none';
+      }
+      
+      // Clear previous messages
+      modalError.style.display = 'none';
+      modalSuccess.style.display = 'none';
+      
+      // Show modal
+      modal.style.display = 'block';
+    }
+    
+    function closeModal() {
+      modal.style.display = 'none';
+      selectedWithdrawalId = null;
+    }
+    
+    async function approveWithdrawal(id) {
+      try {
+        modalError.style.display = 'none';
+        modalSuccess.style.display = 'none';
+        
+        const response = await fetch(`${apiBase}/api/admin-emergency/withdrawal-requests/${id}/approve`, {
+          method: 'POST',
+          headers: { 
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          modalSuccess.textContent = 'Withdrawal approved successfully';
+          modalSuccess.style.display = 'block';
+          
+          // Reload data after short delay
+          setTimeout(() => {
+            closeModal();
+            loadWithdrawalRequests();
+          }, 1500);
+        } else {
+          modalError.textContent = data.error || 'Failed to approve withdrawal';
+          modalError.style.display = 'block';
+        }
+      } catch (error) {
+        modalError.textContent = `Error: ${error.message}`;
+        modalError.style.display = 'block';
+        console.error('Error approving withdrawal:', error);
+      }
+    }
+    
+    async function rejectWithdrawal(id) {
+      try {
+        modalError.style.display = 'none';
+        modalSuccess.style.display = 'none';
+        
+        const response = await fetch(`${apiBase}/api/admin-emergency/withdrawal-requests/${id}/reject`, {
+          method: 'POST',
+          headers: { 
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          modalSuccess.textContent = 'Withdrawal rejected successfully';
+          modalSuccess.style.display = 'block';
+          
+          // Reload data after short delay
+          setTimeout(() => {
+            closeModal();
+            loadWithdrawalRequests();
+          }, 1500);
+        } else {
+          modalError.textContent = data.error || 'Failed to reject withdrawal';
+          modalError.style.display = 'block';
+        }
+      } catch (error) {
+        modalError.textContent = `Error: ${error.message}`;
+        modalError.style.display = 'block';
+        console.error('Error rejecting withdrawal:', error);
+      }
+    }
+    
+    // Make functions available globally for onclick handlers
+    window.approveWithdrawal = approveWithdrawal;
+    window.rejectWithdrawal = rejectWithdrawal;
+    window.openWithdrawalDetails = openWithdrawalDetails;
+  </script>
+</body>
+</html>

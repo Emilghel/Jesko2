@@ -1,0 +1,67 @@
+/* Sound wave animation for the sound icon */
+@keyframes soundWave {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.3);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+  }
+}
+
+.sound-icon {
+  position: relative;
+}
+
+.sound-icon.active {
+  animation: soundWave 1s ease-out;
+}
+
+/* Sound waves emanating from the icon */
+.sound-icon::before,
+.sound-icon::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  background-color: transparent;
+  z-index: -1;
+}
+
+.sound-icon.active::before {
+  animation: soundWave 1.2s ease-out;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.sound-icon.active::after {
+  animation: soundWave 1.2s ease-out 0.3s;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Custom colors for different personality types */
+.sound-business.active {
+  animation: soundWave 1s ease-out;
+  box-shadow: 0 0 0 0 rgba(51, 195, 189, 0.4);
+}
+
+.sound-creative.active {
+  animation: soundWave 1s ease-out;
+  box-shadow: 0 0 0 0 rgba(131, 56, 236, 0.4);
+}
+
+.sound-assistant.active {
+  animation: soundWave 1s ease-out;
+  box-shadow: 0 0 0 0 rgba(167, 201, 87, 0.4);
+}
+
+.sound-custom.active {
+  animation: soundWave 1s ease-out;
+  box-shadow: 0 0 0 0 rgba(247, 37, 133, 0.4);
+}

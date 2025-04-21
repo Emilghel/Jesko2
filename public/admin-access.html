@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Access Portal</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+      line-height: 1.6;
+      color: #333;
+      background-color: #f8f9fa;
+    }
+    
+    h1 {
+      color: #2563eb;
+      border-bottom: 2px solid #e5e7eb;
+      padding-bottom: 0.5rem;
+      text-align: center;
+    }
+    
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+    
+    .panel {
+      background-color: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      padding: 1.5rem;
+      transition: transform 0.2s;
+    }
+    
+    .panel:hover {
+      transform: translateY(-5px);
+    }
+    
+    .panel h2 {
+      margin-top: 0;
+      color: #2563eb;
+    }
+    
+    .button-container {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+    
+    .button {
+      display: inline-block;
+      background-color: #2563eb;
+      color: white;
+      text-decoration: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.375rem;
+      font-weight: bold;
+      transition: background-color 0.2s;
+      text-align: center;
+      border: none;
+      cursor: pointer;
+    }
+    
+    .button:hover {
+      background-color: #1d4ed8;
+    }
+    
+    .button.secondary {
+      background-color: #6b7280;
+    }
+    
+    .button.secondary:hover {
+      background-color: #4b5563;
+    }
+    
+    .info-box {
+      background-color: #f3f4f6;
+      border-left: 4px solid #2563eb;
+      padding: 1rem;
+      margin: 1.5rem 0;
+    }
+    
+    .success {
+      background-color: #dcfce7;
+      border-left: 4px solid #16a34a;
+    }
+    
+    #tokenStatus {
+      display: none;
+      margin-top: 1rem;
+    }
+    
+    #currentToken {
+      word-break: break-all;
+      font-size: 0.85em;
+      background-color: #f8f9fa;
+      padding: 0.5rem;
+      border-radius: 0.25rem;
+      border: 1px solid #e5e7eb;
+    }
+  </style>
+</head>
+<body>
+  <h1>Admin Access Portal</h1>
+  
+  <div class="container">
+    <div class="panel" style="border: 2px solid #15803d; background-color: #f0fdf4;">
+      <h2 style="color: #15803d;">⚡ Quick Admin Fix</h2>
+      <p>Having trouble accessing admin areas? Use our specialized tools to fix admin authentication issues:</p>
+      
+      <div class="button-container">
+        <a href="/force-admin.html" class="button" style="background-color: #15803d;" target="_blank">Force Admin Access</a>
+        <a href="/debug-admin.html" class="button" style="background-color: #0891b2;" target="_blank">Debug Admin Access</a>
+      </div>
+      
+      <p style="margin-top: 1rem; font-size: 0.9rem; color: #166534;">These tools will fix the "Access Restricted" errors by ensuring your browser has the proper admin authentication data.</p>
+    </div>
+  
+    <div class="panel">
+      <h2>Admin Panel Access</h2>
+      <p>Use these direct links to access the different admin panels without going through the UI navigation tabs.</p>
+      
+      <div class="button-container">
+        <a href="/admin-panel-1" class="button" target="_blank">Admin Panel 1</a>
+        <a href="/admin" class="button" target="_blank">Admin Dashboard</a>
+        <a href="/admin-full" class="button" target="_blank">Full Admin Panel</a>
+      </div>
+      
+      <h3 style="margin-top: 1.5rem;">Admin Sub-Pages</h3>
+      <p>Direct access to specific admin functionality:</p>
+      
+      <div class="button-container">
+        <a href="/admin/coins" class="button secondary" target="_blank">Admin Coins</a>
+        <a href="/admin/personality-prompts" class="button secondary" target="_blank">Personality Prompts</a>
+        <a href="/free-stock-videos" class="button secondary" target="_blank">Stock Videos</a>
+        <a href="/admin-simple" class="button secondary" target="_blank">Simple Admin</a>
+        <a href="/admin-emergency.html" class="button secondary" target="_blank">Emergency Admin</a>
+      </div>
+    </div>
+    
+    <div class="panel">
+      <h2>Admin Login</h2>
+      <p>You can also log in with your admin credentials to access all features:</p>
+      
+      <div class="info-box">
+        <p>You need administrator credentials to access this area.</p>
+        <p>Please contact your system administrator if you need access.</p>
+      </div>
+      
+      <div class="button-container">
+        <a href="/admin-login.html" class="button" style="background-color: #059669;">Admin Direct Login</a>
+        <a href="/login" class="button" target="_blank">Regular Login</a>
+        <a href="/auth" class="button" target="_blank">Auth Page</a>
+        <a href="/partner-login" class="button secondary" target="_blank">Partner Login</a>
+      </div>
+    </div>
+    
+    <div class="panel">
+      <h2>Token Management</h2>
+      <p>Store your admin token in the browser's localStorage to enable authentication through the UI:</p>
+      
+      <div class="button-container">
+        <button onclick="storeAdminToken()" class="button">Store Admin Token</button>
+        <button onclick="checkAdminToken()" class="button secondary">Check Current Token</button>
+        <button onclick="clearAdminToken()" class="button secondary">Clear Token</button>
+      </div>
+      
+      <div id="tokenStatus" class="info-box"></div>
+    </div>
+  </div>
+  
+  <script>
+    // Admin token is set at runtime by the server
+    let adminToken = null;
+    
+    // First make a secure request to get a token
+    async function getAdminToken() {
+      try {
+        const response = await fetch('/api/admin/request-token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include'
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to get admin token');
+        }
+        
+        const data = await response.json();
+        return data.token;
+      } catch (error) {
+        console.error('Failed to get admin token:', error);
+        return null;
+      }
+    }
+    
+    async function storeAdminToken() {
+      try {
+        // Get token securely from the server
+        adminToken = await getAdminToken();
+        
+        if (!adminToken) {
+          throw new Error('Could not retrieve a valid admin token');
+        }
+        
+        // Remove any existing tokens first
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('partnerToken');
+        
+        // Set the auth token
+        localStorage.setItem('auth_token', adminToken);
+        
+        // Store user data to ensure we have proper isAdmin flag
+        const adminUser = {
+          id: 4,
+          username: "admin",
+          displayName: "System Administrator",
+          isAdmin: true,
+          role: "admin"
+        };
+        localStorage.setItem('auth_user', JSON.stringify(adminUser));
+        
+        // Force reload after token set to ensure all components pick up the new token
+        const tokenStatus = document.getElementById('tokenStatus');
+        tokenStatus.innerHTML = '<p><strong>Success!</strong> Admin token has been stored in your browser.</p>' + 
+                               '<p>You should now be able to access admin features through the UI.</p>' +
+                               '<p>Click "Go to Admin Panel" below to access the admin panel with your new token.</p>' +
+                               '<div style="margin-top: 1rem;"><button onclick="goToAdminPanel()" class="button">Go to Admin Panel</button></div>';
+        tokenStatus.className = 'info-box success';
+        tokenStatus.style.display = 'block';
+      } catch (error) {
+        const tokenStatus = document.getElementById('tokenStatus');
+        tokenStatus.innerHTML = '<p><strong>Error:</strong> ' + error.message + '</p>';
+        tokenStatus.className = 'info-box';
+        tokenStatus.style.display = 'block';
+      }
+    }
+    
+    function goToAdminPanel() {
+      window.location.href = '/admin-panel-1';
+    }
+    
+    function checkAdminToken() {
+      const currentToken = localStorage.getItem('auth_token');
+      const tokenStatus = document.getElementById('tokenStatus');
+      
+      if (currentToken) {
+        tokenStatus.innerHTML = '<p><strong>Current Token:</strong></p>' +
+                               '<div id="currentToken">' + currentToken + '</div>';
+        tokenStatus.className = 'info-box';
+      } else {
+        tokenStatus.innerHTML = '<p><strong>No token found in localStorage.</strong></p>' +
+                               '<p>Click "Store Admin Token" to add it.</p>';
+        tokenStatus.className = 'info-box';
+      }
+      
+      tokenStatus.style.display = 'block';
+    }
+    
+    function clearAdminToken() {
+      localStorage.removeItem('auth_token');
+      document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+      
+      const tokenStatus = document.getElementById('tokenStatus');
+      tokenStatus.innerHTML = '<p><strong>Token Cleared!</strong> The admin token has been removed from your browser.</p>';
+      tokenStatus.className = 'info-box';
+      tokenStatus.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

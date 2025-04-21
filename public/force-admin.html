@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Force Admin Access</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 2rem;
+      line-height: 1.6;
+      color: #333;
+      background-color: #f8f9fa;
+    }
+    
+    h1 {
+      text-align: center;
+      color: #2563eb;
+      margin-bottom: 2rem;
+    }
+    
+    .container {
+      background-color: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      padding: 2rem;
+    }
+    
+    .status {
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 0.375rem;
+    }
+    
+    .status.success {
+      background-color: #dcfce7;
+      color: #16a34a;
+    }
+    
+    .status.error {
+      background-color: #fee2e2;
+      color: #dc2626;
+    }
+    
+    .status.info {
+      background-color: #dbeafe;
+      color: #2563eb;
+    }
+    
+    .button-container {
+      margin-top: 2rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    
+    button {
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.375rem;
+      font-weight: bold;
+      cursor: pointer;
+      flex: 1;
+      min-width: 200px;
+      transition: background-color 0.2s;
+    }
+    
+    button:hover {
+      background-color: #1d4ed8;
+    }
+    
+    button.danger {
+      background-color: #dc2626;
+    }
+    
+    button.danger:hover {
+      background-color: #b91c1c;
+    }
+    
+    button.success {
+      background-color: #16a34a;
+    }
+    
+    button.success:hover {
+      background-color: #15803d;
+    }
+    
+    .links {
+      margin-top: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .links a {
+      padding: 0.5rem;
+      text-decoration: none;
+      color: #2563eb;
+      border-radius: 0.25rem;
+    }
+    
+    .links a:hover {
+      background-color: #dbeafe;
+    }
+    
+    pre {
+      background-color: #f1f5f9;
+      padding: 1rem;
+      border-radius: 0.375rem;
+      overflow-x: auto;
+      font-size: 0.875rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Force Admin Access</h1>
+  
+  <div class="container">
+    <p>This page will modify your browser's authentication data to force admin access.</p>
+    <p>Use this if you're experiencing "Access Restricted" errors when trying to access admin pages.</p>
+    
+    <div id="status" class="status info">
+      Click "Force Admin Access" to fix your admin authentication issues.
+    </div>
+    
+    <div class="button-container">
+      <button id="forceAdminBtn" class="success">Force Admin Access</button>
+      <button id="clearTokensBtn" class="danger">Clear All Tokens</button>
+    </div>
+    
+    <div id="adminData" style="display: none;">
+      <h3>Current Admin Data</h3>
+      <pre id="adminDataPre"></pre>
+    </div>
+    
+    <div class="links" id="adminLinks" style="display: none;">
+      <h3>Admin Links</h3>
+      <a href="/admin-panel-1" target="_blank">Admin Panel 1</a>
+      <a href="/admin-full" target="_blank">Full Admin Panel</a>
+      <a href="/admin" target="_blank">Admin Dashboard</a>
+      <a href="/admin-simple" target="_blank">Simple Admin Panel</a>
+      <a href="/debug-admin.html" target="_blank">Admin Debug Tool</a>
+      <a href="/admin-access.html">Return to Admin Access Portal</a>
+    </div>
+  </div>
+  
+  <script>
+    // Get DOM elements
+    const statusDiv = document.getElementById('status');
+    const forceAdminBtn = document.getElementById('forceAdminBtn');
+    const clearTokensBtn = document.getElementById('clearTokensBtn');
+    const adminDataPre = document.getElementById('adminDataPre');
+    const adminDataDiv = document.getElementById('adminData');
+    const adminLinks = document.getElementById('adminLinks');
+    
+    // Function to force admin access - securely retrieves token from server
+    async function forceAdminAccess() {
+      try {
+        // Clear existing tokens first
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('partnerToken');
+        localStorage.removeItem('partnerInfo');
+        
+        // Show status while we make the request
+        const statusDiv = document.getElementById('status');
+        statusDiv.textContent = 'Requesting admin access token from server...';
+        statusDiv.className = 'status info';
+        
+        // Request a secure token from the server
+        const response = await fetch('/api/admin/request-token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include' // Include cookies for existing authentication if any
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to get admin token from server');
+        }
+        
+        const data = await response.json();
+        const adminToken = data.token;
+        
+        if (!adminToken) {
+          throw new Error('Server did not return a valid token');
+        }
+        
+        // Set admin token
+        localStorage.setItem('auth_token', adminToken);
+        
+        // Also set in cookie for systems that check cookies
+        document.cookie = `auth_token=${adminToken}; path=/; max-age=${60*60*24*7}`;
+        
+        // Create admin user data with explicit isAdmin flag
+        const adminUser = {
+          id: data.user?.id || 4,
+          username: data.user?.username || "admin",
+          email: data.user?.email || "admin@jesko.ai", // Updated to Jesko.AI domain
+          displayName: data.user?.displayName || "System Administrator",
+          isAdmin: true,  // This is crucial
+          role: "admin",  // This helps in some components
+          token: adminToken,
+          createdAt: new Date().toISOString(),
+          lastLogin: new Date().toISOString()
+        };
+        
+        // Store admin user data
+        localStorage.setItem('auth_user', JSON.stringify(adminUser));
+        
+        // Set headers if axios is available
+        if (window.axios) {
+          window.axios.defaults.headers.common['Authorization'] = `Bearer ${adminToken}`;
+        }
+        
+        // Update status
+        statusDiv.className = "status success";
+        statusDiv.innerHTML = `<strong>Admin Access Forced Successfully!</strong><p>You should now be able to access all admin pages. Click the links below to navigate to admin panels.</p>`;
+        
+        // Show admin data
+        adminDataPre.textContent = JSON.stringify(adminUser, null, 2);
+        adminDataDiv.style.display = "block";
+        
+        // Show admin links
+        adminLinks.style.display = "block";
+        
+        // Register the token with server (best effort)
+        try {
+          fetch('/api/auth/register-token', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              token: adminToken,
+              userId: adminUser.id
+            })
+          }).catch(() => {/* ignore errors */});
+        } catch (e) {
+          // Ignore registration errors
+        }
+      } catch (error) {
+        statusDiv.className = "status error";
+        statusDiv.textContent = `Error: ${error.message}`;
+      }
+    }
+    
+    // Function to clear all tokens
+    function clearTokens() {
+      try {
+        // Clear localStorage items
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('partnerToken');
+        localStorage.removeItem('auth_user');
+        localStorage.removeItem('partnerInfo');
+        
+        // Clear cookies
+        document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+        
+        // Update status
+        statusDiv.className = "status info";
+        statusDiv.textContent = "All tokens and authentication data cleared. You will need to log in again.";
+        
+        // Hide admin data and links
+        adminDataDiv.style.display = "none";
+        adminLinks.style.display = "none";
+      } catch (error) {
+        statusDiv.className = "status error";
+        statusDiv.textContent = `Error: ${error.message}`;
+      }
+    }
+    
+    // Add event listeners
+    forceAdminBtn.addEventListener('click', forceAdminAccess);
+    clearTokensBtn.addEventListener('click', clearTokens);
+    
+    // Check current auth status on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      const authToken = localStorage.getItem('auth_token');
+      const authUser = localStorage.getItem('auth_user');
+      
+      if (authToken) {
+        statusDiv.className = "status info";
+        statusDiv.textContent = "You have an existing authentication token. Click 'Force Admin Access' to ensure it has admin privileges.";
+        
+        if (authUser) {
+          try {
+            const userData = JSON.parse(authUser);
+            
+            // Show admin data if it exists
+            adminDataPre.textContent = JSON.stringify(userData, null, 2);
+            adminDataDiv.style.display = "block";
+            
+            // Show admin links
+            adminLinks.style.display = "block";
+            
+            if (userData.isAdmin) {
+              statusDiv.className = "status success";
+              statusDiv.textContent = "You already have admin privileges set in your user data. If you're still having issues, click 'Force Admin Access' to refresh your tokens.";
+            } else {
+              statusDiv.className = "status error";
+              statusDiv.textContent = "You have authentication data but not admin privileges. Click 'Force Admin Access' to fix this.";
+            }
+          } catch (e) {
+            // Ignore parsing errors
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

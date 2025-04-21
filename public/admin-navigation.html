@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Navigation Panel</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --secondary: #6b7280;
+      --secondary-dark: #4b5563;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --warning: #ca8a04;
+      --info: #0891b2;
+      --bg: #f8f9fa;
+      --text: #333;
+      --border: #e5e7eb;
+      --card-bg: white;
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      --radius: 0.5rem;
+    }
+    
+    body {
+      font-family: 'Arial', sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      line-height: 1.6;
+      color: var(--text);
+      background-color: var(--bg);
+    }
+    
+    h1, h2, h3 {
+      color: var(--primary);
+    }
+    
+    h1 {
+      font-size: 2rem;
+      text-align: center;
+      margin-bottom: 2rem;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 0.5rem;
+    }
+    
+    .container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+    
+    .card {
+      background-color: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1.5rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .card h2 {
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .icon {
+      width: 1.5rem;
+      height: 1.5rem;
+      fill: var(--primary);
+    }
+    
+    .links {
+      list-style-type: none;
+      padding: 0;
+      margin: 1rem 0 0;
+    }
+    
+    .links li {
+      margin-bottom: 0.75rem;
+    }
+    
+    .links a {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+      color: var(--text);
+      padding: 0.5rem;
+      border-radius: 0.25rem;
+      transition: background-color 0.2s;
+    }
+    
+    .links a:hover {
+      background-color: var(--primary);
+      color: white;
+    }
+    
+    .links a:hover .link-icon {
+      fill: white;
+    }
+    
+    .link-icon {
+      width: 1rem;
+      height: 1rem;
+      fill: var(--secondary);
+      transition: fill 0.2s;
+    }
+    
+    .info-bar {
+      background-color: #f3f4f6;
+      border-left: 4px solid var(--primary);
+      padding: 1rem;
+      margin: 2rem 0;
+    }
+    
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+    
+    .badge.primary {
+      background-color: var(--primary);
+      color: white;
+    }
+    
+    .badge.secondary {
+      background-color: var(--secondary);
+      color: white;
+    }
+    
+    .badge.success {
+      background-color: var(--success);
+      color: white;
+    }
+    
+    .badge.warning {
+      background-color: var(--warning);
+      color: white;
+    }
+    
+    .badge.danger {
+      background-color: var(--danger);
+      color: white;
+    }
+    
+    .badge.info {
+      background-color: var(--info);
+      color: white;
+    }
+    
+    .actions {
+      margin-top: 2rem;
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius);
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      border: none;
+      transition: background-color 0.2s;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background-color: var(--primary-dark);
+    }
+    
+    .btn-secondary {
+      background-color: var(--secondary);
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      background-color: var(--secondary-dark);
+    }
+    
+    .btn-outline {
+      background-color: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    
+    .btn-outline:hover {
+      background-color: #f3f4f6;
+    }
+    
+    .btn-success {
+      background-color: var(--success);
+      color: white;
+    }
+    
+    .btn-success:hover {
+      background-color: #15803d;
+    }
+    
+    .footer {
+      margin-top: 2rem;
+      text-align: center;
+      font-size: 0.875rem;
+      color: var(--secondary);
+    }
+    
+    .footer a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+    
+    .footer a:hover {
+      text-decoration: underline;
+    }
+    
+    #statusBar {
+      display: none;
+      margin-top: 1rem;
+      padding: 0.75rem;
+      border-radius: var(--radius);
+      text-align: center;
+      font-weight: 500;
+    }
+    
+    #statusBar.success {
+      background-color: #dcfce7;
+      color: var(--success);
+      border: 1px solid #bbf7d0;
+    }
+    
+    #statusBar.error {
+      background-color: #fee2e2;
+      color: var(--danger);
+      border: 1px solid #fecaca;
+    }
+  </style>
+</head>
+<body>
+  <h1>WarmLeadNetwork Admin Navigation</h1>
+  
+  <div class="info-bar">
+    <p><strong>Welcome to the Admin Navigation Panel!</strong> This central hub provides quick access to all admin areas of the WarmLeadNetwork platform.</p>
+    <p>Your token has been verified and you have full administrative access.</p>
+    <div class="badges">
+      <span class="badge success">Admin Access</span>
+      <span class="badge primary">Full Permissions</span>
+      <span class="badge info">Authentication Valid</span>
+    </div>
+  </div>
+  
+  <div class="container">
+    <div class="card">
+      <h2>
+        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="3" y1="9" x2="21" y2="9"></line>
+          <line x1="9" y1="21" x2="9" y2="9"></line>
+        </svg>
+        Admin Dashboards
+      </h2>
+      <ul class="links">
+        <li>
+          <a href="/admin-panel-1" target="_blank">
+            <svg class="link-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+            </svg>
+            Admin Panel 1
+          </a>
+        </li>
+        <li>
+          <a href="/admin-full" target="_blank">
+            <svg class="link-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+            Full Admin Panel
+          </a>
+        </li>
+        <li>
+          <a href="/admin" target="_blank">
+            <svg class="link-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            Basic Admin Dashboard
+          </a>
+        </li>
+        <li>
+          <a href="/admin-simple" target="_blank">
+            <svg class="link-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7m0-18H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7m0-18v18"></path>
+            </svg>
+            Simple Admin Panel
+          </a>
+        </li>
+      </ul>
+    </div>
+    
+    <div class="card">
+      <h2>
+        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        User Management
+      </h2>
+      <ul class="links">
+        <li>
+          <a href="/admin-panel-1?tab=users" target="_blank">
+            <svg class="link-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            Manage Users
+          </a>
+        </li>
+        <li>
+          <a href="/admin/partner-management" target="_blank">
+            <svg class="link-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+            </svg>
+            Partner Management
+          </a>
+        </li>
+        <li>
+          <a href="/admin/coins" target="_blank">
+            <svg class="link-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="16"></line>
+              <line x1="8" y1="12" x2="16" y2="12"></line>
+            </svg>
+            Manage Coins
+          </a>
+        </li>
+      </ul>
+    </div>
+    
+    <div class="card">
+      <h2>
+        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="1 4 1 10 7 10"></polyline>
+          <polyline points="23 20 23 14 17 14"></polyline>
+          <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
+        </svg>
+        Content Management
+      </h2>
+      <ul class="links">
+        <li>
+          <a href="/admin/personality-prompts" target="_blank">
+            <svg class="link-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            Personality Prompts
+          </a>
+        </li>
+        <li>
+          <a href="/free-stock-videos" target="_blank">
+            <svg class="link-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="23 7 16 12 23 17 23 7"></polygon>
+              <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+            </svg>
+            Stock Videos
+          </a>
+        </li>
+      </ul>
+    </div>
+    
+    <div class="card">
+      <h2>
+        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        System Management
+      </h2>
+      <ul class="links">
+        <li>
+          <a href="/admin-emergency.html" target="_blank">
+            <svg class="link-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            Emergency Admin Access
+          </a>
+        </li>
+        <li>
+          <a href="/admin-panel-1?tab=system" target="_blank">
+            <svg class="link-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+            System Status
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+  
+  <div class="actions">
+    <a href="/admin-access.html" class="btn btn-outline">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="16"></line>
+        <line x1="8" y1="12" x2="16" y2="12"></line>
+      </svg>
+      Admin Token Portal
+    </a>
+    <a href="/admin-login.html" class="btn btn-primary">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+        <polyline points="10 17 15 12 10 7"></polyline>
+        <line x1="15" y1="12" x2="3" y2="12"></line>
+      </svg>
+      Admin Login
+    </a>
+    <button onclick="verifyAdminStatus()" class="btn btn-secondary">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+      Verify Admin Status
+    </button>
+    <button onclick="clearTokens()" class="btn btn-outline">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3 6 5 6 21 6"></polyline>
+        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+      </svg>
+      Clear Tokens
+    </button>
+    <a href="/" class="btn btn-outline">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+      </svg>
+      Return to Home
+    </a>
+  </div>
+  
+  <div id="statusBar"></div>
+  
+  <div class="footer">
+    <p>WarmLeadNetwork Admin Navigation Portal &copy; 2025 | <a href="/admin-access.html">Admin Access</a> | <a href="/partner-login">Partner Login</a></p>
+  </div>
+  
+  <script>
+    // Function to verify admin status
+    async function verifyAdminStatus() {
+      const statusBar = document.getElementById('statusBar');
+      statusBar.className = '';
+      statusBar.style.display = 'block';
+      statusBar.textContent = 'Verifying admin status...';
+      
+      try {
+        // Get token from localStorage
+        const token = localStorage.getItem('auth_token');
+        
+        if (!token) {
+          throw new Error('No authentication token found. Please login first.');
+        }
+        
+        // Check auth status by fetching user data
+        const response = await fetch('/api/auth/me', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Authentication failed with status: ${response.status}`);
+        }
+        
+        const userData = await response.json();
+        
+        if (!userData.isAdmin) {
+          throw new Error('Your account does not have administrator privileges.');
+        }
+        
+        // Success
+        statusBar.textContent = `Verified as admin: ${userData.displayName || userData.username} (${userData.email})`;
+        statusBar.className = 'success';
+      } catch (error) {
+        // Error
+        statusBar.textContent = `Error: ${error.message}`;
+        statusBar.className = 'error';
+      }
+    }
+    
+    // Function to clear tokens
+    function clearTokens() {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('partnerToken');
+      document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+      
+      const statusBar = document.getElementById('statusBar');
+      statusBar.textContent = 'All authentication tokens have been cleared.';
+      statusBar.className = 'success';
+      statusBar.style.display = 'block';
+    }
+    
+    // Check admin status on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      // Verify admin status silently
+      (async function() {
+        try {
+          const token = localStorage.getItem('auth_token');
+          
+          if (!token) return;
+          
+          const response = await fetch('/api/auth/me', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          
+          if (!response.ok) return;
+          
+          const userData = await response.json();
+          
+          if (!userData.isAdmin) {
+            const statusBar = document.getElementById('statusBar');
+            statusBar.textContent = 'Warning: You are logged in but do not have administrator privileges.';
+            statusBar.className = 'error';
+            statusBar.style.display = 'block';
+          }
+        } catch (error) {
+          console.error('Error checking admin status:', error);
+        }
+      })();
+    });
+  </script>
+</body>
+</html>

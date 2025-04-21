@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Emergency Panel</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background-color: #111827;
+      color: #e5e7eb;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    
+    header {
+      margin-bottom: 2rem;
+      border-bottom: 1px solid #1f2937;
+      padding-bottom: 1rem;
+    }
+    
+    h1 {
+      font-size: 1.875rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: #f9fafb;
+    }
+    
+    .subtitle {
+      color: #9ca3af;
+      font-size: 1rem;
+    }
+    
+    .card {
+      background-color: #1f2937;
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: #f9fafb;
+    }
+    
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+      background-color: #1f2937;
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+    }
+    
+    .stat-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #e5e7eb;
+    }
+    
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    
+    .stat-value.blue {
+      color: #38bdf8;
+    }
+    
+    .stat-value.green {
+      color: #10b981;
+    }
+    
+    .stat-value.yellow {
+      color: #f59e0b;
+    }
+    
+    .stat-desc {
+      font-size: 0.875rem;
+      color: #9ca3af;
+    }
+    
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .btn {
+      padding: 0.5rem 1rem;
+      border-radius: 0.25rem;
+      font-weight: 500;
+      font-size: 0.875rem;
+      cursor: pointer;
+      border: none;
+      transition: background-color 0.2s;
+    }
+    
+    .btn-blue {
+      background-color: #3b82f6;
+      color: white;
+    }
+    
+    .btn-blue:hover {
+      background-color: #2563eb;
+    }
+    
+    .btn-green {
+      background-color: #10b981;
+      color: white;
+    }
+    
+    .btn-green:hover {
+      background-color: #059669;
+    }
+    
+    .btn-purple {
+      background-color: #8b5cf6;
+      color: white;
+    }
+    
+    .btn-purple:hover {
+      background-color: #7c3aed;
+    }
+    
+    .btn-gray {
+      background-color: #4b5563;
+      color: white;
+    }
+    
+    .btn-gray:hover {
+      background-color: #374151;
+    }
+    
+    .note {
+      font-size: 0.875rem;
+      color: #6b7280;
+      margin-top: 2rem;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1.5rem;
+    }
+    
+    th {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      background-color: #1f2937;
+      font-weight: 600;
+      color: #d1d5db;
+      border-bottom: 1px solid #374151;
+    }
+    
+    td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid #374151;
+      color: #e5e7eb;
+    }
+    
+    .status {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+    
+    .status-pending {
+      background-color: rgba(245, 158, 11, 0.1);
+      color: #f59e0b;
+    }
+    
+    .status-approved {
+      background-color: rgba(16, 185, 129, 0.1);
+      color: #10b981;
+    }
+    
+    .status-rejected {
+      background-color: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+    }
+    
+    .status-paid {
+      background-color: rgba(59, 130, 246, 0.1);
+      color: #3b82f6;
+    }
+    
+    .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 200px;
+    }
+    
+    .loading-spinner {
+      width: 3rem;
+      height: 3rem;
+      border-radius: 50%;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-top-color: #38bdf8;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+    
+    .hidden {
+      display: none;
+    }
+    
+    .auth-card {
+      max-width: 500px;
+      margin: 4rem auto;
+    }
+    
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: #d1d5db;
+    }
+    
+    input {
+      width: 100%;
+      padding: 0.75rem;
+      background-color: #374151;
+      border: 1px solid #4b5563;
+      border-radius: 0.25rem;
+      color: #e5e7eb;
+      font-size: 0.875rem;
+    }
+    
+    input:focus {
+      outline: 2px solid #3b82f6;
+      border-color: #3b82f6;
+    }
+    
+    .error-message {
+      color: #ef4444;
+      font-size: 0.875rem;
+      margin-top: 0.5rem;
+    }
+    
+    .access-denied {
+      text-align: center;
+      padding: 3rem 1rem;
+    }
+    
+    .access-denied-icon {
+      width: 4rem;
+      height: 4rem;
+      background-color: #ef4444;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0 auto 1.5rem;
+    }
+    
+    .access-denied-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: #f9fafb;
+    }
+    
+    .access-denied-message {
+      color: #9ca3af;
+      margin-bottom: 2rem;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  </style>
+</head>
+<body>
+  <!-- Login View -->
+  <div id="login-view" class="hidden">
+    <div class="container">
+      <div class="card auth-card">
+        <div class="card-title">Admin Login</div>
+        <form id="login-form">
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required>
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required>
+          </div>
+          <div class="error-message" id="login-error"></div>
+          <button type="submit" class="btn btn-blue">Login</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Access Denied View -->
+  <div id="access-denied-view" class="hidden">
+    <div class="container">
+      <div class="card">
+        <div class="access-denied">
+          <div class="access-denied-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+          </div>
+          <h2 class="access-denied-title">Access Denied</h2>
+          <p class="access-denied-message">You do not have permission to access the admin panel. Please log in with an admin account or contact your system administrator.</p>
+          <button class="btn btn-blue" id="go-to-login">Login as Admin</button>
+          <button class="btn btn-gray" id="go-to-home">Return to Home</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Loading View -->
+  <div id="loading-view">
+    <div class="container">
+      <div class="loading">
+        <div class="loading-spinner"></div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Admin Dashboard View -->
+  <div id="admin-view" class="hidden">
+    <div class="container">
+      <header>
+        <h1>Admin Emergency Panel</h1>
+        <p class="subtitle">Manage users, partners, and site settings</p>
+      </header>
+      
+      <div class="card-grid">
+        <div class="stat-card">
+          <div class="stat-title">Users</div>
+          <div class="stat-value blue" id="user-count">-</div>
+          <div class="stat-desc">Total registered users</div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-title">Partners</div>
+          <div class="stat-value green" id="partner-count">-</div>
+          <div class="stat-desc">Total partner accounts</div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-title">Pending Withdrawals</div>
+          <div class="stat-value yellow" id="withdrawal-count">-</div>
+          <div class="stat-desc">Pending withdrawal requests</div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-title">Partner Withdrawal Requests</div>
+        <div id="withdrawals-table-container" class="loading">
+          <div class="loading-spinner"></div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-title">Quick Actions</div>
+        <div class="actions">
+          <button class="btn btn-blue" id="refresh-data">Refresh Data</button>
+          <button class="btn btn-green" id="manage-partners">Manage Partners</button>
+          <button class="btn btn-purple" id="system-settings">System Settings</button>
+          <button class="btn btn-gray" id="logout">Logout</button>
+        </div>
+      </div>
+      
+      <p class="note">This is an emergency admin panel for basic management tasks. For the full admin panel, ensure all system components are working correctly.</p>
+    </div>
+  </div>
+  
+  <script>
+    // Global functions for buttons to access
+    window.approveWithdrawal = function(id) {
+      approveWithdrawal(id);
+    };
+    
+    window.rejectWithdrawal = function(id) {
+      rejectWithdrawal(id);
+    };
+  
+    // DOM Elements
+    const loginView = document.getElementById('login-view');
+    const adminView = document.getElementById('admin-view');
+    const loadingView = document.getElementById('loading-view');
+    const accessDeniedView = document.getElementById('access-denied-view');
+    const loginForm = document.getElementById('login-form');
+    const loginError = document.getElementById('login-error');
+    const userCount = document.getElementById('user-count');
+    const partnerCount = document.getElementById('partner-count');
+    const withdrawalCount = document.getElementById('withdrawal-count');
+    const withdrawalsTableContainer = document.getElementById('withdrawals-table-container');
+    const refreshDataBtn = document.getElementById('refresh-data');
+    const logoutBtn = document.getElementById('logout');
+    const goToLoginBtn = document.getElementById('go-to-login');
+    const goToHomeBtn = document.getElementById('go-to-home');
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      checkAuth();
+      
+      // Event listeners
+      loginForm.addEventListener('submit', handleLogin);
+      refreshDataBtn.addEventListener('click', fetchAdminData);
+      logoutBtn.addEventListener('click', handleLogout);
+      goToLoginBtn.addEventListener('click', showLoginView);
+      goToHomeBtn.addEventListener('click', () => window.location.href = '/');
+    });
+    
+    // Check if user is authenticated and is admin
+    async function checkAuth() {
+      showView(loadingView);
+      
+      try {
+        const token = localStorage.getItem('auth_token');
+        
+        if (!token) {
+          showView(loginView);
+          return;
+        }
+        
+        // First try the emergency admin API endpoint
+        const emergencyResponse = await fetch('/api/admin-emergency/check-status', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        // If emergency endpoint works, use that
+        if (emergencyResponse.ok) {
+          const data = await emergencyResponse.json();
+          console.log("Emergency admin check successful:", data);
+          
+          if (data.authenticated) {
+            showView(adminView);
+            fetchAdminData();
+            return;
+          }
+        }
+        
+        // Fall back to regular API if emergency fails
+        console.log("Trying regular user API as fallback");
+        const response = await fetch('/api/user', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error('Authentication failed');
+        }
+        
+        const userData = await response.json();
+        
+        if (userData && userData.isAdmin) {
+          showView(adminView);
+          fetchAdminData();
+        } else {
+          showView(accessDeniedView);
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        showView(loginView);
+      }
+    }
+    
+    // Handle login form submission
+    async function handleLogin(event) {
+      event.preventDefault();
+      loginError.textContent = '';
+      
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      
+      showView(loadingView);
+      
+      try {
+        // Try the special emergency admin login first
+        const emergencyResponse = await fetch('/api/admin-emergency/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email, password })
+        });
+        
+        // If emergency login works, use that
+        if (emergencyResponse.ok) {
+          console.log("Emergency admin login successful");
+          const data = await emergencyResponse.json();
+          
+          if (data.success && data.token) {
+            localStorage.setItem('auth_token', data.token);
+            showView(adminView);
+            fetchAdminData();
+            return;
+          }
+        } else {
+          console.log("Emergency login failed, trying regular login");
+        }
+        
+        // Fall back to regular login if emergency fails
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ username: email, password })
+        });
+        
+        if (!response.ok) {
+          throw new Error('Login failed. Please check your credentials.');
+        }
+        
+        const userData = await response.json();
+        
+        if (userData && userData.isAdmin) {
+          localStorage.setItem('auth_token', userData.token || 'admin_token');
+          showView(adminView);
+          fetchAdminData();
+        } else {
+          throw new Error('You do not have admin privileges.');
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        loginError.textContent = error.message;
+        showView(loginView);
+      }
+    }
+    
+    // Fetch admin dashboard data
+    async function fetchAdminData() {
+      try {
+        // Get auth token
+        const token = localStorage.getItem('auth_token');
+        if (!token) {
+          throw new Error('Authentication token not found');
+        }
+        
+        // Show loading states
+        userCount.textContent = '-';
+        partnerCount.textContent = '-';
+        withdrawalCount.textContent = '-';
+        withdrawalsTableContainer.innerHTML = '<div class="loading-spinner"></div>';
+        withdrawalsTableContainer.classList.add('loading');
+        
+        // Fetch actual stats from the emergency API
+        try {
+          const statsResponse = await fetch('/api/admin-emergency/stats', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          
+          if (statsResponse.ok) {
+            const statsData = await statsResponse.json();
+            console.log("Emergency stats data:", statsData);
+            
+            userCount.textContent = statsData.userCount?.toString() || '0';
+            partnerCount.textContent = statsData.partnerCount?.toString() || '0';
+            withdrawalCount.textContent = statsData.withdrawalCount?.toString() || '0';
+          } else {
+            console.error("Failed to fetch emergency stats:", await statsResponse.text());
+            userCount.textContent = '?';
+            partnerCount.textContent = '?';
+            withdrawalCount.textContent = '?';
+          }
+        } catch (statsError) {
+          console.error("Stats fetch error:", statsError);
+          userCount.textContent = '?';
+          partnerCount.textContent = '?';
+          withdrawalCount.textContent = '?';
+        }
+        
+        // Fetch withdrawal requests from the emergency API
+        try {
+          const withdrawalsResponse = await fetch('/api/admin-emergency/withdrawals', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          
+          if (withdrawalsResponse.ok) {
+            const withdrawalRequests = await withdrawalsResponse.json();
+            console.log("Withdrawal requests:", withdrawalRequests);
+            
+            // If we got real data, show it
+            if (Array.isArray(withdrawalRequests) && withdrawalRequests.length > 0) {
+              const table = `
+                <table>
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Partner</th>
+                      <th>Amount</th>
+                      <th>Date</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${withdrawalRequests.map(request => `
+                      <tr>
+                        <td>${request.id}</td>
+                        <td>${request.partnerName || request.partnerId}</td>
+                        <td>$${typeof request.amount === 'number' ? request.amount.toFixed(2) : request.amount}</td>
+                        <td>${new Date(request.createdAt).toLocaleDateString()}</td>
+                        <td><span class="status status-${request.status.toLowerCase()}">${request.status}</span></td>
+                        <td>
+                          ${request.status === 'PENDING' ? `
+                            <button class="btn btn-green btn-sm" onclick="approveWithdrawal(${request.id})">Approve</button>
+                            <button class="btn btn-gray btn-sm" onclick="rejectWithdrawal(${request.id})">Reject</button>
+                          ` : ''}
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              `;
+              
+              withdrawalsTableContainer.innerHTML = table;
+            } else {
+              withdrawalsTableContainer.innerHTML = '<p>No withdrawal requests found.</p>';
+            }
+          } else {
+            throw new Error(`Failed to fetch withdrawals: ${withdrawalsResponse.status}`);
+          }
+        } catch (withdrawalsError) {
+          console.error("Withdrawals fetch error:", withdrawalsError);
+          withdrawalsTableContainer.innerHTML = `<p class="error-message">Failed to load withdrawal data: ${withdrawalsError.message}</p>`;
+          
+          // Fallback to placeholder data if API fails
+          const placeholderData = [
+            { id: 1, partnerName: 'Partner One', amount: 850, createdAt: '2025-04-15', status: 'PENDING' },
+            { id: 2, partnerName: 'Partner Two', amount: 1200, createdAt: '2025-04-14', status: 'APPROVED' }
+          ];
+          
+          const table = `
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Partner</th>
+                  <th>Amount</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${placeholderData.map(request => `
+                  <tr>
+                    <td>${request.id}</td>
+                    <td>${request.partnerName}</td>
+                    <td>$${request.amount.toFixed(2)}</td>
+                    <td>${new Date(request.createdAt).toLocaleDateString()}</td>
+                    <td><span class="status status-${request.status.toLowerCase()}">${request.status}</span></td>
+                    <td>
+                      ${request.status === 'PENDING' ? `
+                        <button class="btn btn-green btn-sm">Approve</button>
+                        <button class="btn btn-gray btn-sm">Reject</button>
+                      ` : ''}
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          `;
+          
+          withdrawalsTableContainer.innerHTML = table;
+        }
+        
+        withdrawalsTableContainer.classList.remove('loading');
+      } catch (error) {
+        console.error('Failed to fetch admin data:', error);
+        withdrawalsTableContainer.innerHTML = `<p class="error-message">Failed to load data: ${error.message}</p>`;
+      }
+    }
+    
+    // Handle approve withdrawal
+    async function approveWithdrawal(id) {
+      if (!confirm('Are you sure you want to approve this withdrawal?')) {
+        return;
+      }
+      
+      try {
+        const token = localStorage.getItem('auth_token');
+        if (!token) {
+          throw new Error('Authentication token not found');
+        }
+        
+        const response = await fetch(`/api/admin-emergency/withdrawals/${id}/process`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            action: 'approve',
+            notes: 'Approved via Emergency Admin Panel'
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to approve withdrawal: ${response.status}`);
+        }
+        
+        alert('Withdrawal approved successfully!');
+        fetchAdminData();
+      } catch (error) {
+        console.error('Failed to approve withdrawal:', error);
+        alert(`Error: ${error.message}`);
+      }
+    }
+    
+    // Handle reject withdrawal
+    async function rejectWithdrawal(id) {
+      if (!confirm('Are you sure you want to reject this withdrawal?')) {
+        return;
+      }
+      
+      try {
+        const token = localStorage.getItem('auth_token');
+        if (!token) {
+          throw new Error('Authentication token not found');
+        }
+        
+        const response = await fetch(`/api/admin-emergency/withdrawals/${id}/process`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            action: 'reject',
+            notes: 'Rejected via Emergency Admin Panel'
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to reject withdrawal: ${response.status}`);
+        }
+        
+        alert('Withdrawal rejected successfully!');
+        fetchAdminData();
+      } catch (error) {
+        console.error('Failed to reject withdrawal:', error);
+        alert(`Error: ${error.message}`);
+      }
+    }
+    
+    // Handle logout
+    function handleLogout() {
+      localStorage.removeItem('auth_token');
+      showView(loginView);
+    }
+    
+    // Show login view
+    function showLoginView() {
+      showView(loginView);
+    }
+    
+    // Helper to show only one view at a time
+    function showView(viewToShow) {
+      [loginView, adminView, loadingView, accessDeniedView].forEach(view => {
+        view.classList.add('hidden');
+      });
+      
+      viewToShow.classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>

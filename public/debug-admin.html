@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Authentication Debug</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.6;
+      color: #333;
+    }
+    
+    h1, h2, h3 {
+      color: #2563eb;
+    }
+    
+    .panel {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    
+    pre {
+      background-color: #f7f7f7;
+      border-radius: 4px;
+      padding: 12px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    
+    .code {
+      font-family: monospace;
+      background-color: #f7f7f7;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+    
+    button {
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-right: 8px;
+      margin-bottom: 8px;
+    }
+    
+    button:hover {
+      background-color: #1d4ed8;
+    }
+    
+    button.warning {
+      background-color: #dc2626;
+    }
+    
+    button.warning:hover {
+      background-color: #b91c1c;
+    }
+    
+    button.success {
+      background-color: #16a34a;
+    }
+    
+    button.success:hover {
+      background-color: #15803d;
+    }
+    
+    .info {
+      background-color: #eff6ff;
+      border-left: 4px solid #2563eb;
+      padding: 12px;
+      margin: 12px 0;
+    }
+    
+    .error {
+      background-color: #fee2e2;
+      border-left: 4px solid #dc2626;
+      padding: 12px;
+      margin: 12px 0;
+    }
+    
+    .success {
+      background-color: #d1fae5;
+      border-left: 4px solid #16a34a;
+      padding: 12px;
+      margin: 12px 0;
+    }
+    
+    .warning {
+      background-color: #fff7ed;
+      border-left: 4px solid #ea580c;
+      padding: 12px;
+      margin: 12px 0;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+    
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    
+    th {
+      background-color: #f2f2f2;
+    }
+    
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    
+    .hidden {
+      display: none;
+    }
+    
+    #debugResults {
+      margin-top: 20px;
+    }
+    
+    .actions {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Admin Authentication Debug</h1>
+  
+  <div class="panel">
+    <h2>Current Authentication Status</h2>
+    <p>This tool will help diagnose why you're experiencing "Access Restricted" errors when trying to access admin pages.</p>
+    
+    <div class="info">
+      <p><strong>How this works:</strong> The tool will check various aspects of your authentication, including tokens, user data, 
+      and admin flag status. It will then suggest fixes based on what it finds.</p>
+    </div>
+    
+    <div class="actions">
+      <button id="checkAuthBtn">Check Authentication Status</button>
+      <button id="checkLocalStorage">Check Local Storage</button>
+      <button id="checkCookies">Check Cookies</button>
+      <button id="validateAdminStatus">Validate Admin Status</button>
+    </div>
+    
+    <div id="debugResults"></div>
+  </div>
+  
+  <div class="panel">
+    <h2>Force Admin Authentication</h2>
+    <p>This section provides actions to explicitly fix your admin authentication.</p>
+    
+    <div class="warning">
+      <p><strong>Note:</strong> These options force changes to your authentication state. Use them only if the diagnostics above show issues.</p>
+    </div>
+    
+    <div class="actions">
+      <button id="forceAdminTokenBtn" class="warning">Force Admin Token</button>
+      <button id="clearTokensBtn">Clear All Tokens</button>
+      <button id="storeAdminDataBtn" class="success">Store Admin User Data</button>
+      <button id="fixHeadersBtn">Fix Authorization Headers</button>
+    </div>
+    
+    <div id="fixResults"></div>
+  </div>
+  
+  <div class="panel hidden" id="adminDirectLinks">
+    <h2>Direct Admin Access</h2>
+    <p>Use these direct links with embedded tokens to access admin pages:</p>
+    
+    <div id="noTokenWarning" class="warning" style="display: none;">
+      <strong>No Authentication Token Available</strong>
+      <p>You need to log in or use the "Force Admin Token" button before you can access admin pages.</p>
+    </div>
+    
+    <table>
+      <tr>
+        <th>Admin Page</th>
+        <th>Action</th>
+      </tr>
+      <tr>
+        <td>Admin Panel 1</td>
+        <td><a id="adminPanel1Link" href="#" target="_blank">Access Directly</a></td>
+      </tr>
+      <tr>
+        <td>Full Admin Panel</td>
+        <td><a id="adminFullLink" href="#" target="_blank">Access Directly</a></td>
+      </tr>
+      <tr>
+        <td>Simple Admin</td>
+        <td><a id="adminSimpleLink" href="#" target="_blank">Access Directly</a></td>
+      </tr>
+      <tr>
+        <td>Admin Dashboard</td>
+        <td><a id="adminDashboardLink" href="#" target="_blank">Access Directly</a></td>
+      </tr>
+    </table>
+  </div>
+  
+  <div class="panel hidden" id="technicalDetails">
+    <h2>Technical Details</h2>
+    <div id="technicalContent"></div>
+  </div>
+  
+  <div class="actions">
+    <a href="/admin-access.html"><button>Return to Admin Access Portal</button></a>
+    <a href="/"><button>Return to Homepage</button></a>
+  </div>
+  
+  <script>
+    // Get DOM elements
+    const debugResults = document.getElementById('debugResults');
+    const fixResults = document.getElementById('fixResults');
+    const technicalContent = document.getElementById('technicalContent');
+    const adminDirectLinks = document.getElementById('adminDirectLinks');
+    const technicalDetails = document.getElementById('technicalDetails');
+    
+    // Admin token will be fetched dynamically
+    let currentAuthToken = null;
+    
+    // Add event listeners to buttons
+    document.getElementById('checkAuthBtn').addEventListener('click', checkAuthStatus);
+    document.getElementById('checkLocalStorage').addEventListener('click', checkLocalStorage);
+    document.getElementById('checkCookies').addEventListener('click', checkCookies);
+    document.getElementById('validateAdminStatus').addEventListener('click', validateAdminStatus);
+    document.getElementById('forceAdminTokenBtn').addEventListener('click', forceAdminToken);
+    document.getElementById('clearTokensBtn').addEventListener('click', clearTokens);
+    document.getElementById('storeAdminDataBtn').addEventListener('click', storeAdminData);
+    document.getElementById('fixHeadersBtn').addEventListener('click', fixHeaders);
+    
+    // Function to update admin links with current token
+    function updateAdminLinks() {
+      const authToken = localStorage.getItem('auth_token');
+      const noTokenWarning = document.getElementById('noTokenWarning');
+      
+      // Get link elements
+      const adminPanel1Link = document.getElementById('adminPanel1Link');
+      const adminFullLink = document.getElementById('adminFullLink');
+      const adminSimpleLink = document.getElementById('adminSimpleLink');
+      const adminDashboardLink = document.getElementById('adminDashboardLink');
+      
+      if (!authToken) {
+        // Show warning and disable links if no token found
+        if (noTokenWarning) {
+          noTokenWarning.style.display = 'block';
+        }
+        
+        // Disable links
+        [adminPanel1Link, adminFullLink, adminSimpleLink, adminDashboardLink].forEach(link => {
+          if (link) {
+            link.href = '#';
+            link.style.color = '#999';
+            link.style.textDecoration = 'line-through';
+            link.onclick = (e) => {
+              e.preventDefault();
+              alert('No authentication token available. Please log in as admin first.');
+            };
+          }
+        });
+      } else {
+        // Hide warning if token exists
+        if (noTokenWarning) {
+          noTokenWarning.style.display = 'none';
+        }
+        
+        // Update links with current token
+        if (adminPanel1Link) {
+          adminPanel1Link.href = `/admin-panel-1?token=${authToken}`;
+        }
+        if (adminFullLink) {
+          adminFullLink.href = `/admin-full?token=${authToken}`;
+        }
+        if (adminSimpleLink) {
+          adminSimpleLink.href = `/admin-simple?token=${authToken}`;
+        }
+        if (adminDashboardLink) {
+          adminDashboardLink.href = `/admin?token=${authToken}`;
+        }
+      }
+    }
+    
+    // Add loading indicator
+    function startLoading(element) {
+      element.innerHTML = `<div class="info">Loading... Please wait.</div>`;
+    }
+    
+    // Function to check authentication status
+    async function checkAuthStatus() {
+      startLoading(debugResults);
+      
+      let results = `<h3>Authentication Status Check</h3>`;
+      
+      try {
+        // Check auth token in localStorage
+        const authToken = localStorage.getItem('auth_token');
+        if (!authToken) {
+          results += `<div class="error">
+            <strong>No auth_token found in localStorage</strong>
+            <p>This is required for authentication.</p>
+          </div>`;
+        } else {
+          results += `<div class="success">
+            <strong>Auth token found in localStorage</strong>
+            <p>Token: ${authToken.substring(0, 10)}...</p>
+          </div>`;
+          
+          // Check API token validity
+          try {
+            const response = await fetch('/api/auth/me', {
+              headers: {
+                'Authorization': `Bearer ${authToken}`
+              }
+            });
+            
+            if (response.ok) {
+              const userData = await response.json();
+              results += `<div class="success">
+                <strong>API authentication successful</strong>
+                <p>User: ${userData.username} (${userData.email})</p>
+                <p>Admin Status: ${userData.isAdmin ? 'Administrator ✅' : 'Not Admin ❌'}</p>
+              </div>`;
+              
+              // Check user data in localStorage
+              const storedUser = localStorage.getItem('auth_user');
+              if (storedUser) {
+                try {
+                  const parsedUser = JSON.parse(storedUser);
+                  results += `<div class="success">
+                    <strong>User data found in localStorage</strong>
+                    <p>User: ${parsedUser.username} (${parsedUser.email})</p>
+                    <p>Admin Status in stored data: ${parsedUser.isAdmin ? 'Administrator ✅' : 'Not Admin ❌'}</p>
+                  </div>`;
+                  
+                  // Check for mismatch
+                  if (userData.isAdmin !== parsedUser.isAdmin) {
+                    results += `<div class="error">
+                      <strong>Admin Status Mismatch!</strong>
+                      <p>Server says: ${userData.isAdmin ? 'Admin' : 'Not Admin'}</p>
+                      <p>Stored data says: ${parsedUser.isAdmin ? 'Admin' : 'Not Admin'}</p>
+                      <p>This is likely causing your admin access issues.</p>
+                    </div>`;
+                  }
+                } catch (parseError) {
+                  results += `<div class="error">
+                    <strong>Error parsing user data in localStorage</strong>
+                    <p>${parseError.message}</p>
+                  </div>`;
+                }
+              } else {
+                results += `<div class="warning">
+                  <strong>No user data found in localStorage</strong>
+                  <p>This may cause issues with some admin pages.</p>
+                </div>`;
+              }
+              
+              // Check for partner token
+              const partnerToken = localStorage.getItem('partnerToken');
+              if (partnerToken) {
+                results += `<div class="error">
+                  <strong>Partner token detected!</strong>
+                  <p>Having a partner token may override admin privileges in some components.</p>
+                </div>`;
+              }
+              
+            } else {
+              results += `<div class="error">
+                <strong>API authentication failed</strong>
+                <p>Status: ${response.status}</p>
+                <p>Your token may be invalid or expired.</p>
+              </div>`;
+            }
+          } catch (apiError) {
+            results += `<div class="error">
+              <strong>Error checking API token</strong>
+              <p>${apiError.message}</p>
+            </div>`;
+          }
+        }
+        
+        // Check cookies
+        const cookies = document.cookie.split(';').map(cookie => cookie.trim());
+        const authCookie = cookies.find(cookie => cookie.startsWith('auth_token='));
+        
+        if (!authCookie) {
+          results += `<div class="warning">
+            <strong>No auth_token cookie found</strong>
+            <p>Some components may require the token in cookies.</p>
+          </div>`;
+        } else {
+          results += `<div class="success">
+            <strong>Auth token cookie found</strong>
+            <p>Cookie: ${authCookie.substring(0, 20)}...</p>
+          </div>`;
+          
+          // Check if localStorage and cookie tokens match
+          const authToken = localStorage.getItem('auth_token');
+          const cookieToken = authCookie.split('=')[1];
+          
+          if (authToken && decodeURIComponent(cookieToken) !== authToken) {
+            results += `<div class="error">
+              <strong>Token mismatch!</strong>
+              <p>localStorage token and cookie token are different.</p>
+            </div>`;
+          }
+        }
+        
+        // Show direct links if we found issues
+        if (results.includes('error')) {
+          adminDirectLinks.classList.remove('hidden');
+        }
+        
+      } catch (error) {
+        results += `<div class="error">
+          <strong>Error during authentication check</strong>
+          <p>${error.message}</p>
+        </div>`;
+      }
+      
+      // Add final recommendation
+      if (results.includes('error')) {
+        results += `<div class="warning">
+          <strong>Issues Found!</strong>
+          <p>Use the "Force Admin Authentication" options below to fix these issues.</p>
+        </div>`;
+      } else {
+        results += `<div class="success">
+          <strong>All Checks Passed!</strong>
+          <p>Your authentication appears to be valid. If you're still having issues, try the "Force Admin Authentication" options below.</p>
+        </div>`;
+      }
+      
+      debugResults.innerHTML = results;
+    }
+    
+    // Function to check localStorage
+    function checkLocalStorage() {
+      startLoading(debugResults);
+      
+      let results = `<h3>LocalStorage Check</h3>`;
+      
+      try {
+        const authToken = localStorage.getItem('auth_token');
+        const authUser = localStorage.getItem('auth_user');
+        const partnerToken = localStorage.getItem('partnerToken');
+        const partnerInfo = localStorage.getItem('partnerInfo');
+        
+        results += `<h4>auth_token</h4>`;
+        if (authToken) {
+          results += `<pre>${authToken}</pre>`;
+        } else {
+          results += `<div class="error">No auth_token found in localStorage</div>`;
+        }
+        
+        results += `<h4>auth_user</h4>`;
+        if (authUser) {
+          try {
+            const parsedUser = JSON.parse(authUser);
+            results += `<pre>${JSON.stringify(parsedUser, null, 2)}</pre>`;
+          } catch (e) {
+            results += `<div class="error">Error parsing auth_user: ${e.message}</div>`;
+            results += `<pre>${authUser}</pre>`;
+          }
+        } else {
+          results += `<div class="warning">No auth_user found in localStorage</div>`;
+        }
+        
+        results += `<h4>partnerToken</h4>`;
+        if (partnerToken) {
+          results += `<div class="error">partnerToken found! This may override admin privileges.</div>`;
+          results += `<pre>${partnerToken}</pre>`;
+        } else {
+          results += `<div class="success">No partnerToken found (good for admin access)</div>`;
+        }
+        
+        results += `<h4>partnerInfo</h4>`;
+        if (partnerInfo) {
+          results += `<div class="warning">partnerInfo found. This may affect admin/partner UI rendering.</div>`;
+          try {
+            const parsedInfo = JSON.parse(partnerInfo);
+            results += `<pre>${JSON.stringify(parsedInfo, null, 2)}</pre>`;
+          } catch (e) {
+            results += `<div class="error">Error parsing partnerInfo: ${e.message}</div>`;
+            results += `<pre>${partnerInfo}</pre>`;
+          }
+        } else {
+          results += `<div class="success">No partnerInfo found (good for admin access)</div>`;
+        }
+      } catch (error) {
+        results += `<div class="error">
+          <strong>Error checking localStorage</strong>
+          <p>${error.message}</p>
+        </div>`;
+      }
+      
+      debugResults.innerHTML = results;
+    }
+    
+    // Function to check cookies
+    function checkCookies() {
+      startLoading(debugResults);
+      
+      let results = `<h3>Cookies Check</h3>`;
+      
+      try {
+        const cookies = document.cookie.split(';').map(cookie => cookie.trim());
+        
+        if (cookies.length === 0 || (cookies.length === 1 && cookies[0] === '')) {
+          results += `<div class="warning">No cookies found</div>`;
+        } else {
+          results += `<table>
+            <tr>
+              <th>Cookie Name</th>
+              <th>Value</th>
+            </tr>`;
+            
+          cookies.forEach(cookie => {
+            const [name, value] = cookie.split('=');
+            results += `<tr>
+              <td>${name}</td>
+              <td>${value.length > 20 ? value.substring(0, 20) + '...' : value}</td>
+            </tr>`;
+          });
+          
+          results += `</table>`;
+          
+          const authCookie = cookies.find(cookie => cookie.startsWith('auth_token='));
+          if (!authCookie) {
+            results += `<div class="error">No auth_token cookie found</div>`;
+          }
+        }
+      } catch (error) {
+        results += `<div class="error">
+          <strong>Error checking cookies</strong>
+          <p>${error.message}</p>
+        </div>`;
+      }
+      
+      debugResults.innerHTML = results;
+    }
+    
+    // Function to validate admin status with server
+    async function validateAdminStatus() {
+      startLoading(debugResults);
+      
+      let results = `<h3>Admin Status Validation</h3>`;
+      
+      try {
+        // Check if user is logged in
+        const authToken = localStorage.getItem('auth_token');
+        
+        if (!authToken) {
+          results += `<div class="error">
+            <strong>No auth_token found in localStorage</strong>
+            <p>Cannot validate admin status without authentication.</p>
+          </div>`;
+        } else {
+          // Try to access admin endpoint
+          try {
+            const response = await fetch('/api/admin/system-status', {
+              headers: {
+                'Authorization': `Bearer ${authToken}`
+              }
+            });
+            
+            if (response.ok) {
+              const data = await response.json();
+              results += `<div class="success">
+                <strong>Admin API Access Successful</strong>
+                <p>You have valid admin privileges on the server.</p>
+                <p>DB Connected: ${data.dbConnected ? 'Yes' : 'No'}</p>
+                <p>User Count: ${data.userCount}</p>
+                <p>Timestamp: ${data.timestamp}</p>
+              </div>`;
+              
+              // Show technical details
+              technicalDetails.classList.remove('hidden');
+              technicalContent.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } else {
+              if (response.status === 401) {
+                results += `<div class="error">
+                  <strong>Admin API Access Denied (401 Unauthorized)</strong>
+                  <p>Your token is valid, but you don't have admin privileges.</p>
+                </div>`;
+              } else if (response.status === 403) {
+                results += `<div class="error">
+                  <strong>Admin API Access Forbidden (403 Forbidden)</strong>
+                  <p>Your authentication is valid, but you lack admin privileges.</p>
+                </div>`;
+              } else {
+                results += `<div class="error">
+                  <strong>Admin API Access Failed</strong>
+                  <p>Status: ${response.status}</p>
+                </div>`;
+              }
+              
+              // Try to get text response
+              try {
+                const text = await response.text();
+                
+                // Show technical details
+                technicalDetails.classList.remove('hidden');
+                technicalContent.innerHTML = `<p>Error Response:</p><pre>${text}</pre>`;
+              } catch (e) {
+                // Ignore text extraction errors
+              }
+            }
+          } catch (apiError) {
+            results += `<div class="error">
+              <strong>Error accessing admin API</strong>
+              <p>${apiError.message}</p>
+            </div>`;
+          }
+          
+          // Also try to get user data to see admin flag
+          try {
+            const response = await fetch('/api/auth/me', {
+              headers: {
+                'Authorization': `Bearer ${authToken}`
+              }
+            });
+            
+            if (response.ok) {
+              const userData = await response.json();
+              results += `<div class="info">
+                <strong>User API Response</strong>
+                <p>User: ${userData.username} (${userData.email})</p>
+                <p>Admin Flag from API: ${userData.isAdmin ? 'true ✅' : 'false ❌'}</p>
+              </div>`;
+              
+              // Check stored user data
+              const storedUser = localStorage.getItem('auth_user');
+              if (storedUser) {
+                try {
+                  const parsedUser = JSON.parse(storedUser);
+                  
+                  if (parsedUser.isAdmin !== userData.isAdmin) {
+                    results += `<div class="error">
+                      <strong>Admin Flag Mismatch!</strong>
+                      <p>API says: ${userData.isAdmin ? 'Admin' : 'Not Admin'}</p>
+                      <p>Stored says: ${parsedUser.isAdmin ? 'Admin' : 'Not Admin'}</p>
+                      <p>This is likely causing your admin access issues.</p>
+                    </div>`;
+                  }
+                } catch (e) {
+                  // Ignore parsing errors
+                }
+              }
+            }
+          } catch (userApiError) {
+            // Ignore user API errors
+          }
+        }
+      } catch (error) {
+        results += `<div class="error">
+          <strong>Error during admin validation</strong>
+          <p>${error.message}</p>
+        </div>`;
+      }
+      
+      debugResults.innerHTML = results;
+    }
+    
+    // Function to force admin token
+    async function forceAdminToken() {
+      startLoading(fixResults);
+      
+      try {
+        // Clear existing tokens
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('partnerToken');
+        
+        // Request a secure token from the server
+        const response = await fetch('/api/admin/request-token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include' // Include cookies for existing authentication if any
+        });
+        
+        // Handle specific error responses
+        if (response.status === 401) {
+          throw new Error('Authentication required. Please log in with your admin credentials first.');
+        } else if (response.status === 403) {
+          throw new Error('Access denied. Your account does not have administrator privileges.');
+        } else if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(`Failed to get admin token: ${errorData.error || response.statusText || 'Unknown error'}`);
+        }
+        
+        const data = await response.json();
+        const adminToken = data.token;
+        
+        if (!adminToken) {
+          throw new Error('Server did not return a valid token');
+        }
+        
+        // Set admin token
+        localStorage.setItem('auth_token', adminToken);
+        
+        // Also set in cookie for systems that check cookies
+        document.cookie = `auth_token=${adminToken}; path=/; max-age=${60*60*24*7}`;
+        
+        // Store the token for other functions to use
+        currentAuthToken = adminToken;
+        
+        // Update admin links with the new token
+        updateAdminLinks();
+        
+        fixResults.innerHTML = `<div class="success">
+          <strong>Admin Token Set Successfully</strong>
+          <p>The admin token has been set in both localStorage and cookies.</p>
+          <p>The direct access links below have been updated with your secure token.</p>
+        </div>`;
+        
+        // Show direct links
+        adminDirectLinks.classList.remove('hidden');
+      } catch (error) {
+        fixResults.innerHTML = `<div class="error">
+          <strong>Error setting admin token</strong>
+          <p>${error.message}</p>
+        </div>`;
+      }
+    }
+    
+    // Function to clear all tokens
+    function clearTokens() {
+      startLoading(fixResults);
+      
+      try {
+        // Clear localStorage items
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('partnerToken');
+        localStorage.removeItem('auth_user');
+        localStorage.removeItem('partnerInfo');
+        
+        // Clear cookies
+        document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+        
+        // Reset current token reference
+        currentAuthToken = null;
+        
+        // Update admin links to show they're disabled
+        updateAdminLinks();
+        
+        fixResults.innerHTML = `<div class="info">
+          <strong>All Tokens Cleared</strong>
+          <p>All authentication tokens and user data have been cleared.</p>
+          <p>You will need to login again or use "Force Admin Token" to access admin pages.</p>
+        </div>`;
+      } catch (error) {
+        fixResults.innerHTML = `<div class="error">
+          <strong>Error clearing tokens</strong>
+          <p>${error.message}</p>
+        </div>`;
+      }
+    }
+    
+    // Function to store admin user data
+    function storeAdminData() {
+      startLoading(fixResults);
+      
+      try {
+        // Get current token
+        const authToken = localStorage.getItem('auth_token');
+        
+        if (!authToken) {
+          throw new Error('No auth token available. Please set a token first using "Force Admin Token".');
+        }
+        
+        // Create admin user data
+        const adminUser = {
+          id: 4,
+          username: "admin",
+          email: "admin@warmleadnetwork.com",
+          displayName: "System Administrator",
+          isAdmin: true,
+          role: "admin",
+          token: authToken
+        };
+        
+        // Store in localStorage
+        localStorage.setItem('auth_user', JSON.stringify(adminUser));
+        
+        // This is redundant now since we already checked for token above
+        // Just update admin links to reflect the changes
+        updateAdminLinks();
+        
+        fixResults.innerHTML = `<div class="success">
+          <strong>Admin User Data Stored</strong>
+          <p>Admin user data with isAdmin=true has been stored in localStorage.</p>
+          <p>This should fix issues with client-side admin checks.</p>
+        </div>`;
+        
+        // Show direct links
+        adminDirectLinks.classList.remove('hidden');
+      } catch (error) {
+        fixResults.innerHTML = `<div class="error">
+          <strong>Error storing admin data</strong>
+          <p>${error.message}</p>
+        </div>`;
+      }
+    }
+    
+    // Function to fix headers
+    function fixHeaders() {
+      startLoading(fixResults);
+      
+      try {
+        // Get current token
+        const token = localStorage.getItem('auth_token');
+        
+        if (!token) {
+          throw new Error('No authentication token available. Please set a token first using "Force Admin Token".');
+        }
+        
+        // Set global axios headers if available
+        if (window.axios) {
+          window.axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+          fixResults.innerHTML = `<div class="success">
+            <strong>Authorization Headers Fixed</strong>
+            <p>The Authorization header has been set on axios for API requests.</p>
+          </div>`;
+        } else {
+          fixResults.innerHTML = `<div class="warning">
+            <strong>Could not find axios</strong>
+            <p>The global axios object was not found. Headers could not be set.</p>
+            <p>Try refreshing the page after setting the admin token.</p>
+          </div>`;
+        }
+      } catch (error) {
+        fixResults.innerHTML = `<div class="error">
+          <strong>Error fixing headers</strong>
+          <p>${error.message}</p>
+        </div>`;
+      }
+    }
+    
+    // Run initial check when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      // Update admin links with current token
+      updateAdminLinks();
+      
+      // Check if auth_token exists
+      const authToken = localStorage.getItem('auth_token');
+      
+      if (!authToken) {
+        debugResults.innerHTML = `<div class="warning">
+          <strong>No authentication token found</strong>
+          <p>You are not currently logged in.</p>
+          <p>Use the "Force Admin Token" button to set an admin token.</p>
+        </div>`;
+        
+        // Show direct links
+        adminDirectLinks.classList.remove('hidden');
+      } else {
+        // Run a quick auth check
+        (async function() {
+          try {
+            const response = await fetch('/api/auth/me', {
+              headers: {
+                'Authorization': `Bearer ${authToken}`
+              }
+            });
+            
+            if (response.ok) {
+              const userData = await response.json();
+              
+              debugResults.innerHTML = `<div class="info">
+                <strong>Currently logged in as:</strong>
+                <p>User: ${userData.username} (${userData.email})</p>
+                <p>Admin Status: ${userData.isAdmin ? 'Administrator ✅' : 'Not Admin ❌'}</p>
+                <p>Click "Check Authentication Status" for a full diagnostic.</p>
+              </div>`;
+              
+              if (!userData.isAdmin) {
+                debugResults.innerHTML += `<div class="warning">
+                  <strong>Not an Admin Account</strong>
+                  <p>Your account does not have admin privileges according to the server.</p>
+                  <p>Use the "Force Admin Authentication" options below to fix this.</p>
+                </div>`;
+                
+                // Show direct links
+                adminDirectLinks.classList.remove('hidden');
+              }
+            } else {
+              debugResults.innerHTML = `<div class="error">
+                <strong>Authentication Failed</strong>
+                <p>Your token appears to be invalid or expired.</p>
+                <p>Use the "Force Admin Token" button to set a valid admin token.</p>
+              </div>`;
+              
+              // Show direct links
+              adminDirectLinks.classList.remove('hidden');
+            }
+          } catch (error) {
+            debugResults.innerHTML = `<div class="error">
+              <strong>Error checking authentication</strong>
+              <p>${error.message}</p>
+              <p>Click "Check Authentication Status" for a full diagnostic.</p>
+            </div>`;
+          }
+        })();
+      }
+    });
+  </script>
+</body>
+</html>

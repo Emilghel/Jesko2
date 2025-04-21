@@ -1,0 +1,436 @@
+@import './styles/agent-tutorial.css';
+@import './styles/interactive-tutorial.css';
+@import './styles/ai-animations.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  /* Futuristic button styles */
+  .neon-button {
+    @apply px-4 py-2 bg-gradient-to-r from-purple-700 to-indigo-700 rounded-md relative overflow-hidden;
+    box-shadow: 0 0 15px rgba(123, 74, 226, 0.5), inset 0 0 10px rgba(147, 112, 219, 0.3);
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(139, 92, 246, 0.5);
+    transition: all 0.3s ease;
+  }
+  
+  .neon-button:hover {
+    @apply from-purple-600 to-indigo-600;
+    box-shadow: 0 0 25px rgba(123, 74, 226, 0.7), inset 0 0 15px rgba(147, 112, 219, 0.5);
+    transform: translateY(-2px);
+  }
+  
+  .neon-button:active {
+    transform: translateY(0);
+    box-shadow: 0 0 10px rgba(123, 74, 226, 0.4), inset 0 0 5px rgba(147, 112, 219, 0.2);
+  }
+  
+  .cyberpunk-button-subtle {
+    @apply py-2 px-3 bg-transparent border rounded-md transition-all duration-300;
+    border-color: rgba(111, 76, 255, 0.3);
+    box-shadow: 0 0 10px rgba(111, 76, 255, 0.1);
+  }
+  
+  .cyberpunk-button-subtle:hover {
+    @apply bg-gray-800;
+    border-color: rgba(111, 76, 255, 0.5);
+    box-shadow: 0 0 15px rgba(111, 76, 255, 0.2);
+    transform: translateY(-2px);
+  }
+  
+  .cyberpunk-button-indigo {
+    @apply py-2 px-3 bg-transparent border rounded-md transition-all duration-300 text-indigo-400;
+    border-color: rgba(99, 102, 241, 0.3);
+    box-shadow: 0 0 10px rgba(99, 102, 241, 0.1);
+  }
+  
+  .cyberpunk-button-indigo:hover {
+    @apply bg-gray-800;
+    border-color: rgba(99, 102, 241, 0.5);
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.2);
+    transform: translateY(-2px);
+  }
+  
+  /* Futuristic input styles */
+  .cyberpunk-input {
+    @apply p-3 rounded-md text-white;
+    background: rgba(20, 20, 31, 0.7);
+    border: 1px solid rgba(111, 76, 255, 0.3);
+    box-shadow: 0 0 10px rgba(111, 76, 255, 0.1), inset 0 0 10px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    transition: all 0.3s ease;
+  }
+  
+  .cyberpunk-input:focus {
+    border-color: rgba(111, 76, 255, 0.7);
+    box-shadow: 0 0 15px rgba(111, 76, 255, 0.3), inset 0 0 10px rgba(0, 0, 0, 0.5);
+    outline: none;
+  }
+  
+  /* Holographic card container */
+  .holographic-card {
+    @apply rounded-2xl relative overflow-hidden;
+    background: rgba(30, 30, 45, 0.7);
+    border: 1px solid rgba(236, 72, 153, 0.3);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 
+                inset 0 0 20px rgba(236, 72, 153, 0.15),
+                0 0 15px rgba(236, 72, 153, 0.3);
+    backdrop-filter: blur(10px);
+  }
+  
+  .holographic-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, 
+      transparent, 
+      rgba(236, 72, 153, 0.4), 
+      rgba(192, 39, 255, 0.4), 
+      rgba(236, 72, 153, 0.4), 
+      transparent
+    );
+  }
+  
+  .holographic-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(
+      circle at center,
+      rgba(236, 72, 153, 0.08) 0%,
+      rgba(236, 72, 153, 0.03) 45%,
+      transparent 70%
+    );
+    filter: blur(15px);
+    z-index: -1;
+    transform: scale(1.05);
+    opacity: 0.7;
+    border-radius: inherit;
+  }
+  
+  .futuristic-container {
+    @apply rounded-2xl relative overflow-hidden;
+    background: rgba(30, 30, 45, 0.7);
+    border: 1px solid rgba(236, 72, 153, 0.3);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 
+                inset 0 0 20px rgba(236, 72, 153, 0.2),
+                0 0 15px rgba(236, 72, 153, 0.4);
+    backdrop-filter: blur(10px);
+    position: relative;
+  }
+  
+  /* Pink glow effect with anti-aliasing */
+  .futuristic-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(
+      circle at center,
+      rgba(236, 72, 153, 0.1) 0%,
+      rgba(236, 72, 153, 0.05) 45%,
+      transparent 70%
+    );
+    filter: blur(20px);
+    z-index: -1;
+    transform: scale(1.1); /* Slightly larger to create soft edges */
+    opacity: 0.8;
+    border-radius: inherit;
+  }
+  
+  .futuristic-purple-glow {
+    text-shadow: 0 0 10px rgba(139, 92, 246, 0.7);
+  }
+  
+  .hex-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+      linear-gradient(to bottom right, transparent 49.9%, rgba(111, 76, 255, 0.05) 50%, transparent 50.1%),
+      linear-gradient(to bottom left, transparent 49.9%, rgba(192, 39, 255, 0.05) 50%, transparent 50.1%);
+    background-size: 40px 40px;
+    opacity: 0.5;
+    z-index: -1;
+  }
+}
+
+:root {
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
+  --card: 240 10% 3.9%;
+  --card-foreground: 0 0% 98%;
+  --popover: 240 10% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 263 70% 50%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 240 3.7% 15.9%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 240 3.7% 15.9%;
+  --muted-foreground: 240 5% 64.9%;
+  --accent: 240 3.7% 15.9%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 240 3.7% 15.9%;
+  --input: 240 3.7% 15.9%;
+  --ring: 263 70% 50%;
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
+  --card: 240 10% 3.9%;
+  --card-foreground: 0 0% 98%;
+  --popover: 240 10% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 263 70% 50%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 240 3.7% 15.9%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 240 3.7% 15.9%;
+  --muted-foreground: 240 5% 64.9%;
+  --accent: 240 3.7% 15.9%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 240 3.7% 15.9%;
+  --input: 240 3.7% 15.9%;
+  --ring: 263 70% 50%;
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--secondary));
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted));
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground));
+}
+
+/* Video player enhancements */
+.video-border-glow {
+  position: relative;
+  z-index: 0;
+  transition: all 0.3s ease;
+}
+
+.video-border-glow::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -3px;
+  background: linear-gradient(45deg, 
+    #33C3BD, #6366f1, #8b5cf6, #0075FF, 
+    #33C3BD, #6366f1, #8b5cf6, #0075FF);
+  background-size: 400% 400%;
+  filter: blur(10px);
+  opacity: 0.7;
+  transition: all 0.3s ease;
+  animation: glowingBorder 15s ease infinite;
+  border-radius: inherit;
+}
+
+.video-border-glow:hover::before {
+  filter: blur(15px);
+  opacity: 0.9;
+}
+
+@keyframes glowingBorder {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* High-detail star with subtle visual effects */
+.star-svg {
+  color: var(--color1, #FFC107);
+  filter: drop-shadow(0 0 3px var(--color1, #FFC107))
+          drop-shadow(0 0 5px var(--color2, rgba(255, 193, 7, 0.4)))
+          drop-shadow(0 0 8px var(--color1, #FFC107));
+  animation: star-float 6s ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+  transform-origin: center;
+  will-change: transform, filter;
+  transition: filter 0.3s ease;
+}
+
+/* Star inner glow effect when hovering over parent - toned down */
+.star-wrapper:hover .star-svg {
+  filter: drop-shadow(0 0 4px var(--color1, #FFC107))
+          drop-shadow(0 0 8px var(--color2, rgba(255, 193, 7, 0.5)))
+          drop-shadow(0 0 10px var(--color1, #FFC107));
+}
+
+/* Advanced star wrapper with more subtle glow effects */
+.star-wrapper {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 5;
+  transition: transform 0.3s ease;
+}
+
+.star-wrapper:hover {
+  transform: scale(1.12);
+}
+
+/* Inner light core - reduced opacity */
+.star-wrapper:before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at center,
+    rgba(255, 255, 255, 0.2) 0%,
+    rgba(255, 255, 255, 0.05) 30%,
+    rgba(255, 255, 255, 0) 70%
+  );
+  z-index: 1;
+  opacity: 0.7;
+  mix-blend-mode: screen;
+}
+
+/* Outer glow and rays - reduced size and opacity */
+.star-wrapper:after {
+  content: '';
+  position: absolute;
+  width: 150%;
+  height: 150%;
+  border-radius: 50%;
+  z-index: 0;
+  background: radial-gradient(
+    circle at center,
+    var(--color1, #FFC107) 0%,
+    color-mix(in srgb, var(--color1, #FFC107) 50%, transparent) 40%,
+    transparent 70%
+  );
+  opacity: 0.1;
+  animation: star-pulse 4s ease-in-out infinite;
+  animation-delay: calc(var(--delay, 0s) + 0.2s);
+  filter: blur(4px);
+}
+
+/* Rays of light emanating from the star - reduced opacity */
+.star-wrapper .star-svg::after {
+  content: '';
+  position: absolute;
+  width: 180%;
+  height: 180%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    var(--color1, #FFC107) 20deg,
+    transparent 40deg,
+    transparent 80deg,
+    var(--color1, #FFC107) 100deg,
+    transparent 120deg,
+    transparent 160deg,
+    var(--color1, #FFC107) 180deg,
+    transparent 200deg,
+    transparent 240deg,
+    var(--color1, #FFC107) 260deg,
+    transparent 280deg,
+    transparent 320deg,
+    var(--color1, #FFC107) 340deg,
+    transparent 360deg
+  );
+  z-index: -1;
+  opacity: 0;
+  animation: star-rays 6s linear infinite;
+  animation-delay: calc(var(--delay, 0s) + 0.5s);
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+/* Subtle pulsing animation for the glow effect */
+@keyframes star-pulse {
+  0%, 100% { 
+    opacity: 0.08;
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 0.15;
+    transform: scale(1.15);
+  }
+}
+
+/* Enhanced floating animation for the stars with slight rotation */
+@keyframes star-float {
+  0%, 100% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
+  25% {
+    transform: translate(3px, -3px) scale(1.08) rotate(2deg);
+  }
+  50% {
+    transform: translate(-2px, 3px) scale(1) rotate(-2deg);
+  }
+  75% {
+    transform: translate(2px, 2px) scale(1.05) rotate(1deg);
+  }
+}
+
+/* Emanating rays animation - more subtle */
+@keyframes star-rays {
+  0% {
+    opacity: 0;
+    transform: scale(0.85) rotate(0deg);
+  }
+  30% {
+    opacity: 0.06;
+    transform: scale(1) rotate(120deg);
+  }
+  70% {
+    opacity: 0.03;
+    transform: scale(1.05) rotate(240deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.9) rotate(360deg);
+  }
+}
