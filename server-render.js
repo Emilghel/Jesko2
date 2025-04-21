@@ -5,9 +5,10 @@
  * when the full application can't be deployed.
  */
 
-const express = require('express');
-const cors = require('cors');
-const { Pool } = require('pg');
+import express from 'express';
+import cors from 'cors';
+import pg from 'pg';
+const { Pool } = pg;
 const app = express();
 
 // Apply middleware
