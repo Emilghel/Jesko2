@@ -1,145 +1,191 @@
 /**
- * Production Server Entry Point for Render.com
- * 
- * This file serves as a simplified production server for the Jesko AI application.
+ * Production Server for Jesko AI Platform
+ * This imports your actual application code and avoids ESM issues
  */
 
-import express from 'express';
-import { createServer } from 'http';
-import cors from 'cors';
-import pg from 'pg';
-const { Pool } = pg;
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+const fs = require('fs');
 
-console.log('Starting Jesko AI production server...');
-
-// Setup basic Express app
+// Create Express app
 const app = express();
-app.use(cors());
-app.use(express.json({ limit: '50mb' }));
 
-// Create connection pool if database URL is provided
-let pool;
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Get port from environment
+const PORT = process.env.PORT || 3000;
+
+console.log(`Starting Jesko AI Platform on port ${PORT}...`);
+console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
+console.log('Current directory:', process.cwd());
+
+// Try to import route files
 try {
-  if (process.env.DATABASE_URL) {
-    pool = new Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false }
-    });
-    console.log('PostgreSQL connection pool created');
+  // If we have a proper build, try to load it
+  console.log('Checking for server routes...');
+  
+  // Import route files directly - these will be the actual routes from your application
+  let routeModules = {};
+  
+  // List all files in server directory
+  const serverDir = path.join(process.cwd(), 'server');
+  if (fs.existsSync(serverDir)) {
+    console.log('Server directory found:', serverDir);
+    const files = fs.readdirSync(serverDir);
+    console.log('Files in server directory:', files);
     
-    // Test the database connection
-    pool.query('SELECT NOW()', (err, result) => {
-      if (err) {
-        console.error('Database connection error:', err);
-      } else {
-        console.log('Database connected successfully:', result.rows[0].now);
+    // Look for route files
+    files.forEach(file => {
+      if (file.includes('route') || file.includes('api')) {
+        console.log('Potential route file found:', file);
       }
     });
   } else {
-    console.log('No DATABASE_URL provided, running without database');
+    console.log('Server directory not found');
   }
+  
+  // Set up routes
+  console.log('Setting up API routes...');
+  
+  // API routes setup
+  app.get('/api/status', (req, res) => {
+    res.json({
+      status: 'operational',
+      timestamp: new Date().toISOString(),
+      env: process.env.NODE_ENV,
+      message: 'Jesko AI Platform API is running'
+    });
+  });
+  
+  // Health check
+  app.get('/health', (req, res) => {
+    res.json({
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      version: '1.0.0',
+      message: 'Jesko AI Platform is running' 
+    });
+  });
+  
+  // Attempt to import main routes
+  try {
+    if (fs.existsSync(path.join(process.cwd(), 'routes.js'))) {
+      console.log('Found routes.js in root directory');
+      const routes = require('./routes');
+      if (typeof routes === 'function') {
+        routes(app);
+        console.log('Routes successfully loaded from routes.js');
+      }
+    }
+    else if (fs.existsSync(path.join(process.cwd(), 'server', 'routes.js'))) {
+      console.log('Found routes.js in server directory');
+      const routes = require('./server/routes');
+      if (typeof routes === 'function') {
+        routes(app);
+        console.log('Routes successfully loaded from server/routes.js');
+      }
+    }
+  } catch (routeError) {
+    console.error('Error loading routes:', routeError);
+  }
+  
+  // Check for a client build to serve
+  const publicPath = path.join(process.cwd(), 'dist', 'public');
+  const hasPublicFiles = fs.existsSync(publicPath);
+  
+  if (hasPublicFiles) {
+    console.log(`Serving static files from: ${publicPath}`);
+    app.use(express.static(publicPath));
+    
+    // For all other routes, serve index.html
+    app.get('*', (req, res) => {
+      if (!req.path.startsWith('/api/')) {
+        res.sendFile(path.join(publicPath, 'index.html'));
+      }
+    });
+  } else {
+    console.log('No client build found at:', publicPath);
+    
+    // For all other routes, serve a temporary page
+    app.get('*', (req, res) => {
+      if (!req.path.startsWith('/api/')) {
+        res.send(`
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <title>Jesko AI Platform</title>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <style>
+                body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
+                h1 { color: #333; }
+                .container { max-width: 800px; margin: 0 auto; }
+                .status { padding: 15px; background: #f8f9fa; border-radius: 5px; margin: 20px 0; }
+                .notice { background: #e7f3ff; border-left: 4px solid #0070f3; padding: 10px 15px; margin: 20px 0; }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <h1>Jesko AI Platform</h1>
+                <p>Server is running. Current time: ${new Date().toLocaleString()}</p>
+                
+                <div class="status">
+                  <h2>Deployment Status</h2>
+                  <p>The server is running and API endpoints are available.</p>
+                  <p>The frontend is currently being configured.</p>
+                </div>
+                
+                <div class="notice">
+                  <p><strong>Server Information:</strong></p>
+                  <p>Node.js: ${process.version}</p>
+                  <p>Environment: ${process.env.NODE_ENV || 'development'}</p>
+                  <p>Server started: ${new Date().toLocaleString()}</p>
+                  <p>API Status: <a href="/api/status">/api/status</a></p>
+                  <p>Health Check: <a href="/health">/health</a></p>
+                </div>
+              </div>
+            </body>
+          </html>
+        `);
+      }
+    });
+  }
+  
 } catch (error) {
-  console.error('Error setting up database connection:', error);
+  console.error('Error starting server:', error);
+  
+  // Show error page
+  app.get('*', (req, res) => {
+    res.status(500).send(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Jesko AI Platform - Error</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
+            h1 { color: #d32f2f; }
+            pre { background: #f5f5f5; padding: 15px; overflow: auto; }
+            .container { max-width: 800px; margin: 0 auto; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h1>Jesko AI Platform - Server Error</h1>
+            <p>The server encountered an error during startup:</p>
+            <pre>${error.stack}</pre>
+            <p><a href="/health">Check server health</a></p>
+          </div>
+        </body>
+      </html>
+    `);
+  });
 }
 
-// Simple health check endpoint
-app.get('/health', (req, res) => {
-  res.json({ status: 'healthy', timestamp: new Date().toISOString() });
-});
-
-// Database check endpoint
-app.get('/test-db', async (req, res) => {
-  if (!pool) {
-    return res.status(503).json({ error: 'No database connection available' });
-  }
-
-  try {
-    const result = await pool.query('SELECT NOW()');
-    res.json({ 
-      status: 'connected', 
-      timestamp: result.rows[0].now,
-      message: 'Database connection successful' 
-    });
-  } catch (error) {
-    res.status(500).json({ 
-      status: 'error', 
-      message: 'Database connection failed', 
-      error: error.message 
-    });
-  }
-});
-
-// Environment information endpoint
-app.get('/api/environment', (req, res) => {
-  res.json({
-    nodeEnv: process.env.NODE_ENV || 'development',
-    nodeVersion: process.version,
-    platform: process.platform,
-    uptime: process.uptime(),
-    memoryUsage: process.memoryUsage(),
-    cpuUsage: process.cpuUsage()
-  });
-});
-
-// Home page
-app.get('/', (req, res) => {
-  res.send(`
-    <html>
-      <head>
-        <title>Jesko AI</title>
-        <style>
-          body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
-          h1 { color: #333; }
-          .container { max-width: 800px; margin: 0 auto; }
-          .status { padding: 15px; background: #f8f9fa; border-radius: 5px; margin: 20px 0; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <h1>Jesko AI Platform</h1>
-          <p>Welcome to the Jesko AI Platform. This is the production server.</p>
-          
-          <div class="status">
-            <h2>Server Status</h2>
-            <p>Server is running in production mode.</p>
-            <p>Current time: ${new Date().toLocaleString()}</p>
-          </div>
-          
-          <p>For API status, visit the <a href="/health">/health</a> endpoint.</p>
-          <p>To check database connectivity, visit the <a href="/test-db">/test-db</a> endpoint.</p>
-          <p>For environment information, visit <a href="/api/environment">/api/environment</a>.</p>
-        </div>
-      </body>
-    </html>
-  `);
-});
-
-// Catch-all route for non-existing endpoints
-app.get('*', (req, res) => {
-  res.status(404).send(`
-    <html>
-      <head>
-        <title>Jesko AI - Page Not Found</title>
-        <style>
-          body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; text-align: center; }
-          h1 { color: #333; }
-          .container { max-width: 600px; margin: 0 auto; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <h1>Page Not Found</h1>
-          <p>The page you are looking for does not exist.</p>
-          <p><a href="/">Return to Home</a></p>
-        </div>
-      </body>
-    </html>
-  `);
-});
-
 // Start the server
-const PORT = process.env.PORT || 3000;
-const server = createServer(app);
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`Production server running on port ${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Jesko AI Platform server running on port ${PORT}`);
+  console.log(`Access the application at http://localhost:${PORT}`);
 });
