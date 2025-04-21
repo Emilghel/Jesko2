@@ -1,0 +1,94 @@
+          {/* Call to Action for Own Your AI */}
+          <div className="mt-24 mb-16 relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0A0F16] via-[#141B29] to-[#0A0F16] opacity-80 rounded-3xl"></div>
+            <div className="absolute -top-12 -left-12 w-64 h-64 bg-[#33C3BD]/5 rounded-full blur-[80px]"></div>
+            <div className="absolute -bottom-12 -right-12 w-64 h-64 bg-[#0075FF]/5 rounded-full blur-[80px]"></div>
+            
+            <div className="relative z-10 max-w-5xl mx-auto bg-gradient-to-b from-[#141B29]/90 to-[#0A0F16]/90 rounded-3xl border border-[#1E293B] shadow-[0_0_30px_rgba(51,195,189,0.1)] p-12">
+              <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-transparent via-[#33C3BD] to-transparent opacity-70"></div>
+              
+              <div className="flex flex-col lg:flex-row items-center">
+                <div className="lg:w-2/3 mb-8 lg:mb-0 lg:pr-8">
+                  <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-[#33C3BD] to-[#0075FF] bg-clip-text text-transparent">
+                    Ready to Take it to the Next Level?
+                  </h2>
+                  <p className="text-xl text-gray-300 mb-6">
+                    Own your <span className="font-semibold bg-gradient-to-r from-[#33C3BD] to-[#0075FF] bg-clip-text text-transparent">AI business completely</span> and earn up to <span className="font-semibold text-white">95% revenue share</span>
+                  </p>
+                  <div className="space-y-3 mb-6">
+                    <div className="flex items-center">
+                      <span className="glowing-star" style={{"--delay": "0s", "--scale": "0.7"} as React.CSSProperties}></span>
+                      <span className="text-gray-300">Full AI business ownership</span>
+                    </div>
+                    <div className="flex items-center">
+                      <span className="glowing-star" style={{"--delay": "0.3s", "--color1": "rgba(6, 182, 212, 1)", "--color2": "rgba(59, 130, 246, 0.8)", "--scale": "0.7"} as React.CSSProperties}></span>
+                      <span className="text-gray-300">Passive income while you sleep</span>
+                    </div>
+                    <div className="flex items-center">
+                      <span className="glowing-star" style={{"--delay": "0.6s", "--color1": "rgba(124, 58, 237, 1)", "--color2": "rgba(139, 92, 246, 0.8)", "--scale": "0.7"} as React.CSSProperties}></span>
+                      <span className="text-gray-300">Full training and support provided</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="lg:w-1/3 flex justify-center">
+                  <Link href="/own-your-ai">
+                    <Button size="lg" className="relative group overflow-hidden bg-gradient-to-r from-[#33C3BD] to-[#0075FF] hover:opacity-90 transition-all duration-300 text-white font-medium px-10 py-8 rounded-xl shadow-lg">
+                      <div className="absolute inset-0 bg-gradient-to-r from-[#33C3BD] via-[#0075FF] to-[#33C3BD] opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-size-200 animate-gradient-x"></div>
+                      <span className="relative z-10 flex items-center text-lg">
+                        Learn About Ownership
+                        <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                      </span>
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+              
+              {/* Floating elements for visual flair */}
+              <div className="absolute top-10 right-10 w-12 h-12 rounded-full bg-[#33C3BD]/10 animate-pulse"></div>
+              <div className="absolute bottom-10 left-10 w-8 h-8 rounded-full bg-[#0075FF]/10 animate-pulse" style={{ animationDelay: '1s' }}></div>
+            </div>
+          </div>
+          
+          {/* Extra information section */}
+          <div className="mt-20 max-w-3xl mx-auto text-center">
+            <h2 className="text-2xl font-bold mb-6 text-white">
+              All Plans Include
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+              <div className="bg-[#141B29] rounded-xl border border-[#1E293B] p-5">
+                <div className="w-12 h-12 rounded-full bg-[#33C3BD]/20 flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-6 h-6 text-[#33C3BD]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-medium text-white mb-2">24/7 Availability</h3>
+                <p className="text-gray-400 text-sm">Your AI secretary works around the clock, never taking a day off.</p>
+              </div>
+              
+              <div className="bg-[#141B29] rounded-xl border border-[#1E293B] p-5">
+                <div className="w-12 h-12 rounded-full bg-[#33C3BD]/20 flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-6 h-6 text-[#33C3BD]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-medium text-white mb-2">Secure Communications</h3>
+                <p className="text-gray-400 text-sm">All conversations are encrypted and securely stored.</p>
+              </div>
+              
+              <div className="bg-[#141B29] rounded-xl border border-[#1E293B] p-5">
+                <div className="w-12 h-12 rounded-full bg-[#33C3BD]/20 flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-6 h-6 text-[#33C3BD]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-medium text-white mb-2">Regular Updates</h3>
+                <p className="text-gray-400 text-sm">Our AI technology continuously improves with regular updates.</p>
+              </div>
+            </div>
+            
+            <div className="text-gray-400 mt-8">
+              <p>Have questions about our pricing plans? <a href="#" className="text-[#33C3BD] hover:underline">Contact our sales team</a></p>
+            </div>
+          </div>
+          

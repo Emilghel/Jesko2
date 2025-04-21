@@ -1,0 +1,109 @@
+          {/* Own Jesko AI Yourself CTA Section */}
+          <div className="mt-16 relative z-10 max-w-5xl mx-auto">
+            <div className="rounded-xl overflow-hidden border border-[#1E293B] shadow-2xl bg-gradient-to-b from-[#141B29] to-[#0A0F16]">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Left side - Video */}
+                <div className="relative overflow-hidden rounded-lg">
+                  {/* Video background elements */}
+                  <div className="absolute -inset-1 bg-gradient-to-r from-[#33C3BD]/30 to-[#0075FF]/30 blur-xl opacity-30 z-0"></div>
+                  <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8ZGVmcz4KICA8cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjIwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KICAgIDxwYXRoIGQ9Ik0gMjAgMCBMIDAgMCAwIDIwIiBmaWxsPSJub25lIiBzdHJva2U9IiMxRTI5M0IiIHN0cm9rZS13aWR0aD0iMSIvPgogIDwvcGF0dGVybj4KPC9kZWZzPgo8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIiAvPgo8L3N2Zz4=')] opacity-20 z-0"></div>
+                  
+                  {/* Video container with aspect ratio */}
+                  <div className="pt-[125%] relative z-10">
+                    {/* Semi-transparent overlay for the whole video */}
+                    <div className="absolute inset-0 bg-black/20 mix-blend-overlay z-20 pointer-events-none"></div>
+                    
+                    {/* Video element */}
+                    <video 
+                      src="https://video.wixstatic.com/video/ee3656_123f1e883bfa4c4da92020a2807a218c/720p/mp4/file.mp4"
+                      className="absolute inset-0 w-full h-full object-cover z-10"
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                    />
+                    
+                    {/* Gradient overlays for blending */}
+                    <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-[#141B29] via-[#141B29]/80 to-transparent pointer-events-none z-30"></div>
+                    <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#0A0F16] via-[#0A0F16]/80 to-transparent pointer-events-none z-30"></div>
+                    <div className="absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-[#141B29] to-transparent pointer-events-none z-30"></div>
+                    <div className="absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-[#141B29] to-transparent pointer-events-none z-30"></div>
+                    
+                    {/* Color tint for mood */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#33C3BD]/30 via-indigo-500/10 to-[#0075FF]/20 mix-blend-soft-light pointer-events-none z-40"></div>
+                    
+                    {/* Subtle grain texture */}
+                    <div className="absolute inset-0 opacity-30 mix-blend-multiply pointer-events-none z-40"
+                      style={{ 
+                        backgroundImage: "url('data:image/svg+xml,%3Csvg viewBox=\"0 0 200 200\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cfilter id=\"noise\"%3E%3CfeTurbulence type=\"fractalNoise\" baseFrequency=\"0.65\" numOctaves=\"3\" stitchTiles=\"stitch\"/%3E%3C/filter%3E%3Crect width=\"100%\" height=\"100%\" filter=\"url(%23noise)\" opacity=\"0.4\"/%3E%3C/svg%3E')",
+                        backgroundSize: "200px 200px"
+                      }}>
+                    </div>
+                    
+                    {/* Interactive glow */}
+                    <div className="absolute inset-0 bg-gradient-to-tr from-[#33C3BD]/10 to-[#0075FF]/10 opacity-0 hover:opacity-40 transition-opacity duration-700 pointer-events-none z-40"></div>
+                  </div>
+                  
+                  {/* Video border effect */}
+                  <div className="absolute -inset-[1px] rounded-lg border border-white/10 z-50 pointer-events-none"></div>
+                </div>
+                
+                {/* Right side - Content */}
+                <div className="p-8 flex flex-col justify-center">
+                  <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-[#33C3BD] to-[#0075FF] bg-clip-text text-transparent">
+                    Own Jesko AI Yourself
+                  </h2>
+                  
+                  <p className="text-gray-300 mb-6">
+                    Get exclusive access to Jesko AI technology for your business. Transform your customer interactions, 
+                    content creation, and more with cutting-edge AI solutions.
+                  </p>
+                  
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-3">
+                      <div className="text-[#33C3BD] mt-1">
+                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                      <span className="text-gray-300">White-label solution with your branding</span>
+                    </div>
+                    
+                    <div className="flex items-start gap-3">
+                      <div className="text-[#33C3BD] mt-1">
+                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                      <span className="text-gray-300">Dedicated technical support and training</span>
+                    </div>
+                    
+                    <div className="flex items-start gap-3">
+                      <div className="text-[#33C3BD] mt-1">
+                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                      <span className="text-gray-300">Custom integration with your existing platforms</span>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-8">
+                    <a href="/own-your-ai" className="w-full relative group overflow-hidden inline-block">
+                      {/* Button background with animated gradient */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-[#33C3BD] via-[#2A9ED5] to-[#0075FF] group-hover:via-[#0075FF] group-hover:to-[#33C3BD] bg-size-200 animate-gradient-x"></div>
+                      
+                      {/* Shine effect */}
+                      <div className="absolute inset-0 opacity-0 group-hover:opacity-20 bg-white blur-sm transform -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                      
+                      {/* Button content */}
+                      <div className="relative py-4 px-6 bg-[#0A0F16]/10 backdrop-blur-sm border border-white/10 rounded-lg flex items-center justify-center">
+                        <span className="text-white font-medium">Become a Partner</span>
+                      </div>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
