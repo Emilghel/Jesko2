@@ -391,73 +391,360 @@ export const insertStockVideoSchema = createInsertSchema(stockVideos).omit({
 export type InsertStockVideo = z.infer<typeof insertStockVideoSchema>;
 export type StockVideo = typeof stockVideos.$inferSelect;
 
-// Video History table to store user-generated videos
-export const videoHistory = pgTable("video_history", {
+// Partners table to track users who can refer others
+export const partners = pgTable("partners", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id).notNull(),
-  videoUrl: text("video_url").notNull(),
-  thumbnailUrl: text("thumbnail_url").notNull(),
-  prompt: text("prompt").notNull(),
-  modelVersion: text("model_version").notNull().default("gen-2"),
-  aspectRatio: text("aspect_ratio").notNull().default("16:9"),
-  duration: integer("duration").notNull().default(3), // in seconds
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  // Additional metadata
-  motionStrength: doublePrecision("motion_strength"),
-  sourceImageUrl: text("source_image_url"),
-  isPublic: boolean("is_public").default(false),
-  isInStockLibrary: boolean("is_in_stock_library").default(false),
-  stockVideoId: integer("stock_video_id").references(() => stockVideos.id),
+  user_id: integer("user_id").references(() => users.id).notNull().unique(),
+  company_name: text("company_name").notNull(),
+  referral_code: text("referral_code").notNull().unique(),
+  commission_rate: doublePrecision("commission_rate").default(0.10), // 10% by default
+  status: text("status").notNull().default("PENDING"), // PENDING, ACTIVE, SUSPENDED
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  website: text("website"),
+  logo_url: text("logo_url"),
+  contact_email: text("contact_email"),
+  contact_phone: text("contact_phone"),
+  total_referrals: integer("total_referrals").default(0),
+  total_earnings: doublePrecision("total_earnings").default(0),
+  total_withdrawals: doublePrecision("total_withdrawals").default(0),
+  available_balance: doublePrecision("available_balance").default(0),
+  tier: text("tier").default("BASIC"), // BASIC, SILVER, GOLD, PLATINUM
+  notes: text("notes"),
+  last_payment_date: timestamp("last_payment_date"),
+  country: text("country"),
+  tax_id: text("tax_id"),
 });
 
-export const insertVideoHistorySchema = createInsertSchema(videoHistory).omit({
-  id: true,
-  createdAt: true,
+export const insertPartnerSchema = createInsertSchema(partners).pick({
+  user_id: true,
+  company_name: true,
+  referral_code: true,
+  commission_rate: true,
+  status: true,
+  website: true,
+  logo_url: true,
+  contact_email: true,
+  contact_phone: true,
+  tier: true,
+  notes: true,
+  country: true,
+  tax_id: true,
 });
 
-export type InsertVideoHistory = z.infer<typeof insertVideoHistorySchema>;
-export type VideoHistory = typeof videoHistory.$inferSelect;
+export type InsertPartner = z.infer<typeof insertPartnerSchema>;
+export type Partner = typeof partners.$inferSelect;
 
-// Calendar Integration Tables
-export const calendarIntegrations = pgTable("calendar_integrations", {
+// User referrals table to track where users came from
+export const userReferrals = pgTable("user_referrals", {
+  id: serial("id").primaryKey(),
+  user_id: integer("user_id").references(() => users.id).notNull().unique(),
+  partner_id: integer("partner_id").references(() => partners.id),
+  referral_code: text("referral_code").notNull(),
+  signup_date: timestamp("signup_date").defaultNow().notNull(),
+  first_purchase_date: timestamp("first_purchase_date"),
+  total_spend: doublePrecision("total_spend").default(0),
+  commission_paid: doublePrecision("commission_paid").default(0),
+  status: text("status").default("ACTIVE"), // ACTIVE, INACTIVE, FRAUD
+});
+
+export const insertUserReferralSchema = createInsertSchema(userReferrals).pick({
+  user_id: true,
+  partner_id: true,
+  referral_code: true,
+  first_purchase_date: true,
+  total_spend: true,
+  commission_paid: true,
+  status: true,
+});
+
+export type InsertUserReferral = z.infer<typeof insertUserReferralSchema>;
+export type UserReferral = typeof userReferrals.$inferSelect;
+
+// Partner payouts table to track partner payments
+export const partnerPayouts = pgTable("partner_payouts", {
+  id: serial("id").primaryKey(),
+  partner_id: integer("partner_id").references(() => partners.id).notNull(),
+  amount: doublePrecision("amount").notNull(),
+  status: text("status").notNull().default("PENDING"), // PENDING, PROCESSING, COMPLETED, FAILED
+  payment_method: text("payment_method").notNull(), // PAYPAL, BANK_TRANSFER, etc.
+  transaction_id: text("transaction_id"),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  processed_at: timestamp("processed_at"),
+  notes: text("notes"),
+  payment_details: text("payment_details"), // JSON with payment details
+});
+
+export const insertPartnerPayoutSchema = createInsertSchema(partnerPayouts).pick({
+  partner_id: true,
+  amount: true,
+  status: true,
+  payment_method: true,
+  transaction_id: true,
+  notes: true,
+  payment_details: true,
+});
+
+export type InsertPartnerPayout = z.infer<typeof insertPartnerPayoutSchema>;
+export type PartnerPayout = typeof partnerPayouts.$inferSelect;
+
+// Partner tokens and access tokens
+export const partnerTokens = pgTable("partner_tokens", {
+  id: serial("id").primaryKey(),
+  partner_id: integer("partner_id").references(() => partners.id).notNull(),
+  token: text("token").notNull().unique(),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  expires_at: timestamp("expires_at"),
+  last_used_at: timestamp("last_used_at"),
+  is_active: boolean("is_active").default(true),
+  token_type: text("token_type").default("API_KEY"), // API_KEY, ACCESS_TOKEN, etc.
+  permissions: text("permissions").default("[]"), // JSON array of permission strings
+  ip_restriction: text("ip_restriction"), // Optional IP restriction
+});
+
+export const insertPartnerTokenSchema = createInsertSchema(partnerTokens).pick({
+  partner_id: true,
+  token: true,
+  expires_at: true,
+  is_active: true,
+  token_type: true,
+  permissions: true,
+  ip_restriction: true,
+});
+
+export type InsertPartnerToken = z.infer<typeof insertPartnerTokenSchema>;
+export type PartnerToken = typeof partnerTokens.$inferSelect;
+
+// Discount codes for promo campaigns
+export const discountCodes = pgTable("discount_codes", {
+  id: serial("id").primaryKey(),
+  code: text("code").notNull().unique(),
+  discount_percent: integer("discount_percent").notNull().default(10),
+  max_uses: integer("max_uses").default(100),
+  current_uses: integer("current_uses").default(0),
+  expires_at: timestamp("expires_at"),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  is_active: boolean("is_active").default(true),
+  description: text("description"),
+  partner_id: integer("partner_id").references(() => partners.id), // Optional link to a partner
+  min_purchase_amount: integer("min_purchase_amount").default(0), // Minimum purchase amount in coins
+  campaign_name: text("campaign_name"), // For grouping discount codes
+});
+
+export const insertDiscountCodeSchema = createInsertSchema(discountCodes).pick({
+  code: true,
+  discount_percent: true,
+  max_uses: true,
+  expires_at: true,
+  is_active: true,
+  description: true,
+  partner_id: true,
+  min_purchase_amount: true,
+  campaign_name: true,
+});
+
+export type InsertDiscountCode = z.infer<typeof insertDiscountCodeSchema>;
+export type DiscountCode = typeof discountCodes.$inferSelect;
+
+// Used discount codes to track which users have used which codes
+export const usedDiscountCodes = pgTable("used_discount_codes", {
   id: serial("id").primaryKey(),
   user_id: integer("user_id").references(() => users.id).notNull(),
-  provider: text("provider").notNull(), // 'google', 'calendly', etc.
-  access_token: text("access_token"),
-  refresh_token: text("refresh_token"),
-  token_expiry: timestamp("token_expiry"),
-  calendar_id: text("calendar_id"), // Primary calendar ID
-  email: text("email").notNull(), // Email associated with the calendar
+  discount_code_id: integer("discount_code_id").references(() => discountCodes.id).notNull(),
+  used_at: timestamp("used_at").defaultNow().notNull(),
+  transaction_id: integer("transaction_id").references(() => coinTransactions.id),
+  discount_amount: integer("discount_amount").notNull(), // Amount discounted in coins
+  purchase_amount: integer("purchase_amount").notNull(), // Total amount of purchase in coins
+});
+
+export const insertUsedDiscountCodeSchema = createInsertSchema(usedDiscountCodes).pick({
+  user_id: true,
+  discount_code_id: true,
+  transaction_id: true,
+  discount_amount: true,
+  purchase_amount: true,
+});
+
+export type InsertUsedDiscountCode = z.infer<typeof insertUsedDiscountCodeSchema>;
+export type UsedDiscountCode = typeof usedDiscountCodes.$inferSelect;
+
+// Lead table for managing contacts
+export const leads = pgTable("leads", {
+  id: serial("id").primaryKey(),
+  user_id: integer("user_id").references(() => users.id).notNull(),
+  first_name: text("first_name").notNull(),
+  last_name: text("last_name"),
+  email: text("email"),
+  phone_number: text("phone_number"),
+  company: text("company"),
+  job_title: text("job_title"),
+  source: text("source").default("MANUAL"), // MANUAL, IMPORT, API, etc.
+  status: text("status").default("NEW"), // NEW, CONTACTED, QUALIFIED, CUSTOMER, etc.
+  notes: text("notes"),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  updated_at: timestamp("updated_at").defaultNow().notNull(),
+  last_contacted: timestamp("last_contacted"),
+  custom_fields: text("custom_fields").default("{}"), // JSON object with custom fields
+  tags: text("tags").array(),
+});
+
+export const insertLeadSchema = createInsertSchema(leads).pick({
+  user_id: true,
+  first_name: true,
+  last_name: true,
+  email: true,
+  phone_number: true,
+  company: true,
+  job_title: true,
+  source: true,
+  status: true,
+  notes: true,
+  custom_fields: true,
+  tags: true,
+});
+
+export type InsertLead = z.infer<typeof insertLeadSchema>;
+export type Lead = typeof leads.$inferSelect;
+
+// Lead calls for tracking calls to leads
+export const leadCalls = pgTable("lead_calls", {
+  id: serial("id").primaryKey(),
+  lead_id: integer("lead_id").references(() => leads.id).notNull(),
+  user_id: integer("user_id").references(() => users.id).notNull(),
+  call_time: timestamp("call_time").defaultNow().notNull(),
+  duration: integer("duration"), // in seconds
+  outcome: text("outcome"), // ANSWERED, VOICEMAIL, NO_ANSWER, etc.
+  notes: text("notes"),
+  recording_url: text("recording_url"),
+  agent_id: integer("agent_id").references(() => userAgents.id), // If call made by AI agent
+  transcript: text("transcript"),
+  call_type: text("call_type").default("OUTBOUND"), // OUTBOUND, INBOUND, AUTOMATED
+  call_sid: text("call_sid"), // For tracking Twilio calls
+});
+
+export const insertLeadCallSchema = createInsertSchema(leadCalls).pick({
+  lead_id: true,
+  user_id: true,
+  call_time: true,
+  duration: true,
+  outcome: true,
+  notes: true,
+  recording_url: true,
+  agent_id: true,
+  transcript: true,
+  call_type: true,
+  call_sid: true,
+});
+
+export type InsertLeadCall = z.infer<typeof insertLeadCallSchema>;
+export type LeadCall = typeof leadCalls.$inferSelect;
+
+// Custom automated call settings
+export const automatedCallSettings = pgTable("automated_call_settings", {
+  id: serial("id").primaryKey(),
+  user_id: integer("user_id").references(() => users.id).notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  agent_id: integer("agent_id").references(() => userAgents.id).notNull(),
+  leads_filter: text("leads_filter").default("{}"), // JSON criteria for selecting leads
+  schedule_type: text("schedule_type").default("ONE_TIME"), // ONE_TIME, DAILY, WEEKLY, MONTHLY
+  schedule_time: text("schedule_time"), // "HH:MM" format for daily/weekly/monthly
+  schedule_days: text("schedule_days").array(), // Array of days of week for weekly: ["MON", "WED", "FRI"]
+  next_run_time: timestamp("next_run_time"),
+  is_active: boolean("is_active").default(true),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  updated_at: timestamp("updated_at").defaultNow().notNull(),
+  max_calls_per_run: integer("max_calls_per_run").default(10),
+  call_delay: integer("call_delay").default(60), // seconds between calls
+  timezone: text("timezone").default("UTC"),
+});
+
+export const insertAutomatedCallSettingsSchema = createInsertSchema(automatedCallSettings).pick({
+  user_id: true,
+  name: true,
+  description: true,
+  agent_id: true,
+  leads_filter: true,
+  schedule_type: true,
+  schedule_time: true,
+  schedule_days: true,
+  next_run_time: true,
+  is_active: true,
+  max_calls_per_run: true,
+  call_delay: true,
+  timezone: true,
+});
+
+export type InsertAutomatedCallSettings = z.infer<typeof insertAutomatedCallSettingsSchema>;
+export type AutomatedCallSettings = typeof automatedCallSettings.$inferSelect;
+
+// Automated call runs to track batches of automated calls
+export const automatedCallRuns = pgTable("automated_call_runs", {
+  id: serial("id").primaryKey(),
+  settings_id: integer("settings_id").references(() => automatedCallSettings.id).notNull(),
+  start_time: timestamp("start_time").defaultNow().notNull(),
+  end_time: timestamp("end_time"),
+  status: text("status").default("RUNNING"), // SCHEDULED, RUNNING, COMPLETED, FAILED, CANCELLED
+  total_calls: integer("total_calls").default(0),
+  successful_calls: integer("successful_calls").default(0),
+  failed_calls: integer("failed_calls").default(0),
+  error_message: text("error_message"),
+  run_log: text("run_log").default("[]"), // JSON array of log messages
+});
+
+export const insertAutomatedCallRunSchema = createInsertSchema(automatedCallRuns).pick({
+  settings_id: true,
+  end_time: true,
+  status: true,
+  total_calls: true,
+  successful_calls: true,
+  failed_calls: true,
+  error_message: true,
+  run_log: true,
+});
+
+export type InsertAutomatedCallRun = z.infer<typeof insertAutomatedCallRunSchema>;
+export type AutomatedCallRun = typeof automatedCallRuns.$inferSelect;
+
+// SEO Keywords for the app
+export const seoKeywords = pgTable("seo_keywords", {
+  id: serial("id").primaryKey(),
+  keyword: text("keyword").notNull().unique(),
+  relevance_score: integer("relevance_score").default(50), // 0-100 relevance score
+  search_volume: integer("search_volume"),
   created_at: timestamp("created_at").defaultNow().notNull(),
   updated_at: timestamp("updated_at").defaultNow().notNull(),
   is_active: boolean("is_active").default(true),
-  settings: jsonb("settings").default({}), // JSON for provider-specific settings
-  last_synced: timestamp("last_synced"),
-  display_name: text("display_name"), // User-friendly name for the calendar
+  category: text("category").default("general"),
+  notes: text("notes"),
 });
 
-// Scheduled appointments created by AI agents 
-export const scheduledAppointments = pgTable("scheduled_appointments", {
+export const insertSeoKeywordSchema = createInsertSchema(seoKeywords).pick({
+  keyword: true,
+  relevance_score: true,
+  search_volume: true,
+  is_active: true,
+  category: true,
+  notes: true,
+});
+
+export type InsertSeoKeyword = z.infer<typeof insertSeoKeywordSchema>;
+export type SeoKeyword = typeof seoKeywords.$inferSelect;
+
+// User calendar integrations
+export const calendarIntegrations = pgTable("calendar_integrations", {
   id: serial("id").primaryKey(),
   user_id: integer("user_id").references(() => users.id).notNull(),
-  agent_id: integer("agent_id").references(() => userAgents.id).notNull(),
-  calendar_integration_id: integer("calendar_integration_id").references(() => calendarIntegrations.id).notNull(),
-  lead_id: integer("lead_id"), // Optional reference to a lead
-  title: text("title").notNull(),
-  description: text("description"),
-  start_time: timestamp("start_time").notNull(),
-  end_time: timestamp("end_time").notNull(),
-  status: text("status").notNull().default("scheduled"), // scheduled, completed, cancelled, rescheduled
-  calendar_event_id: text("calendar_event_id"), // ID of the event in the external calendar
-  meeting_link: text("meeting_link"), // For virtual meetings
-  location: text("location"), // For in-person meetings
-  attendees: jsonb("attendees").default([]), // Array of attendee emails/info
-  reminders: jsonb("reminders").default([]), // Array of reminder settings
+  provider: text("provider").notNull(), // GOOGLE, OFFICE365, etc.
+  access_token: text("access_token").notNull(),
+  refresh_token: text("refresh_token"),
+  token_expires: timestamp("token_expires"),
+  calendar_id: text("calendar_id"),
+  calendar_name: text("calendar_name"),
   created_at: timestamp("created_at").defaultNow().notNull(),
   updated_at: timestamp("updated_at").defaultNow().notNull(),
-  created_during_call_sid: text("created_during_call_sid"), // Call where this appointment was created
-  notes: text("notes"), // Additional notes about the appointment
-  custom_data: jsonb("custom_data").default({}), // For any additional data
+  is_active: boolean("is_active").default(true),
+  scopes: text("scopes"), // Comma-separated list of granted scopes
+  last_synced: timestamp("last_synced"),
 });
 
 export const insertCalendarIntegrationSchema = createInsertSchema(calendarIntegrations).omit({
@@ -466,548 +753,34 @@ export const insertCalendarIntegrationSchema = createInsertSchema(calendarIntegr
   updated_at: true,
 });
 
-export const insertScheduledAppointmentSchema = createInsertSchema(scheduledAppointments).omit({
+export type InsertCalendarIntegration = z.infer<typeof insertCalendarIntegrationSchema>;
+export type CalendarIntegration = typeof calendarIntegrations.$inferSelect;
+
+// Calendar appointments
+export const appointments = pgTable("appointments", {
+  id: serial("id").primaryKey(),
+  user_id: integer("user_id").references(() => users.id).notNull(),
+  lead_id: integer("lead_id").references(() => leads.id),
+  title: text("title").notNull(),
+  description: text("description"),
+  start_time: timestamp("start_time").notNull(),
+  end_time: timestamp("end_time").notNull(),
+  location: text("location"),
+  status: text("status").default("SCHEDULED"), // SCHEDULED, COMPLETED, CANCELLED, RESCHEDULED
+  calendar_integration_id: integer("calendar_integration_id").references(() => calendarIntegrations.id),
+  external_event_id: text("external_event_id"), // ID in external calendar service
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  updated_at: timestamp("updated_at").defaultNow().notNull(),
+  reminder_sent: boolean("reminder_sent").default(false),
+  notes: text("notes"),
+  appointment_type: text("appointment_type").default("MEETING"), // MEETING, CALL, DEMO, etc.
+});
+
+export const insertAppointmentSchema = createInsertSchema(appointments).omit({
   id: true,
   created_at: true,
   updated_at: true,
 });
 
-export type InsertCalendarIntegration = z.infer<typeof insertCalendarIntegrationSchema>;
-export type CalendarIntegration = typeof calendarIntegrations.$inferSelect;
-export type InsertScheduledAppointment = z.infer<typeof insertScheduledAppointmentSchema>;
-export type ScheduledAppointment = typeof scheduledAppointments.$inferSelect;
-
-// Enum for calendar providers
-export enum CalendarProvider {
-  GOOGLE = "google",
-  CALENDLY = "calendly",
-  OUTLOOK = "outlook",
-}
-
-// Enum for appointment status
-export enum AppointmentStatus {
-  SCHEDULED = "scheduled",
-  COMPLETED = "completed",
-  CANCELLED = "cancelled",
-  RESCHEDULED = "rescheduled",
-  PENDING = "pending", // Waiting for confirmation
-}
-
-// Partner System Tables
-export const partners = pgTable("partners", {
-  id: serial("id").primaryKey(),
-  user_id: integer("user_id").references(() => users.id).notNull().unique(),
-  company_name: text("company_name").notNull(),
-  contact_name: text("contact_name").notNull(),
-  referral_code: text("referral_code").notNull().unique(),
-  commission_rate: doublePrecision("commission_rate").notNull().default(0.2), // 20% commission by default
-  earnings_balance: doublePrecision("earnings_balance").notNull().default(0),
-  total_earnings: doublePrecision("total_earnings").notNull().default(0),
-  status: text("status").notNull().default("pending"), // pending, active, suspended
-  created_at: timestamp("created_at").defaultNow().notNull(),
-  updated_at: timestamp("updated_at").defaultNow().notNull(),
-  payment_info: json("payment_info"),
-  bio: text("bio"),
-  website: text("website"),
-  logo_url: text("logo_url"),
-  stripe_account_id: text("stripe_account_id"), // Stripe connected account ID for partner payouts
-});
-
-export const referrals = pgTable("referrals", {
-  id: serial("id").primaryKey(),
-  partner_id: integer("partner_id").references(() => partners.id).notNull(),
-  referred_user_id: integer("referred_user_id").references(() => users.id).notNull().unique(),
-  referral_code: text("referral_code").notNull(), // Store which referral code was used
-  status: text("status").notNull().default("active"), // active, inactive
-  created_at: timestamp("created_at").defaultNow().notNull(),
-  first_purchase_date: timestamp("first_purchase_date"),
-  total_purchases: doublePrecision("total_purchases").notNull().default(0),
-});
-
-export const partnerPayments = pgTable("partner_payments", {
-  id: serial("id").primaryKey(),
-  partner_id: integer("partner_id").references(() => partners.id).notNull(),
-  amount: doublePrecision("amount").notNull(),
-  payment_date: timestamp("payment_date").defaultNow().notNull(),
-  status: text("status").notNull().default("pending"), // pending, completed, failed
-  payment_method: text("payment_method").notNull(),
-  transaction_id: text("transaction_id"),
-  notes: text("notes"),
-});
-
-export const partnerCommissions = pgTable("partner_commissions", {
-  id: serial("id").primaryKey(),
-  partner_id: integer("partner_id").references(() => partners.id).notNull(),
-  referral_id: integer("referral_id").references(() => referrals.id),
-  transaction_id: text("transaction_id").notNull(), // Now a string to support both coin transaction IDs and Stripe IDs
-  amount: doublePrecision("amount").notNull(),
-  commission_amount: doublePrecision("commission_amount").notNull(),
-  status: text("status").notNull().default("pending"), // pending, paid, void
-  created_at: timestamp("created_at").defaultNow().notNull(),
-  paid_date: timestamp("paid_date"),
-  payment_id: integer("payment_id").references(() => partnerPayments.id),
-  payment_type: text("payment_type").default("coin").notNull(), // coin, stripe, paypal
-  description: text("description"),
-});
-
-// Insert Schemas
-export const insertPartnerSchema = createInsertSchema(partners).pick({
-  user_id: true,
-  company_name: true,
-  contact_name: true,
-  referral_code: true,
-  commission_rate: true,
-  status: true,
-  payment_info: true,
-  bio: true,
-  website: true,
-  logo_url: true,
-});
-
-export const insertReferralSchema = createInsertSchema(referrals).pick({
-  partner_id: true,
-  referred_user_id: true,
-  referral_code: true,
-  status: true,
-  total_purchases: true,
-});
-
-export const insertPartnerPaymentSchema = createInsertSchema(partnerPayments).pick({
-  partner_id: true,
-  amount: true,
-  status: true,
-  payment_method: true,
-  transaction_id: true,
-  notes: true,
-});
-
-export const insertPartnerCommissionSchema = createInsertSchema(partnerCommissions).pick({
-  partner_id: true,
-  referral_id: true,
-  transaction_id: true,
-  amount: true,
-  commission_amount: true,
-  status: true,
-  payment_id: true,
-  payment_type: true,
-  description: true,
-});
-
-// Table for tracking referral link clicks
-export const referralClicks = pgTable("referral_clicks", {
-  id: serial("id").primaryKey(),
-  referral_code: text("referral_code").notNull(),
-  ip_address: text("ip_address"),
-  user_agent: text("user_agent"),
-  timestamp: timestamp("timestamp").defaultNow().notNull(),
-  converted: boolean("converted").default(false).notNull(),
-  conversion_timestamp: timestamp("conversion_timestamp"),
-  conversion_user_id: integer("conversion_user_id").references(() => users.id),
-  base_url: text("base_url").notNull(),
-  custom_url: text("custom_url"),
-  partner_id: integer("partner_id").references(() => partners.id).notNull(),
-  utm_source: text("utm_source"),
-  utm_medium: text("utm_medium"),
-  utm_campaign: text("utm_campaign"),
-  utm_term: text("utm_term"),
-  utm_content: text("utm_content"),
-  referrer: text("referrer"),
-});
-
-// Table for saved referral links
-export const savedReferralLinks = pgTable("saved_referral_links", {
-  id: serial("id").primaryKey(),
-  partner_id: integer("partner_id").references(() => partners.id).notNull(),
-  name: text("name").notNull(),
-  base_url: text("base_url").notNull(),
-  custom_url: text("custom_url"),
-  full_url: text("full_url").notNull(),
-  created_at: timestamp("created_at").defaultNow().notNull(),
-  campaign: text("campaign"),
-  utm_source: text("utm_source"),
-  utm_medium: text("utm_medium"),
-  utm_campaign: text("utm_campaign"),
-  utm_term: text("utm_term"),
-  utm_content: text("utm_content"),
-  click_count: integer("click_count").default(0).notNull(),
-  conversion_count: integer("conversion_count").default(0).notNull(),
-  last_used: timestamp("last_used"),
-});
-
-// Table for tracking referral conversions
-export const referralConversions = pgTable("referral_conversions", {
-  id: serial("id").primaryKey(),
-  partner_id: integer("partner_id").references(() => partners.id).notNull(),
-  user_id: integer("user_id").references(() => users.id).notNull(),
-  referral_code: text("referral_code").notNull(),
-  conversion_type: text("conversion_type").notNull(), // signup, purchase, etc.
-  timestamp: timestamp("timestamp").defaultNow().notNull(),
-  value: doublePrecision("value").default(0), // monetary value if applicable
-  utm_source: text("utm_source"),
-  utm_medium: text("utm_medium"),
-  utm_campaign: text("utm_campaign"),
-  ip_address: text("ip_address"), // hashed IP to correlate with click
-  conversion_page: text("conversion_page"), // page where conversion occurred
-  referrer: text("referrer"), // referrer at time of conversion
-});
-
-export const insertReferralClickSchema = createInsertSchema(referralClicks).pick({
-  referral_code: true,
-  ip_address: true,
-  user_agent: true,
-  base_url: true,
-  custom_url: true,
-  partner_id: true,
-  utm_source: true,
-  utm_medium: true,
-  utm_campaign: true,
-  utm_term: true,
-  utm_content: true,
-  referrer: true,
-});
-
-export const insertReferralConversionSchema = createInsertSchema(referralConversions).pick({
-  partner_id: true,
-  user_id: true,
-  referral_code: true,
-  conversion_type: true,
-  value: true,
-  utm_source: true,
-  utm_medium: true,
-  utm_campaign: true,
-  ip_address: true,
-  conversion_page: true,
-  referrer: true,
-});
-
-export const insertSavedReferralLinkSchema = createInsertSchema(savedReferralLinks).pick({
-  partner_id: true,
-  name: true,
-  base_url: true,
-  custom_url: true,
-  full_url: true,
-  campaign: true,
-  utm_source: true,
-  utm_medium: true,
-  utm_campaign: true,
-  utm_term: true,
-  utm_content: true,
-});
-
-// Types
-export type InsertPartner = z.infer<typeof insertPartnerSchema>;
-export type Partner = typeof partners.$inferSelect;
-
-export type InsertReferral = z.infer<typeof insertReferralSchema>;
-export type Referral = typeof referrals.$inferSelect;
-
-export type InsertReferralClick = z.infer<typeof insertReferralClickSchema>;
-export type ReferralClick = typeof referralClicks.$inferSelect;
-
-export type InsertReferralConversion = z.infer<typeof insertReferralConversionSchema>;
-export type ReferralConversion = typeof referralConversions.$inferSelect;
-
-export type InsertSavedReferralLink = z.infer<typeof insertSavedReferralLinkSchema>;
-export type SavedReferralLink = typeof savedReferralLinks.$inferSelect;
-
-export type InsertPartnerPayment = z.infer<typeof insertPartnerPaymentSchema>;
-export type PartnerPayment = typeof partnerPayments.$inferSelect;
-
-export type InsertPartnerCommission = z.infer<typeof insertPartnerCommissionSchema>;
-export type PartnerCommission = typeof partnerCommissions.$inferSelect;
-
-// Partner status enum
-export enum PartnerStatus {
-  PENDING = "pending",
-  ACTIVE = "active",
-  SUSPENDED = "suspended",
-}
-
-// Referral status enum
-export enum ReferralStatus {
-  ACTIVE = "active",
-  INACTIVE = "inactive",
-}
-
-// Payment status enum
-export enum PaymentStatus {
-  PENDING = "pending",
-  COMPLETED = "completed",
-  FAILED = "failed",
-  APPROVED = "approved",
-  REJECTED = "rejected",
-  PAID = "paid"
-}
-
-// Commission status enum
-export enum CommissionStatus {
-  PENDING = "pending",
-  PAID = "paid",
-  VOID = "void",
-}
-
-// Type alias for partner commission status
-export type PartnerCommissionStatus = "pending" | "paid" | "void";
-
-// Payment type enum
-export enum PaymentType {
-  COIN = "coin",
-  STRIPE = "stripe",
-  PAYPAL = "paypal",
-}
-
-// Leads Management
-export const leads = pgTable("leads", {
-  id: serial("id").primaryKey(),
-  user_id: integer("user_id").references(() => users.id).notNull(),
-  full_name: text("full_name").notNull(),
-  phone_number: text("phone_number").notNull(),
-  email: text("email"),
-  source: text("source").default("manual"), // manual, excel, google_sheets, etc.
-  status: text("status").default("new").notNull(), // new, contacted, qualified, converted, rejected
-  notes: text("notes"),
-  created_at: timestamp("created_at").defaultNow().notNull(),
-  updated_at: timestamp("updated_at").defaultNow().notNull(),
-  last_contacted: timestamp("last_contacted"),
-  tags: text("tags").array(),
-});
-
-// Insert Schema for Leads
-export const insertLeadSchema = createInsertSchema(leads).pick({
-  user_id: true,
-  full_name: true,
-  phone_number: true,
-  email: true,
-  source: true,
-  status: true,
-  notes: true,
-  tags: true,
-});
-
-// Types for Leads
-export type InsertLead = z.infer<typeof insertLeadSchema>;
-export type Lead = typeof leads.$inferSelect;
-
-// Lead status enum
-export enum LeadStatus {
-  NEW = "new",
-  CONTACTED = "contacted",
-  QUALIFIED = "qualified",
-  CONVERTED = "converted",
-  REJECTED = "rejected",
-}
-
-// Automated call settings and configurations
-export const automatedCallSettings = pgTable("automated_call_settings", {
-  id: serial("id").primaryKey(),
-  user_id: integer("user_id").references(() => users.id).notNull(),
-  name: text("name").notNull(),
-  enabled: boolean("enabled").default(true).notNull(),
-  agent_id: integer("agent_id").references(() => userAgents.id).notNull(),
-  lead_statuses: text("lead_statuses").array().default(['new']).notNull(), // Which lead statuses to call
-  frequency: text("frequency").default("daily").notNull(), // daily, weekly, once
-  run_time: text("run_time").default("09:00").notNull(), // Time to run the automation (24h format)
-  run_days: text("run_days").array(), // For weekly: which days to run (mon, tue, etc.)
-  max_calls_per_run: integer("max_calls_per_run").default(5).notNull(),
-  created_at: timestamp("created_at").defaultNow().notNull(),
-  updated_at: timestamp("updated_at").defaultNow().notNull(),
-  last_run: timestamp("last_run"),
-  next_run: timestamp("next_run"),
-  active_campaign: boolean("active_campaign").default(false).notNull(),
-});
-
-// Call automation runs and logs
-export const automatedCallRuns = pgTable("automated_call_runs", {
-  id: serial("id").primaryKey(),
-  settings_id: integer("settings_id").references(() => automatedCallSettings.id).notNull(),
-  start_time: timestamp("start_time").defaultNow().notNull(),
-  end_time: timestamp("end_time"),
-  status: text("status").default("running").notNull(), // running, completed, failed
-  leads_processed: integer("leads_processed").default(0).notNull(),
-  calls_initiated: integer("calls_initiated").default(0).notNull(),
-  calls_connected: integer("calls_connected").default(0).notNull(),
-  calls_failed: integer("calls_failed").default(0).notNull(),
-  error_message: text("error_message"),
-});
-
-// Insert Schema for Automated Call Settings
-export const insertAutomatedCallSettingsSchema = createInsertSchema(automatedCallSettings).pick({
-  user_id: true,
-  name: true,
-  enabled: true,
-  agent_id: true,
-  lead_statuses: true,
-  frequency: true,
-  run_time: true,
-  run_days: true,
-  max_calls_per_run: true,
-  active_campaign: true,
-});
-
-// Insert Schema for Automated Call Runs
-export const insertAutomatedCallRunsSchema = createInsertSchema(automatedCallRuns).pick({
-  settings_id: true,
-  status: true,
-  leads_processed: true,
-  calls_initiated: true,
-  calls_connected: true,
-  calls_failed: true,
-  error_message: true,
-});
-
-// Types for Automated Call Settings
-export type InsertAutomatedCallSettings = z.infer<typeof insertAutomatedCallSettingsSchema>;
-export type AutomatedCallSettings = typeof automatedCallSettings.$inferSelect;
-
-// Types for Automated Call Runs
-export type InsertAutomatedCallRun = z.infer<typeof insertAutomatedCallRunsSchema>;
-export type AutomatedCallRun = typeof automatedCallRuns.$inferSelect;
-
-// Automation frequency enum
-export enum AutomationFrequency {
-  DAILY = "daily",
-  WEEKLY = "weekly",
-  ONCE = "once",
-}
-
-// Automation status enum
-export enum AutomationStatus {
-  RUNNING = "running",
-  COMPLETED = "completed",
-  FAILED = "failed",
-}
-
-// Lead calls table to store call history with transcripts for each lead
-export const leadCalls = pgTable("lead_calls", {
-  id: serial("id").primaryKey(),
-  lead_id: integer("lead_id").references(() => leads.id).notNull(),
-  call_sid: text("call_sid").notNull().unique(),
-  agent_id: integer("agent_id").references(() => userAgents.id).notNull(),
-  start_time: timestamp("start_time").defaultNow().notNull(),
-  end_time: timestamp("end_time"),
-  duration: integer("duration"), // in seconds
-  status: text("status").notNull().default(CallStatus.INITIATED),
-  recording_url: text("recording_url"),
-  recording_sid: text("recording_sid"),
-  transcript: text("transcript"),
-  call_summary: text("call_summary"), // AI-generated summary of the call
-  call_notes: text("call_notes"), // Additional notes about the call
-  created_at: timestamp("created_at").defaultNow().notNull(),
-});
-
-// Insert Schema for Lead Calls
-export const insertLeadCallSchema = createInsertSchema(leadCalls).pick({
-  lead_id: true,
-  call_sid: true,
-  agent_id: true,
-  status: true,
-  recording_url: true,
-  recording_sid: true,
-  transcript: true,
-  call_summary: true,
-  call_notes: true,
-});
-
-// Types for Lead Calls
-export type InsertLeadCall = z.infer<typeof insertLeadCallSchema>;
-export type LeadCall = typeof leadCalls.$inferSelect;
-
-// SEO Keyword Tables
-
-// SEO Keywords table
-export const seoKeywords = pgTable("seo_keywords", {
-  id: serial("id").primaryKey(),
-  partnerId: integer("partner_id").references(() => partners.id).notNull(),
-  text: text("text").notNull(),
-  searchVolume: integer("search_volume"),
-  difficulty: integer("difficulty"),
-  status: text("status").notNull().default('new'),  // 'new', 'in-progress', 'published'
-  notes: text("notes"),
-  dateAdded: timestamp("date_added").defaultNow().notNull(),
-  tags: text("tags").array(),
-});
-
-// Content Links table for SEO Keywords
-export const contentLinks = pgTable("content_links", {
-  id: serial("id").primaryKey(),
-  keywordId: integer("keyword_id").references(() => seoKeywords.id).notNull(),
-  url: text("url").notNull(),
-  title: text("title").notNull(),
-  publishDate: timestamp("publish_date").defaultNow().notNull(),
-  notes: text("notes"),
-  lastUpdated: timestamp("last_updated").defaultNow().notNull(),
-  clicks: integer("clicks").default(0),
-  impressions: integer("impressions").default(0),
-  position: doublePrecision("position"),
-});
-
-// Content Performance History table for tracking changes over time
-export const contentPerformanceHistory = pgTable("content_performance_history", {
-  id: serial("id").primaryKey(),
-  content_link_id: integer("content_link_id").references(() => contentLinks.id).notNull(),
-  date: timestamp("date").defaultNow().notNull(),
-  clicks: integer("clicks").default(0),
-  position: doublePrecision("position"),
-});
-
-// Content Link Click Details - for more detailed tracking of each click
-export const contentLinkClicks = pgTable("content_link_clicks", {
-  id: serial("id").primaryKey(),
-  content_link_id: integer("content_link_id").references(() => contentLinks.id).notNull(),
-  timestamp: timestamp("timestamp").defaultNow().notNull(),
-  ip_address: text("ip_address"),
-  user_agent: text("user_agent"),
-  referrer: text("referrer"),
-  utm_source: text("utm_source"),
-  utm_medium: text("utm_medium"),
-  utm_campaign: text("utm_campaign"),
-  utm_term: text("utm_term"),
-  utm_content: text("utm_content"),
-  country: text("country"),
-  city: text("city"),
-  device_type: text("device_type"), // desktop, mobile, tablet
-  browser: text("browser"),
-  os: text("os"),
-});
-
-// Create insert schemas
-export const insertSeoKeywordSchema = createInsertSchema(seoKeywords).omit({
-  id: true,
-  dateAdded: true,
-});
-
-export const insertContentLinkSchema = createInsertSchema(contentLinks).omit({
-  id: true,
-  publishDate: true,
-  lastUpdated: true,
-});
-
-export const insertContentPerformanceHistorySchema = createInsertSchema(contentPerformanceHistory).omit({
-  id: true,
-  date: true,
-});
-
-export const insertContentLinkClickSchema = createInsertSchema(contentLinkClicks).omit({
-  id: true,
-  timestamp: true,
-});
-
-// Define types
-export type InsertSeoKeyword = z.infer<typeof insertSeoKeywordSchema>;
-export type SeoKeyword = typeof seoKeywords.$inferSelect;
-
-export type InsertContentLink = z.infer<typeof insertContentLinkSchema>;
-export type ContentLink = typeof contentLinks.$inferSelect;
-
-export type InsertContentPerformanceHistory = z.infer<typeof insertContentPerformanceHistorySchema>;
-export type ContentPerformanceHistory = typeof contentPerformanceHistory.$inferSelect;
-
-export type InsertContentLinkClick = z.infer<typeof insertContentLinkClickSchema>;
-export type ContentLinkClick = typeof contentLinkClicks.$inferSelect;
-
-// SEO Keyword Status Enum
-export enum SeoKeywordStatus {
-  NEW = "new",
-  IN_PROGRESS = "in-progress",
-  PUBLISHED = "published",
-}
+export type InsertAppointment = z.infer<typeof insertAppointmentSchema>;
+export type Appointment = typeof appointments.$inferSelect;
