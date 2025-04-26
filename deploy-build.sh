@@ -1,38 +1,35 @@
 #!/bin/bash
+set -e
 
-# Enhanced Deployment Build Script
-# This script handles the build process with increased memory allocation
+# Install dependencies
+echo "Installing dependencies..."
+npm install
 
-# Display memory information before build
-echo "💾 Memory before build:"
-free -m
+# Create directories
+echo "Creating build directories..."
+mkdir -p dist
+mkdir -p dist/public
 
-# Set Node options for increased memory
-export NODE_OPTIONS="--max-old-space-size=4096"
+# Build frontend with simpler inline configuration (instead of using vite.config.ts)
+echo "Building frontend..."
+echo "import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+export default defineConfig({
+  plugins: [react()],
+  build: {
+    outDir: 'client/dist',
+    emptyOutDir: true,
+  },
+});" > simple-vite.config.js
 
-echo "🔧 Starting build with increased memory allocation (4GB)..."
+npx vite build --config simple-vite.config.js
 
-# Run the build commands
-echo "📦 Building client..."
-npx vite build
-
-# Check if client build was successful
-if [ $? -ne 0 ]; then
-  echo "❌ Client build failed!"
-  exit 1
-fi
-
-echo "📦 Building server..."
+# Build backend
+echo "Building backend..."
 npx esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
 
-# Check if server build was successful
-if [ $? -ne 0 ]; then
-  echo "❌ Server build failed!"
-  exit 1
-fi
+# Copy frontend assets
+echo "Copying assets..."
+cp -r client/dist/* dist/public/ || echo "Warning: No client build files found to copy"
 
-# Display memory information after build
-echo "💾 Memory after build:"
-free -m
-
-echo "✅ Build completed successfully!"
+echo "Build completed successfully!"
