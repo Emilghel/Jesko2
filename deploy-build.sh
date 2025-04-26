@@ -14,6 +14,12 @@ mkdir -p dist/public
 echo "Copying pre-built frontend files..."
 cp -r client/dist/* dist/public/
 
+# Copy static assets to ensure they're available in production
+echo "Copying additional static assets..."
+mkdir -p dist/public/static
+cp -r public/* dist/public/ 2>/dev/null || true
+cp -r static/* dist/public/static/ 2>/dev/null || true
+
 # Build backend (using production-server.ts instead of index.ts to avoid Vite dependencies)
 echo "Building backend using production server..."
 npx esbuild server/production-server.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/index.js
