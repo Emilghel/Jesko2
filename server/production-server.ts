@@ -11,6 +11,7 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import * as fs from 'fs';
 
 // Import core routes and middlewares
 import cookieParser from 'cookie-parser';
@@ -352,9 +353,14 @@ app.use(express.static(distPublicPath));
 app.use(express.static(clientDistPath));
 app.use(express.static(process.cwd()));
 
+// fs module is already imported at the top
+
 // Create a special endpoint to check if we can serve the index.html file
 app.get('/debug-index-location', (req, res) => {
-  let result = { found: false, checkedPaths: [] };
+  let result: { found: boolean; checkedPaths: string[]; foundAt?: string } = { 
+    found: false, 
+    checkedPaths: [] 
+  };
   
   // Check all possible index.html locations
   const possiblePaths = [

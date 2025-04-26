@@ -16,15 +16,22 @@ mkdir -p dist/public
 mkdir -p dist/public/static
 mkdir -p dist/public/temp
 
-# Copy pre-built frontend files from GitHub 
-echo "Copying pre-built frontend files..."
+# Build frontend directly during deployment
+echo "Building frontend with increased memory limit..."
+NODE_OPTIONS="--max-old-space-size=4096" npx vite build || {
+  echo "WARNING: Frontend build failed with increased memory!"
+  echo "Attempting with default memory settings..."
+  npx vite build || echo "ERROR: Frontend build failed completely!"
+}
+
+# Check if frontend was built successfully
 if [ -d "client/dist" ]; then
-  echo "Found client/dist directory, copying files..."
+  echo "Frontend built successfully, copying files..."
   cp -r client/dist/* dist/public/ || echo "Warning: Could not copy from client/dist"
   # Create an explicit copy in the root dist folder too
   cp -r client/dist/* dist/ || echo "Warning: Could not copy to root dist folder"
 else
-  echo "Warning: client/dist directory not found!"
+  echo "ERROR: Frontend build failed! client/dist directory not found!"
 fi
 
 # Copy index.html to multiple locations to ensure it's found
