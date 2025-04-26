@@ -1,0 +1,72 @@
+==> Cloning from https://github.com/Emilghel/Jesko2
+==> Checking out commit 0a447e5e84556ad7bbbd4c9699b810ba61f1c9e6 in branch main
+==> Using Node.js version 22.14.0 (default)
+==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+==> Using Bun version 1.1.0 (default)
+==> Docs on specifying a bun version: https://render.com/docs/bun-version
+==> Running build command 'mkdir -p static &&  cp -r attached_assets/* static/ 2>/dev/null || true &&  mkdir -p client/public &&  cp static/bubble.gif client/public/ 2>/dev/null || true &&  sed -i 's|import teamImage1 from "@assets/12.jpg"|// Use static paths for deployment\nconst teamImage1 = "/static/12.jpg"|g' client/src/components/TeamCarousel.tsx &&  sed -i 's|import teamImage2 from "@assets/13.jpg"|const teamImage2 = "/static/13.jpg"|g' client/src/components/TeamCarousel.tsx &&  sed -i 's|import teamImage3 from "@assets/15.jpg"|const teamImage3 = "/static/15.jpg"|g' client/src/components/TeamCarousel.tsx &&  sed -i 's|import bubbleGifPath from "@assets/bubble.gif"|// Using static path for deployment\nconst bubbleGifPath = "/static/bubble.gif";|g' client/src/components/FloatingChatBubble.tsx 2>/dev/null || true &&  npm install &&  npx vite build'...
+added 1023 packages, and audited 1024 packages in 15s
+124 packages are looking for funding
+  run `npm fund` for details
+11 vulnerabilities (2 low, 8 moderate, 1 high)
+To address issues that do not require attention, run:
+  npm audit fix
+To address all issues possible (including breaking changes), run:
+  npm audit fix --force
+Some issues need review, and may require choosing
+a different dependency.
+Run `npm audit` for details.
+vite v5.4.14 building for production...
+transforming...
+✓ 3430 modules transformed.
+rendering chunks...
+computing gzip size...
+../dist/public/index.html                                   1.98 kB │ gzip:   0.87 kB
+../dist/public/assets/index-BCOXpYQ4.css                  235.73 kB │ gzip:  34.72 kB
+../dist/public/assets/nuclear-agent-delete-Dd77dwgC.js      1.48 kB │ gzip:   0.69 kB
+../dist/public/assets/agent-utils-DPMwDU5J.js               5.34 kB │ gzip:   1.49 kB
+../dist/public/assets/index-7-VV4ky7.js                 2,212.39 kB │ gzip: 579.79 kB
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 11.51s
+==> Uploading build...
+==> Uploaded in 14.3s. Compression took 5.6s
+==> Build successful 🎉
+==> Starting pre-deploy: echo 'const express = require("express"); const path = require("path"); const app = express(); app.use(express.static(path.join(__dirname, "dist/public"))); app.use(express.static("static")); app.get("/healthz", (req, res) => { res.send("OK"); }); app.get("*", (req, res) => { res.sendFile(path.join(__dirname, "dist/public/index.html")); }); const PORT = process.env.PORT || 10000; app.listen(PORT, () => { console.log(`Server running on port ${PORT}`); });' > /opt/render/project/src/server-static.js
+==> Running 'echo 'const express = require("express"); const path = require("path"); const app = express(); app.use(express.static(path.join(__dirname, "dist/public"))); app.use(express.static("static")); app.get("/healthz", (req, res) => { res.send("OK"); }); app.get("*", (req, res) => { res.sendFile(path.join(__dirname, "dist/public/index.html")); }); const PORT = process.env.PORT || 10000; app.listen(PORT, () => { console.log(`Server running on port ${PORT}`); });' > /opt/render/project/src/server-static.js'
+==> Pre-deploy complete!
+==> Deploying...
+==> Running 'node server-static.js'
+node:internal/modules/cjs/loader:1228
+  throw err;
+  ^
+Error: Cannot find module '/opt/render/project/src/server-static.js'
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1225:15)
+    at Function._load (node:internal/modules/cjs/loader:1055:27)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:220:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:170:5)
+    at node:internal/main/run_main_module:36:49 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: []
+}
+Node.js v22.14.0
+==> Exited with status 1
+==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
+==> Running 'node server-static.js'
+node:internal/modules/cjs/loader:1228
+  throw err;
+  ^
+Error: Cannot find module '/opt/render/project/src/server-static.js'
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1225:15)
+    at Function._load (node:internal/modules/cjs/loader:1055:27)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:220:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:170:5)
+    at node:internal/main/run_main_module:36:49 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: []
+}
+Node.js v22.14.0

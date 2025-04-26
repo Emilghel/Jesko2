@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background with gradient -->
+  <circle cx="80" cy="80" r="75" fill="url(#coachBg)" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;0.9;0.8" dur="5s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Trophy cup -->
+  <g opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="1s" begin="0.5s" fill="freeze"/>
+    
+    <!-- Cup body -->
+    <path d="M65 60L65 90C65 95 70 100 80 100C90 100 95 95 95 90L95 60L65 60Z" fill="url(#trophyGradient)">
+      <animate attributeName="d" 
+               values="M65 60L65 90C65 95 70 100 80 100C90 100 95 95 95 90L95 60L65 60Z;
+                       M66 60L66 90C66 95 71 99 80 99C89 99 94 95 94 90L94 60L66 60Z;
+                       M65 60L65 90C65 95 70 100 80 100C90 100 95 95 95 90L95 60L65 60Z" 
+               dur="3s" repeatCount="indefinite"/>
+    </path>
+    
+    <!-- Cup rim -->
+    <path d="M62 60L98 60C98 60 98 55 80 55C62 55 62 60 62 60Z" fill="#FFBE0B">
+      <animate attributeName="d" 
+               values="M62 60L98 60C98 60 98 55 80 55C62 55 62 60 62 60Z;
+                       M63 60L97 60C97 60 97 56 80 56C63 56 63 60 63 60Z;
+                       M62 60L98 60C98 60 98 55 80 55C62 55 62 60 62 60Z" 
+               dur="3s" repeatCount="indefinite"/>
+    </path>
+    
+    <!-- Cup handles -->
+    <path d="M65 65C60 65 55 70 55 75C55 80 60 85 65 85" stroke="#FFBE0B" stroke-width="2" fill="none">
+      <animate attributeName="d" 
+               values="M65 65C60 65 55 70 55 75C55 80 60 85 65 85;
+                       M65 66C60 66 56 70 56 75C56 80 60 84 65 84;
+                       M65 65C60 65 55 70 55 75C55 80 60 85 65 85" 
+               dur="3s" repeatCount="indefinite"/>
+    </path>
+    
+    <path d="M95 65C100 65 105 70 105 75C105 80 100 85 95 85" stroke="#FFBE0B" stroke-width="2" fill="none">
+      <animate attributeName="d" 
+               values="M95 65C100 65 105 70 105 75C105 80 100 85 95 85;
+                       M95 66C100 66 104 70 104 75C104 80 100 84 95 84;
+                       M95 65C100 65 105 70 105 75C105 80 100 85 95 85" 
+               dur="3s" repeatCount="indefinite"/>
+    </path>
+    
+    <!-- Trophy base -->
+    <rect x="70" y="100" width="20" height="5" rx="1" fill="#FFBE0B"/>
+    <rect x="65" y="105" width="30" height="5" rx="1" fill="#FFBE0B"/>
+  </g>
+  
+  <!-- Flying stars (achievements) -->
+  <g opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="1s" begin="1.5s" fill="freeze"/>
+    
+    <path d="M50 40L52 45L58 45L53 48L55 53L50 50L45 53L47 48L42 45L48 45L50 40Z" fill="#FB8500">
+      <animate attributeName="transform" type="translate" 
+               values="0,0; -5,5; 0,0; 5,-5; 0,0" 
+               dur="7s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="3s" repeatCount="indefinite"/>
+    </path>
+    
+    <path d="M110 40L112 45L118 45L113 48L115 53L110 50L105 53L107 48L102 45L108 45L110 40Z" fill="#FB8500">
+      <animate attributeName="transform" type="translate" 
+               values="0,0; 5,5; 0,0; -5,-5; 0,0" 
+               dur="8s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="3s" begin="0.5s" repeatCount="indefinite"/>
+    </path>
+    
+    <path d="M40 100L42 105L48 105L43 108L45 113L40 110L35 113L37 108L32 105L38 105L40 100Z" fill="#FB8500">
+      <animate attributeName="transform" type="translate" 
+               values="0,0; -5,-5; 0,0; 5,5; 0,0" 
+               dur="9s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="3s" begin="1s" repeatCount="indefinite"/>
+    </path>
+    
+    <path d="M120 100L122 105L128 105L123 108L125 113L120 110L115 113L117 108L112 105L118 105L120 100Z" fill="#FB8500">
+      <animate attributeName="transform" type="translate" 
+               values="0,0; 5,-5; 0,0; -5,5; 0,0" 
+               dur="10s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="3s" begin="1.5s" repeatCount="indefinite"/>
+    </path>
+  </g>
+  
+  <!-- Motivational elements -->
+  <g>
+    <!-- Rising graph bars -->
+    <g opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="1s" begin="2.5s" fill="freeze"/>
+      
+      <rect x="30" y="120" width="7" height="0" fill="#FB5607" opacity="0.7">
+        <animate attributeName="height" values="0;20" dur="1s" begin="2.5s" fill="freeze"/>
+        <animate attributeName="y" values="120;100" dur="1s" begin="2.5s" fill="freeze"/>
+      </rect>
+      
+      <rect x="40" y="120" width="7" height="0" fill="#FB5607" opacity="0.8">
+        <animate attributeName="height" values="0;30" dur="1s" begin="2.7s" fill="freeze"/>
+        <animate attributeName="y" values="120;90" dur="1s" begin="2.7s" fill="freeze"/>
+      </rect>
+      
+      <rect x="50" y="120" width="7" height="0" fill="#FB5607" opacity="0.9">
+        <animate attributeName="height" values="0;40" dur="1s" begin="2.9s" fill="freeze"/>
+        <animate attributeName="y" values="120;80" dur="1s" begin="2.9s" fill="freeze"/>
+      </rect>
+    </g>
+    
+    <!-- Target with arrow -->
+    <g opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="1s" begin="3.5s" fill="freeze"/>
+      
+      <circle cx="130" cy="120" r="15" fill="#FB5607" opacity="0.3"/>
+      <circle cx="130" cy="120" r="10" fill="#FB5607" opacity="0.6"/>
+      <circle cx="130" cy="120" r="5" fill="#FB5607"/>
+      
+      <line x1="100" y1="120" x2="125" y2="120" stroke="#000814" stroke-width="2" opacity="0">
+        <animate attributeName="opacity" values="0;1" dur="0.5s" begin="4s" fill="freeze"/>
+      </line>
+      
+      <polygon points="125,117 125,123 130,120" fill="#000814" opacity="0">
+        <animate attributeName="opacity" values="0;1" dur="0.5s" begin="4s" fill="freeze"/>
+      </polygon>
+    </g>
+  </g>
+  
+  <!-- Glowing energy aura -->
+  <circle cx="80" cy="80" r="25" fill="url(#energyGlow)" opacity="0">
+    <animate attributeName="opacity" values="0;0.7" dur="1s" begin="4.5s" fill="freeze"/>
+    <animate attributeName="r" values="22;25;22" dur="3s" begin="4.5s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Flame of motivation -->
+  <g opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="1s" begin="5s" fill="freeze"/>
+    
+    <path d="M80 70C75 60 70 55 70 50C70 45 75 40 80 45C85 40 90 45 90 50C90 55 85 60 80 70Z" fill="url(#flameGradient)">
+      <animate attributeName="d" 
+               values="M80 70C75 60 70 55 70 50C70 45 75 40 80 45C85 40 90 45 90 50C90 55 85 60 80 70Z;
+                       M80 68C76 60 72 55 72 50C72 45 76 42 80 47C84 42 88 45 88 50C88 55 84 60 80 68Z;
+                       M80 70C75 60 70 55 70 50C70 45 75 40 80 45C85 40 90 45 90 50C90 55 85 60 80 70Z" 
+               dur="2s" repeatCount="indefinite"/>
+    </path>
+  </g>
+  
+  <!-- Energy particles -->
+  <g opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="1s" begin="5.5s" fill="freeze"/>
+    
+    <circle cx="70" cy="70" r="1.5" fill="#FFBE0B">
+      <animate attributeName="cx" values="70;65;70" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="70;65;70" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    
+    <circle cx="90" cy="70" r="1.5" fill="#FFBE0B">
+      <animate attributeName="cx" values="90;95;90" dur="3.5s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="70;65;70" dur="3.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" begin="0.3s" repeatCount="indefinite"/>
+    </circle>
+    
+    <circle cx="80" cy="60" r="1.5" fill="#FFBE0B">
+      <animate attributeName="cy" values="60;55;60" dur="2.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" begin="0.6s" repeatCount="indefinite"/>
+    </circle>
+    
+    <circle cx="75" cy="65" r="1.5" fill="#FFBE0B">
+      <animate attributeName="cx" values="75;72;75" dur="4s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="65;62;65" dur="4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" begin="0.9s" repeatCount="indefinite"/>
+    </circle>
+    
+    <circle cx="85" cy="65" r="1.5" fill="#FFBE0B">
+      <animate attributeName="cx" values="85;88;85" dur="3.8s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="65;62;65" dur="3.8s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" begin="1.2s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Concentric motivation rings -->
+  <g opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="1s" begin="6s" fill="freeze"/>
+    
+    <circle cx="80" cy="80" r="35" stroke="#FB5607" stroke-width="1" fill="none">
+      <animate attributeName="r" values="35;36;35" dur="5s" repeatCount="indefinite"/>
+      <animate attributeName="stroke-opacity" values="0.3;0.5;0.3" dur="5s" repeatCount="indefinite"/>
+    </circle>
+    
+    <circle cx="80" cy="80" r="45" stroke="#FB5607" stroke-width="1" fill="none">
+      <animate attributeName="r" values="45;47;45" dur="6s" repeatCount="indefinite"/>
+      <animate attributeName="stroke-opacity" values="0.3;0.5;0.3" dur="6s" repeatCount="indefinite"/>
+    </circle>
+    
+    <circle cx="80" cy="80" r="55" stroke="#FB5607" stroke-width="1" fill="none">
+      <animate attributeName="r" values="55;58;55" dur="7s" repeatCount="indefinite"/>
+      <animate attributeName="stroke-opacity" values="0.3;0.5;0.3" dur="7s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Success pathway -->
+  <path d="M30 130C40 115 60 110 80 110C100 110 120 115 130 130" 
+        stroke="#FB8500" stroke-width="2" stroke-dasharray="4 2" fill="none" opacity="0">
+    <animate attributeName="opacity" values="0;0.8" dur="1s" begin="6.5s" fill="freeze"/>
+    <animate attributeName="stroke-dashoffset" values="0;12" dur="2s" begin="6.5s" repeatCount="indefinite"/>
+  </path>
+  
+  <!-- Gradients and definitions -->
+  <defs>
+    <linearGradient id="coachBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#000814"/>
+      <stop offset="100%" stop-color="#001D3D"/>
+    </linearGradient>
+    
+    <linearGradient id="trophyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFBE0B"/>
+      <stop offset="100%" stop-color="#FB8500"/>
+    </linearGradient>
+    
+    <radialGradient id="energyGlow" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#FFC300">
+        <animate attributeName="stop-color" values="#FFC300;#FB8500;#FFC300" dur="3s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="100%" stop-color="#FB5607">
+        <animate attributeName="stop-color" values="#FB5607;#FFC300;#FB5607" dur="3s" repeatCount="indefinite"/>
+      </stop>
+    </radialGradient>
+    
+    <linearGradient id="flameGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FB5607"/>
+      <stop offset="50%" stop-color="#FFC300"/>
+      <stop offset="100%" stop-color="#FB8500"/>
+    </linearGradient>
+  </defs>
+</svg>

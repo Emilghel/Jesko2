@@ -1,0 +1,83 @@
+==> Cloning from https://github.com/Emilghel/Jesko2
+==> Checking out commit 6887c68560749359d6e9cba7ff463fa39ba68147 in branch main
+==> Using Node.js version 22.14.0 (default)
+==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+==> Using Bun version 1.1.0 (default)
+==> Docs on specifying a bun version: https://render.com/docs/bun-version
+==> Running build command 'npm install && mkdir -p dist/public && echo "<!-- Placeholder frontend for deployment -->" > dist/public/index.html && npx esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist && cp -r static dist/public/ || true'...
+added 978 packages, and audited 979 packages in 14s
+119 packages are looking for funding
+  run `npm fund` for details
+5 vulnerabilities (2 low, 2 moderate, 1 high)
+To address issues that do not require attention, run:
+  npm audit fix
+To address all issues possible (including breaking changes), run:
+  npm audit fix --force
+Some issues need review, and may require choosing
+a different dependency.
+Run `npm audit` for details.
+✘ [ERROR] Could not resolve "./vite"
+    server/index.ts:3:44:
+      3 │ import { setupVite, serveStatic, log } from "./vite";
+        ╵                                             ~~~~~~~~
+✘ [ERROR] Could not resolve "./character-routes"
+    server/index.ts:5:28:
+      5 │ import characterRouter from "./character-routes";
+        ╵                             ~~~~~~~~~~~~~~~~~~~~
+✘ [ERROR] Could not resolve "./transcription-proxy"
+    server/index.ts:6:40:
+      6 │ import { setupTranscriptionProxy } from "./transcription-proxy";
+        ╵                                         ~~~~~~~~~~~~~~~~~~~~~~~
+✘ [ERROR] Could not resolve "./transcription-route"
+    server/index.ts:7:32:
+      7 │ import transcriptionRoutes from "./transcription-route";
+        ╵                                 ~~~~~~~~~~~~~~~~~~~~~~~
+✘ [ERROR] Could not resolve "./automated-call-routes"
+    server/index.ts:13:32:
+      13 │ import automatedCallRouter from "./automated-call-routes";
+         ╵                                 ~~~~~~~~~~~~~~~~~~~~~~~~~
+✘ [ERROR] Cannot assign to "phoneNumber" because it is a constant
+    server/routes.ts:4307:8:
+      4307 │         phoneNumber = sanitized;
+           ╵         ~~~~~~~~~~~
+  The symbol "phoneNumber" was declared a constant here:
+    server/routes.ts:4248:8:
+      4248 │         phoneNumber, 
+           ╵         ~~~~~~~~~~~
+6 of 29 errors shown (disable the message limit with --log-limit=0)
+==> Uploading build...
+==> Uploaded in 16.0s. Compression took 5.2s
+==> Build successful 🎉
+==> Deploying...
+==> Running 'NODE_ENV=production node dist/index.js'
+node:internal/modules/cjs/loader:1228
+  throw err;
+  ^
+Error: Cannot find module '/opt/render/project/src/dist/index.js'
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1225:15)
+    at Function._load (node:internal/modules/cjs/loader:1055:27)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:220:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:170:5)
+    at node:internal/main/run_main_module:36:49 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: []
+}
+Node.js v22.14.0
+==> Exited with status 1
+==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
+==> Running 'NODE_ENV=production node dist/index.js'
+node:internal/modules/cjs/loader:1228
+  throw err;
+  ^
+Error: Cannot find module '/opt/render/project/src/dist/index.js'
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1225:15)
+    at Function._load (node:internal/modules/cjs/loader:1055:27)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:220:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:170:5)
+    at node:internal/main/run_main_module:36:49 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: []
+}
+Node.js v22.14.0

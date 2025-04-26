@@ -1,0 +1,95 @@
+==> Cloning from https://github.com/Emilghel/Jesko2
+==> Checking out commit 6887c68560749359d6e9cba7ff463fa39ba68147 in branch main
+==> Using Node.js version 22.14.0 (default)
+==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+==> Using Bun version 1.1.0 (default)
+==> Docs on specifying a bun version: https://render.com/docs/bun-version
+==> Running build command 'npm install --no-audit --no-fund && npm install vite @vitejs/plugin-react esbuild --no-save && export NODE_OPTIONS="--max-old-space-size=8192 --max-semi-space-size=256 --v8-pool-size=1" && npx vite build && npx esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist'...
+added 978 packages in 14s
+changed 9 packages, and audited 979 packages in 5s
+119 packages are looking for funding
+  run `npm fund` for details
+4 vulnerabilities (2 low, 1 moderate, 1 high)
+To address issues that do not require attention, run:
+  npm audit fix
+To address all issues possible (including breaking changes), run:
+  npm audit fix --force
+Some issues need review, and may require choosing
+a different dependency.
+Run `npm audit` for details.
+failed to load config from /opt/render/project/src/vite.config.ts
+error during build:
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'vite' imported from /opt/render/project/src/node_modules/.vite-temp/vite.config.ts.timestamp-1745574181893-d88a58fa2a9fd.mjs
+    at Object.getPackageJSONURL (node:internal/modules/package_json_reader:268:9)
+    at packageResolve (node:internal/modules/esm/resolve:768:81)
+    at moduleResolve (node:internal/modules/esm/resolve:854:18)
+    at defaultResolve (node:internal/modules/esm/resolve:984:11)
+    at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:685:12)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:634:25)
+    at ModuleLoader.resolve (node:internal/modules/esm/loader:617:38)
+    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:273:38)
+    at ModuleJob._link (node:internal/modules/esm/module_job:135:49)
+==> Build failed 😞
+==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
+==> Using Node.js version 22.14.0 (default)
+==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+==> Using Bun version 1.1.0 (default)
+==> Docs on specifying a bun version: https://render.com/docs/bun-version
+==> Running build command 'npm install --no-audit --no-fund && npm install vite @vitejs/plugin-react esbuild --no-save && export NODE_OPTIONS="--max-old-space-size=8192 --max-semi-space-size=256 --v8-pool-size=1" && npx vite build && npx esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist'...
+added 978 packages in 14s
+changed 9 packages, and audited 979 packages in 5s
+119 packages are looking for funding
+  run `npm fund` for details
+4 vulnerabilities (2 low, 1 moderate, 1 high)
+To address issues that do not require attention, run:
+  npm audit fix
+To address all issues possible (including breaking changes), run:
+  npm audit fix --force
+Some issues need review, and may require choosing
+a different dependency.
+Run `npm audit` for details.
+failed to load config from /opt/render/project/src/vite.config.ts
+error during build:
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'vite' imported from /opt/render/project/src/node_modules/.vite-temp/vite.config.ts.timestamp-1745574181893-d88a58fa2a9fd.mjs
+    at Object.getPackageJSONURL (node:internal/modules/package_json_reader:268:9)
+    at packageResolve (node:internal/modules/esm/resolve:768:81)
+    at moduleResolve (node:internal/modules/esm/resolve:854:18)
+    at defaultResolve (node:internal/modules/esm/resolve:984:11)
+    at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:685:12)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:634:25)
+    at ModuleLoader.resolve (node:internal/modules/esm/loader:617:38)
+    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:273:38)
+    at ModuleJob._link (node:internal/modules/esm/module_job:135:49)
+==> Build failed 😞
+==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
+==> Using Node.js version 22.14.0 (default)
+==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+==> Using Bun version 1.1.0 (default)
+==> Docs on specifying a bun version: https://render.com/docs/bun-version
+==> Running build command 'npm install --no-audit --no-fund && npm install vite @vitejs/plugin-react esbuild --no-save && export NODE_OPTIONS="--max-old-space-size=8192 --max-semi-space-size=256 --v8-pool-size=1" && npx vite build && npx esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist'...
+added 978 packages in 14s
+changed 9 packages, and audited 979 packages in 5s
+119 packages are looking for funding
+  run `npm fund` for details
+4 vulnerabilities (2 low, 1 moderate, 1 high)
+To address issues that do not require attention, run:
+  npm audit fix
+To address all issues possible (including breaking changes), run:
+  npm audit fix --force
+Some issues need review, and may require choosing
+a different dependency.
+Run `npm audit` for details.
+failed to load config from /opt/render/project/src/vite.config.ts
+error during build:
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'vite' imported from /opt/render/project/src/node_modules/.vite-temp/vite.config.ts.timestamp-1745574181893-d88a58fa2a9fd.mjs
+    at Object.getPackageJSONURL (node:internal/modules/package_json_reader:268:9)
+    at packageResolve (node:internal/modules/esm/resolve:768:81)
+    at moduleResolve (node:internal/modules/esm/resolve:854:18)
+    at defaultResolve (node:internal/modules/esm/resolve:984:11)
+    at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:685:12)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:634:25)
+    at ModuleLoader.resolve (node:internal/modules/esm/loader:617:38)
+    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:273:38)
+    at ModuleJob._link (node:internal/modules/esm/module_job:135:49)
+==> Build failed 😞
+==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys

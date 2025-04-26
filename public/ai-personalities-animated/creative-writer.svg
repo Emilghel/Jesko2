@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background with gradient -->
+  <circle cx="80" cy="80" r="75" fill="url(#creativeBg)" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;0.9;0.8" dur="5s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Floating particles that form into ideas -->
+  <g>
+    <!-- Particle 1 -->
+    <circle cx="50" cy="50" r="3" fill="#D1A7FF">
+      <animate attributeName="cx" values="50;70;60" dur="15s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="50;40;55" dur="15s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.4;1;0.4" dur="5s" repeatCount="indefinite"/>
+    </circle>
+    
+    <!-- Particle 2 -->
+    <circle cx="90" cy="40" r="2" fill="#D1A7FF">
+      <animate attributeName="cx" values="90;80;95" dur="12s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="40;50;45" dur="12s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.6;1;0.6" dur="4s" repeatCount="indefinite"/>
+    </circle>
+    
+    <!-- Particle 3 -->
+    <circle cx="60" cy="110" r="2.5" fill="#D1A7FF">
+      <animate attributeName="cx" values="60;75;65" dur="18s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="110;90;105" dur="18s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.3;0.8;0.3" dur="6s" repeatCount="indefinite"/>
+    </circle>
+    
+    <!-- Particle 4 -->
+    <circle cx="110" cy="100" r="3" fill="#D1A7FF">
+      <animate attributeName="cx" values="110;90;100" dur="20s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="100;110;95" dur="20s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.5;1;0.5" dur="7s" repeatCount="indefinite"/>
+    </circle>
+    
+    <!-- Particle 5 -->
+    <circle cx="40" cy="80" r="2" fill="#D1A7FF">
+      <animate attributeName="cx" values="40;55;45" dur="14s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="80;75;85" dur="14s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.4;0.9;0.4" dur="8s" repeatCount="indefinite"/>
+    </circle>
+    
+    <!-- Particle 6 -->
+    <circle cx="120" cy="65" r="2.5" fill="#D1A7FF">
+      <animate attributeName="cx" values="120;105;115" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="65;80;70" dur="16s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.6;1;0.6" dur="5s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Floating pen nib with ink drop -->
+  <g>
+    <!-- Pen nib -->
+    <path d="M70 60L90 80L85 85L65 65L70 60Z" fill="#8338EC">
+      <animate attributeName="transform" type="rotate" values="-5 80 80;5 80 80;-5 80 80" dur="8s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="4s" repeatCount="indefinite"/>
+    </path>
+    
+    <path d="M65 65L55 95L60 100L90 80L85 85L65 65Z" fill="#8338EC">
+      <animate attributeName="transform" type="rotate" values="-5 80 80;5 80 80;-5 80 80" dur="8s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="4s" repeatCount="indefinite"/>
+    </path>
+    
+    <!-- Ink drop -->
+    <circle cx="55" cy="95" r="5" fill="#8338EC">
+      <animate attributeName="r" values="4;6;4" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.6;1;0.6" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="transform" type="rotate" values="-5 80 80;5 80 80;-5 80 80" dur="8s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Flowing text/story lines -->
+  <g>
+    <path d="M30 60C40 58 50 62 60 60C70 58 80 62 90 60C100 58 110 62 120 60" 
+        stroke="#FB5607" stroke-width="2" fill="none">
+      <animate attributeName="d" 
+               values="M30 60C40 58 50 62 60 60C70 58 80 62 90 60C100 58 110 62 120 60;
+                       M30 62C40 60 50 64 60 62C70 60 80 64 90 62C100 60 110 64 120 62;
+                       M30 60C40 58 50 62 60 60C70 58 80 62 90 60C100 58 110 62 120 60" 
+               dur="6s" repeatCount="indefinite"/>
+    </path>
+    
+    <path d="M35 70C45 68 55 72 65 70C75 68 85 72 95 70C105 68 115 72 125 70" 
+        stroke="#FB5607" stroke-width="2" fill="none">
+      <animate attributeName="d" 
+               values="M35 70C45 68 55 72 65 70C75 68 85 72 95 70C105 68 115 72 125 70;
+                       M35 72C45 70 55 74 65 72C75 70 85 74 95 72C105 70 115 74 125 72;
+                       M35 70C45 68 55 72 65 70C75 68 85 72 95 70C105 68 115 72 125 70" 
+               dur="6s" repeatCount="indefinite" begin="1s"/>
+    </path>
+    
+    <path d="M30 80C40 78 50 82 60 80C70 78 80 82 90 80C100 78 110 82 120 80" 
+        stroke="#FB5607" stroke-width="2" fill="none">
+      <animate attributeName="d" 
+               values="M30 80C40 78 50 82 60 80C70 78 80 82 90 80C100 78 110 82 120 80;
+                       M30 82C40 80 50 84 60 82C70 80 80 84 90 82C100 80 110 84 120 82;
+                       M30 80C40 78 50 82 60 80C70 78 80 82 90 80C100 78 110 82 120 80" 
+               dur="6s" repeatCount="indefinite" begin="2s"/>
+    </path>
+  </g>
+  
+  <!-- Idea bulb in center -->
+  <g>
+    <circle cx="80" cy="80" r="15" fill="url(#ideaGlow)">
+      <animate attributeName="r" values="14;16;14" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.8;1;0.8" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    
+    <!-- Idea sparks -->
+    <g>
+      <path d="M80 60L80 65" stroke="#FFBE0B" stroke-width="2" stroke-linecap="round">
+        <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite"/>
+      </path>
+      
+      <path d="M95 65L92 70" stroke="#FFBE0B" stroke-width="2" stroke-linecap="round">
+        <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite" begin="0.3s"/>
+      </path>
+      
+      <path d="M100 80L95 80" stroke="#FFBE0B" stroke-width="2" stroke-linecap="round">
+        <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite" begin="0.6s"/>
+      </path>
+      
+      <path d="M95 95L92 90" stroke="#FFBE0B" stroke-width="2" stroke-linecap="round">
+        <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite" begin="0.9s"/>
+      </path>
+      
+      <path d="M80 100L80 95" stroke="#FFBE0B" stroke-width="2" stroke-linecap="round">
+        <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite" begin="1.2s"/>
+      </path>
+      
+      <path d="M65 95L68 90" stroke="#FFBE0B" stroke-width="2" stroke-linecap="round">
+        <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite" begin="1.5s"/>
+      </path>
+      
+      <path d="M60 80L65 80" stroke="#FFBE0B" stroke-width="2" stroke-linecap="round">
+        <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite" begin="1.8s"/>
+      </path>
+      
+      <path d="M65 65L68 70" stroke="#FFBE0B" stroke-width="2" stroke-linecap="round">
+        <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite" begin="2.1s"/>
+      </path>
+    </g>
+  </g>
+  
+  <!-- Book pages -->
+  <path d="M75 110H85C87 110 89 108 89 106V100H71V106C71 108 73 110 75 110Z" fill="#F1FAEE">
+    <animate attributeName="opacity" values="0.6;0.9;0.6" dur="5s" repeatCount="indefinite"/>
+  </path>
+  
+  <path d="M72 100H88V90C88 88 86 86 84 86H76C74 86 72 88 72 90V100Z" fill="#F1FAEE">
+    <animate attributeName="opacity" values="0.6;0.9;0.6" dur="5s" repeatCount="indefinite"/>
+  </path>
+  
+  <line x1="76" y1="92" x2="84" y2="92" stroke="#8338EC" stroke-width="1">
+    <animate attributeName="opacity" values="0.6;1;0.6" dur="5s" repeatCount="indefinite"/>
+  </line>
+  
+  <line x1="76" y1="95" x2="84" y2="95" stroke="#8338EC" stroke-width="1">
+    <animate attributeName="opacity" values="0.6;1;0.6" dur="5s" repeatCount="indefinite"/>
+  </line>
+  
+  <line x1="76" y1="98" x2="80" y2="98" stroke="#8338EC" stroke-width="1">
+    <animate attributeName="opacity" values="0.6;1;0.6" dur="5s" repeatCount="indefinite"/>
+  </line>
+  
+  <!-- Gradients -->
+  <defs>
+    <linearGradient id="creativeBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#240046"/>
+      <stop offset="100%" stop-color="#3C096C"/>
+    </linearGradient>
+    
+    <radialGradient id="ideaGlow" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#FFBE0B"/>
+      <stop offset="100%" stop-color="#FB5607"/>
+    </radialGradient>
+  </defs>
+</svg>

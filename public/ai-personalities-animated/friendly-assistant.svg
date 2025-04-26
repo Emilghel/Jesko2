@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background with gradient -->
+  <circle cx="80" cy="80" r="75" fill="url(#friendlyBg)" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;0.9;0.8" dur="5s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Floating helper shapes -->
+  <g opacity="0.9">
+    <!-- Calendar icon -->
+    <g opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="1s" begin="0.5s" fill="freeze"/>
+      <animate attributeName="transform" type="translate" 
+               values="0,0; -5,-5; 0,0; 5,5; 0,0" 
+               dur="10s" repeatCount="indefinite"/>
+      
+      <rect x="30" y="40" width="25" height="25" rx="3" fill="#A7C957" opacity="0.9"/>
+      <rect x="34" y="45" width="4" height="4" rx="1" fill="#F1FAEE"/>
+      <rect x="41" y="45" width="4" height="4" rx="1" fill="#F1FAEE"/>
+      <rect x="48" y="45" width="4" height="4" rx="1" fill="#F1FAEE"/>
+      <rect x="34" y="52" width="4" height="4" rx="1" fill="#F1FAEE"/>
+      <rect x="41" y="52" width="4" height="4" rx="1" fill="#F1FAEE"/>
+      <rect x="48" y="52" width="4" height="4" rx="1" fill="#F1FAEE"/>
+    </g>
+    
+    <!-- Clock icon -->
+    <g opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="1s" begin="1s" fill="freeze"/>
+      <animate attributeName="transform" type="translate" 
+               values="0,0; 5,5; 0,0; -5,-5; 0,0" 
+               dur="9s" repeatCount="indefinite"/>
+      
+      <circle cx="120" cy="45" r="15" fill="#6A994E" opacity="0.9"/>
+      <circle cx="120" cy="45" r="12" fill="none" stroke="#F1FAEE" stroke-width="1.5"/>
+      <line x1="120" y1="39" x2="120" y2="45" stroke="#F1FAEE" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="120" y1="45" x2="125" y2="45" stroke="#F1FAEE" stroke-width="1.5" stroke-linecap="round">
+        <animateTransform attributeName="transform" type="rotate" 
+                         from="0 120 45" to="360 120 45" 
+                         dur="30s" repeatCount="indefinite"/>
+      </line>
+    </g>
+    
+    <!-- Checkmark icon -->
+    <g opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="1s" begin="1.5s" fill="freeze"/>
+      <animate attributeName="transform" type="translate" 
+               values="0,0; -5,5; 0,0; 5,-5; 0,0" 
+               dur="8s" repeatCount="indefinite"/>
+      
+      <circle cx="40" cy="110" r="15" fill="#386641" opacity="0.9"/>
+      <path d="M32 110L38 116L48 104" stroke="#F1FAEE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <animate attributeName="stroke-dasharray" values="0 50;50 0" dur="1.5s" begin="1.5s" fill="freeze"/>
+      </path>
+    </g>
+    
+    <!-- Lightbulb icon -->
+    <g opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="1s" begin="2s" fill="freeze"/>
+      <animate attributeName="transform" type="translate" 
+               values="0,0; 5,-5; 0,0; -5,5; 0,0" 
+               dur="9s" repeatCount="indefinite"/>
+      
+      <circle cx="115" cy="110" r="15" fill="#BC4749" opacity="0.9"/>
+      <path d="M115 103C110 103 107 106 107 110C107 113 109 115 111 117C112 118 112 119 112 120C112 120 118 120 118 120C118 119 118 118 119 117C121 115 123 113 123 110C123 106 120 103 115 103Z" 
+            fill="#FFBF69" stroke="#F1FAEE" stroke-width="1">
+        <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" repeatCount="indefinite"/>
+      </path>
+      <line x1="113" y1="121" x2="117" y2="121" stroke="#F1FAEE" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="114" y1="123" x2="116" y2="123" stroke="#F1FAEE" stroke-width="1.5" stroke-linecap="round"/>
+    </g>
+  </g>
+  
+  <!-- Central friendly assistant character -->
+  <g>
+    <!-- Assistant body base -->
+    <g opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="1s" begin="2.5s" fill="freeze"/>
+      
+      <ellipse cx="80" cy="85" rx="20" ry="25" fill="url(#assistantGradient)">
+        <animate attributeName="ry" values="25;26;25" dur="3s" repeatCount="indefinite"/>
+      </ellipse>
+    </g>
+    
+    <!-- Friendly face -->
+    <g opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="1s" begin="3s" fill="freeze"/>
+      
+      <!-- Eyes -->
+      <ellipse cx="73" cy="78" rx="3" ry="4" fill="#F1FAEE">
+        <animate attributeName="ry" values="4;1;4" dur="5s" repeatCount="indefinite"/>
+      </ellipse>
+      
+      <ellipse cx="87" cy="78" rx="3" ry="4" fill="#F1FAEE">
+        <animate attributeName="ry" values="4;1;4" dur="5s" repeatCount="indefinite"/>
+      </ellipse>
+      
+      <!-- Smile -->
+      <path d="M70 85C70 90 75 93 80 93C85 93 90 90 90 85" 
+            stroke="#F1FAEE" stroke-width="2" stroke-linecap="round" fill="none">
+        <animate attributeName="d" 
+                values="M70 85C70 90 75 93 80 93C85 93 90 90 90 85;
+                        M70 86C70 91 75 95 80 95C85 95 90 91 90 86;
+                        M70 85C70 90 75 93 80 93C85 93 90 90 90 85" 
+                dur="4s" repeatCount="indefinite"/>
+      </path>
+    </g>
+    
+    <!-- Assistant "hands" -->
+    <g opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="1s" begin="3.5s" fill="freeze"/>
+      
+      <!-- Left hand -->
+      <g>
+        <ellipse cx="55" cy="85" rx="8" ry="5" fill="#386641" transform="rotate(-10 55 85)">
+          <animate attributeName="transform" 
+                   values="rotate(-10 55 85);rotate(10 55 85);rotate(-10 55 85)" 
+                   dur="4s" repeatCount="indefinite"/>
+        </ellipse>
+      </g>
+      
+      <!-- Right hand -->
+      <g>
+        <ellipse cx="105" cy="85" rx="8" ry="5" fill="#386641" transform="rotate(10 105 85)">
+          <animate attributeName="transform" 
+                   values="rotate(10 105 85);rotate(-10 105 85);rotate(10 105 85)" 
+                   dur="4s" repeatCount="indefinite"/>
+        </ellipse>
+      </g>
+    </g>
+  </g>
+  
+  <!-- Animated helper lines connecting to center -->
+  <g stroke="#F1FAEE" stroke-width="1" stroke-dasharray="3 2" opacity="0.6">
+    <line x1="42" y1="52" x2="65" y2="73" opacity="0">
+      <animate attributeName="opacity" values="0;0.6" dur="0.5s" begin="4s" fill="freeze"/>
+      <animate attributeName="stroke-dashoffset" values="0;10" dur="2s" repeatCount="indefinite"/>
+    </line>
+    
+    <line x1="112" y1="52" x2="90" y2="73" opacity="0">
+      <animate attributeName="opacity" values="0;0.6" dur="0.5s" begin="4.2s" fill="freeze"/>
+      <animate attributeName="stroke-dashoffset" values="0;10" dur="2s" repeatCount="indefinite"/>
+    </line>
+    
+    <line x1="48" y1="103" x2="65" y2="90" opacity="0">
+      <animate attributeName="opacity" values="0;0.6" dur="0.5s" begin="4.4s" fill="freeze"/>
+      <animate attributeName="stroke-dashoffset" values="0;10" dur="2s" repeatCount="indefinite"/>
+    </line>
+    
+    <line x1="106" y1="103" x2="90" y2="90" opacity="0">
+      <animate attributeName="opacity" values="0;0.6" dur="0.5s" begin="4.6s" fill="freeze"/>
+      <animate attributeName="stroke-dashoffset" values="0;10" dur="2s" repeatCount="indefinite"/>
+    </line>
+  </g>
+  
+  <!-- Animated confetti/sparkles -->
+  <g opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="1s" begin="5s" fill="freeze"/>
+    
+    <circle cx="60" cy="60" r="2" fill="#FFBF69">
+      <animate attributeName="cy" values="60;55;60" dur="4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    
+    <circle cx="100" cy="60" r="2" fill="#FFBF69">
+      <animate attributeName="cy" values="60;65;60" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" begin="0.5s" repeatCount="indefinite"/>
+    </circle>
+    
+    <circle cx="50" cy="90" r="2" fill="#FFBF69">
+      <animate attributeName="cx" values="50;45;50" dur="3.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" begin="1s" repeatCount="indefinite"/>
+    </circle>
+    
+    <circle cx="110" cy="90" r="2" fill="#FFBF69">
+      <animate attributeName="cx" values="110;115;110" dur="4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" begin="1.5s" repeatCount="indefinite"/>
+    </circle>
+    
+    <path d="M75 60L77 63L80 60L77 57L75 60Z" fill="#BC4749">
+      <animate attributeName="transform" type="rotate" 
+               from="0 77 60" to="360 77 60" 
+               dur="8s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="3s" repeatCount="indefinite"/>
+    </path>
+    
+    <path d="M85 60L87 63L90 60L87 57L85 60Z" fill="#6A994E">
+      <animate attributeName="transform" type="rotate" 
+               from="0 87 60" to="-360 87 60" 
+               dur="8s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="3s" begin="1.5s" repeatCount="indefinite"/>
+    </path>
+  </g>
+  
+  <!-- Friendly helper badge -->
+  <g opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="1s" begin="5.5s" fill="freeze"/>
+    
+    <circle cx="80" cy="120" r="10" fill="#FFD166">
+      <animate attributeName="r" values="10;11;10" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    
+    <g fill="#386641">
+      <path d="M78 115L78 125M82 115L82 125M75 118L85 118M75 122L85 122">
+        <animate attributeName="opacity" values="0.8;1;0.8" dur="3s" repeatCount="indefinite"/>
+      </path>
+    </g>
+  </g>
+  
+  <!-- Outer helper ring -->
+  <circle cx="80" cy="80" r="50" stroke="url(#helperRing)" stroke-width="2" fill="none" opacity="0">
+    <animate attributeName="opacity" values="0;0.7" dur="1s" begin="6s" fill="freeze"/>
+    <animate attributeName="r" values="50;52;50" dur="6s" repeatCount="indefinite"/>
+    <animateTransform attributeName="transform" type="rotate" from="0 80 80" to="360 80 80" dur="60s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Gradients and definitions -->
+  <defs>
+    <linearGradient id="friendlyBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#386641"/>
+      <stop offset="100%" stop-color="#15422B"/>
+    </linearGradient>
+    
+    <linearGradient id="assistantGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#A7C957"/>
+      <stop offset="100%" stop-color="#6A994E"/>
+    </linearGradient>
+    
+    <linearGradient id="helperRing" x1="0%" y1="0%" x2="100%" y2="100%" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#A7C957">
+        <animate attributeName="stop-color" values="#A7C957;#BC4749;#A7C957" dur="10s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="50%" stop-color="#6A994E">
+        <animate attributeName="stop-color" values="#6A994E;#386641;#6A994E" dur="10s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="100%" stop-color="#A7C957">
+        <animate attributeName="stop-color" values="#A7C957;#FFD166;#A7C957" dur="10s" repeatCount="indefinite"/>
+      </stop>
+    </linearGradient>
+  </defs>
+</svg>

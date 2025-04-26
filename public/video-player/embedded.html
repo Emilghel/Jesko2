@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jesko AI Video Player</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #a855f7;
+      --secondary: #ec4899;
+      --background: #050315;
+      --surface: #0f0a24;
+      --text: #e2e2e2;
+      --accent: #6d28d9;
+    }
+    
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--background);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      padding: 1rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .header-content {
+      position: relative;
+      z-index: 2;
+    }
+    
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: white;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .header-glow {
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+      animation: rotate 20s linear infinite;
+      z-index: 1;
+    }
+    
+    main {
+      flex: 1;
+      padding: 2rem;
+      max-width: 1000px;
+      margin: 0 auto;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    
+    .player-container {
+      background: var(--surface);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      position: relative;
+      margin-bottom: 2rem;
+    }
+    
+    .video-container {
+      width: 100%;
+      padding-top: 56.25%; /* 16:9 Aspect Ratio by default */
+      position: relative;
+      background: #000;
+      overflow: hidden;
+    }
+    
+    /* Special styling for vertical/reel format videos (9:16 aspect ratio) */
+    .video-container.reel-format {
+      padding-top: 177.78%; /* 9:16 Aspect Ratio */
+      max-width: 400px; /* Limit width for better viewing experience */
+      margin: 0 auto; /* Center the container */
+      border-radius: 16px; /* More rounded corners for reels */
+      box-shadow: 0 12px 32px rgba(0,0,0,0.5); /* Enhanced shadow */
+      background-color: black; /* Ensure black background for letterboxing */
+      position: relative;
+      overflow: hidden;
+    }
+    
+    /* Properly center and crop video for reel format */
+    .video-container.reel-format video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* Cover ensures the video fills the container */
+      object-position: center; /* Center the video within the container */
+      background-color: black;
+    }
+    
+    /* Badge for reel format */
+    .reel-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .video-placeholder {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3a 100%);
+    }
+    
+    .video-placeholder i {
+      font-size: 3rem;
+      color: var(--primary);
+      margin-bottom: 1rem;
+      animation: pulse 2s infinite;
+    }
+    
+    .video-placeholder h2 {
+      color: white;
+      margin: 0;
+      text-align: center;
+      font-size: 1.5rem;
+    }
+    
+    .video-placeholder p {
+      color: rgba(255,255,255,0.7);
+      text-align: center;
+      max-width: 80%;
+      margin: 0.5rem 0 0;
+    }
+    
+    .controls {
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(0,0,0,0.2);
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .control-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.2rem;
+      cursor: pointer;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    
+    .control-btn:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    
+    .play-btn {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      width: 50px;
+      height: 50px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+    
+    .play-btn:hover {
+      transform: scale(1.05);
+      background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
+    }
+    
+    .timeline {
+      flex: 1;
+      height: 4px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 4px;
+      position: relative;
+      margin: 0 1rem;
+      overflow: hidden;
+    }
+    
+    .progress {
+      position: absolute;
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+      width: 20%;
+      left: 0;
+      top: 0;
+    }
+    
+    .clip-info {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+    
+    .clip-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 0 0 0.5rem;
+      color: white;
+    }
+    
+    .clip-meta {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.7);
+    }
+    
+    .viral-score {
+      background: linear-gradient(90deg, #ff4d4d, #ff9f4d, #ffcd4d, #4dff77, #4dffff, #4d77ff, #9f4dff, #ff4dff);
+      background-size: 200% 100%;
+      animation: shimmer 3s linear infinite;
+      color: white;
+      font-weight: bold;
+      padding: 0.5rem 1rem;
+      border-radius: 2rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    
+    .clip-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    
+    .action-btn {
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 2rem;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s;
+    }
+    
+    .action-btn:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    
+    .action-primary {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    }
+    
+    .action-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
+    }
+    
+    .footer {
+      text-align: center;
+      padding: 2rem;
+      background: var(--surface);
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .footer-logo {
+      font-size: 1.2rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+    }
+    
+    .stars {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
+    
+    .star {
+      position: absolute;
+      background: white;
+      border-radius: 50%;
+      opacity: 0.6;
+      animation: twinkle 3s infinite ease-in-out;
+    }
+    
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 0.8; }
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.1); opacity: 1; }
+    }
+    
+    @keyframes shimmer {
+      0% { background-position: -100% 0; }
+      100% { background-position: 200% 0; }
+    }
+    
+    @keyframes rotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    
+    .media-queries {
+      max-width: 100%;
+      height: auto;
+    }
+    
+    @media (max-width: 768px) {
+      main {
+        padding: 1rem;
+      }
+      
+      .clip-meta {
+        flex-wrap: wrap;
+      }
+      
+      .control-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+      }
+      
+      .play-btn {
+        width: 44px;
+        height: 44px;
+      }
+      
+      .clip-actions {
+        flex-wrap: wrap;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="stars" id="stars"></div>
+  
+  <header>
+    <div class="header-glow"></div>
+    <div class="header-content">
+      <div class="logo">Jesko AI Video Player</div>
+    </div>
+  </header>
+  
+  <main>
+    <div class="player-container">
+      <div class="video-container">
+        <!-- Actual video element with fallback to placeholder -->
+        <video id="video-player" class="hidden" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;" controls>
+          <source src="https://assets.klap.app/web-assets/landing/klap-demo-shorts.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+        
+        <div id="video-placeholder" class="video-placeholder">
+          <i class="fas fa-film"></i>
+          <h2>AI-Generated Clip</h2>
+          <p>Your AI-powered video clip would appear here in a real implementation</p>
+        </div>
+        
+        <!-- Overlay with gradient effect -->
+        <div class="video-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(0deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.2) 100%); z-index: 2; pointer-events: none;"></div>
+      </div>
+      <div class="controls">
+        <button class="control-btn"><i class="fas fa-backward"></i></button>
+        <button class="control-btn play-btn"><i class="fas fa-play"></i></button>
+        <button class="control-btn"><i class="fas fa-forward"></i></button>
+        <div class="timeline">
+          <div class="progress"></div>
+        </div>
+        <button class="control-btn"><i class="fas fa-volume-up"></i></button>
+        <button class="control-btn"><i class="fas fa-expand"></i></button>
+      </div>
+    </div>
+    
+    <div class="clip-info">
+      <div class="viral-score">
+        <i class="fas fa-fire"></i>
+        <span>Viral Score: 85%</span>
+      </div>
+      
+      <h1 class="clip-title" id="clip-title">Sample AI-Generated Clip</h1>
+      
+      <div class="clip-meta">
+        <div class="meta-item">
+          <i class="fas fa-clock"></i>
+          <span id="timestamp">2:30</span>
+        </div>
+        <div class="meta-item">
+          <i class="fas fa-chart-line"></i>
+          <span id="engagement">Engagement: Exceptional</span>
+        </div>
+        <div class="meta-item">
+          <i class="fas fa-stopwatch"></i>
+          <span id="duration">Duration: 0:35</span>
+        </div>
+      </div>
+      
+      <p id="caption">This is a placeholder for your AI-generated video clip. The actual clips would be extracted from your uploaded video and optimized for social sharing.</p>
+      
+      <div class="clip-actions">
+        <button class="action-btn action-primary">
+          <i class="fas fa-download"></i>
+          <span>Download</span>
+        </button>
+        <button class="action-btn">
+          <i class="fas fa-share-alt"></i>
+          <span>Share</span>
+        </button>
+        <button class="action-btn">
+          <i class="fas fa-edit"></i>
+          <span>Edit</span>
+        </button>
+        <button class="action-btn">
+          <i class="fas fa-magic"></i>
+          <span>AI Enhance</span>
+        </button>
+      </div>
+    </div>
+  </main>
+  
+  <footer class="footer">
+    <div class="footer-logo">Jesko AI</div>
+    <p>Powerful AI-driven video tools for content creators</p>
+  </footer>
+  
+  <script>
+    // Parse URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const clipNumber = urlParams.get('clip') || '1';
+    const title = urlParams.get('title') || 'Sample AI-Generated Clip';
+    const timestamp = urlParams.get('timestamp') || '2:30';
+    const engagement = urlParams.get('engagement') || 'Exceptional';
+    const duration = urlParams.get('duration') || '0:35';
+    const caption = urlParams.get('caption') || 'This is a placeholder for your AI-generated video clip. The actual clips would be extracted from your uploaded video and optimized for social sharing.';
+    const clipType = urlParams.get('type') || 'standard'; // 'reel' or 'standard'
+    const captionStyle = urlParams.get('captionStyle') || 'minimal'; // Added support for caption style: 'minimal', 'bold', 'gradient', 'trending', 'subtitle'
+    
+    // Get precise startTime and endTime if available (direct numeric values)
+    const directStartTime = urlParams.get('startTime');
+    const directEndTime = urlParams.get('endTime');
+    
+    // Get the custom video URL from the parameters, if available
+    const videoUrl = urlParams.get('videoUrl') || 'https://assets.klap.app/web-assets/landing/klap-demo-shorts.mp4';
+    console.log("Using video URL:", videoUrl);
+    
+    // Update the page with parameters
+    document.getElementById('clip-title').textContent = `Clip ${clipNumber}: ${title}`;
+    document.getElementById('timestamp').textContent = timestamp;
+    document.getElementById('engagement').textContent = `Engagement: ${engagement}`;
+    document.getElementById('duration').textContent = `Duration: ${duration}`;
+    document.getElementById('caption').textContent = caption;
+    
+    // Get video element and the placeholder
+    const videoElement = document.getElementById('video-player');
+    const videoPlaceholder = document.getElementById('video-placeholder');
+    const videoContainer = document.querySelector('.video-container');
+    
+    // Check if this is a reel format clip and apply special styling
+    if (clipType === 'reel') {
+      console.log("Setting up vertical reel format (9:16)");
+      videoContainer.classList.add('reel-format');
+      
+      // This ensures the video is properly cropped for vertical format
+      videoElement.style.objectFit = 'cover';
+      
+      // Center the video focus point
+      videoElement.style.objectPosition = 'center';
+      
+      // Create a div for letterboxing/pillarboxing if needed
+      const letterboxContainer = document.createElement('div');
+      letterboxContainer.style.position = 'absolute';
+      letterboxContainer.style.top = '0';
+      letterboxContainer.style.left = '0';
+      letterboxContainer.style.width = '100%';
+      letterboxContainer.style.height = '100%';
+      letterboxContainer.style.background = 'black';
+      letterboxContainer.style.zIndex = '-1';
+      videoContainer.appendChild(letterboxContainer);
+      
+      // Add a reel format badge
+      const reelBadge = document.createElement('div');
+      reelBadge.className = 'reel-badge';
+      reelBadge.innerHTML = '<i class="fas fa-mobile-alt"></i> Vertical Reel';
+      videoContainer.appendChild(reelBadge);
+      
+      // Add text overlay caption for reels with style support
+      const captionOverlay = document.createElement('div');
+      captionOverlay.className = 'caption-overlay';
+      captionOverlay.style.position = 'absolute';
+      captionOverlay.style.bottom = '15%';
+      captionOverlay.style.left = '10%';
+      captionOverlay.style.right = '10%';
+      captionOverlay.style.padding = '10px';
+      captionOverlay.style.zIndex = '10';
+      captionOverlay.style.pointerEvents = 'none';
+      captionOverlay.style.opacity = '0';
+      captionOverlay.style.transform = 'translateY(20px)';
+      captionOverlay.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+      captionOverlay.textContent = caption.substring(0, 120) + (caption.length > 120 ? '...' : '');
+      
+      // Apply the specific caption style based on the parameter
+      console.log(`Applying caption style: ${captionStyle}`);
+      switch(captionStyle) {
+        case 'minimal':
+          // Clean, minimalistic style with semi-transparent background
+          captionOverlay.style.backgroundColor = 'rgba(0,0,0,0.5)';
+          captionOverlay.style.borderRadius = '8px';
+          captionOverlay.style.color = 'white';
+          captionOverlay.style.fontSize = '14px';
+          captionOverlay.style.fontWeight = '400';
+          captionOverlay.style.textAlign = 'center';
+          captionOverlay.style.backdropFilter = 'blur(4px)';
+          break;
+        
+        case 'bold':
+          // Bold, attention-grabbing caption with larger text
+          captionOverlay.style.backgroundColor = 'rgba(0,0,0,0.8)';
+          captionOverlay.style.borderRadius = '10px';
+          captionOverlay.style.color = 'white';
+          captionOverlay.style.fontSize = '18px';
+          captionOverlay.style.fontWeight = '800';
+          captionOverlay.style.textAlign = 'center';
+          captionOverlay.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
+          captionOverlay.style.textShadow = '1px 1px 2px black';
+          break;
+        
+        case 'gradient':
+          // Gradient text effect for TikTok-style videos
+          captionOverlay.style.backgroundColor = 'rgba(0,0,0,0.5)';
+          captionOverlay.style.borderRadius = '12px';
+          captionOverlay.style.background = 'linear-gradient(90deg, rgba(0,0,0,0.6), rgba(148,0,211,0.7))';
+          captionOverlay.style.color = '#00FFFF';
+          captionOverlay.style.fontSize = '16px';
+          captionOverlay.style.fontWeight = '600';
+          captionOverlay.style.textAlign = 'center';
+          captionOverlay.style.textShadow = '2px 2px 4px rgba(255,0,255,0.7)';
+          break;
+        
+        case 'trending':
+          // High-impact style for viral content
+          captionOverlay.style.backgroundColor = 'rgba(128,0,128,0.5)';
+          captionOverlay.style.borderRadius = '8px';
+          captionOverlay.style.color = 'yellow';
+          captionOverlay.style.fontSize = '17px';
+          captionOverlay.style.fontWeight = '700';
+          captionOverlay.style.textAlign = 'center';
+          captionOverlay.style.textShadow = '2px 2px 0px rgba(0,0,0,0.8)';
+          captionOverlay.style.boxShadow = '0 0 20px rgba(255,255,0,0.2)';
+          break;
+        
+        case 'subtitle':
+          // Professional subtitle style
+          captionOverlay.style.backgroundColor = 'rgba(0,0,0,0.6)';
+          captionOverlay.style.borderRadius = '4px';
+          captionOverlay.style.color = 'white';
+          captionOverlay.style.fontSize = '14px';
+          captionOverlay.style.fontWeight = '400';
+          captionOverlay.style.textAlign = 'center';
+          captionOverlay.style.fontFamily = 'Arial, sans-serif';
+          captionOverlay.style.letterSpacing = '0.5px';
+          break;
+        
+        default:
+          // Default style if none specified or invalid
+          captionOverlay.style.backgroundColor = 'rgba(0,0,0,0.6)';
+          captionOverlay.style.borderRadius = '8px';
+          captionOverlay.style.color = 'white';
+          captionOverlay.style.fontSize = '14px';
+          captionOverlay.style.fontWeight = 'bold';
+          captionOverlay.style.textAlign = 'center';
+          captionOverlay.style.backdropFilter = 'blur(4px)';
+      }
+      
+      videoContainer.appendChild(captionOverlay);
+      
+      // Show caption after a short delay
+      setTimeout(() => {
+        captionOverlay.style.opacity = '1';
+        captionOverlay.style.transform = 'translateY(0)';
+      }, 1000);
+    } else {
+      // Standard format (16:9)
+      videoElement.style.objectFit = 'cover';
+    }
+    
+    // Set the video source to the URL from parameters
+    videoElement.querySelector('source').src = videoUrl;
+    
+    // Important: Need to reload the video after changing the source
+    videoElement.load();
+    
+    // Show video player and hide placeholder
+    videoElement.classList.remove('hidden');
+    videoElement.style.display = 'block';
+    videoPlaceholder.style.display = 'none';
+    
+    // First check if we have direct startTime and endTime parameters
+    let startSeconds = 0;
+    let durationSeconds = 30; // Default 30 seconds
+    let endSeconds = 30;
+    
+    if (directStartTime !== null && !isNaN(Number(directStartTime))) {
+      // Direct start time provided as a number
+      startSeconds = Number(directStartTime);
+      console.log(`Using direct startTime parameter: ${startSeconds} seconds`);
+    } else {
+      // Fall back to timestamp parameter (format is "mm:ss")
+      const startTimeParam = timestamp || "0:00";
+      
+      if (startTimeParam.includes(':')) {
+        const [minutes, seconds] = startTimeParam.split(':').map(part => parseInt(part, 10));
+        startSeconds = (minutes * 60) + seconds;
+      }
+      console.log(`Using timestamp parameter for start time: ${startSeconds} seconds`);
+    }
+    
+    if (directEndTime !== null && !isNaN(Number(directEndTime))) {
+      // Direct end time provided as a number
+      endSeconds = Number(directEndTime);
+      durationSeconds = endSeconds - startSeconds;
+      console.log(`Using direct endTime parameter: ${endSeconds} seconds (duration: ${durationSeconds} seconds)`);
+    } else {
+      // Fall back to duration parameter
+      const durationParam = duration || "0:30";
+      
+      if (durationParam.includes(':')) {
+        const [durationMinutes, durationSecs] = durationParam.split(':').map(part => parseInt(part, 10));
+        durationSeconds = (durationMinutes * 60) + durationSecs;
+      }
+      endSeconds = startSeconds + durationSeconds;
+      console.log(`Using duration parameter: ${durationSeconds} seconds (ends at: ${endSeconds} seconds)`);
+    }
+    
+    console.log(`Final clip parameters - start: ${startSeconds}s, end: ${endSeconds}s, duration: ${durationSeconds}s`);
+    
+    // Set the starting point and handle playback
+    videoElement.addEventListener('loadedmetadata', () => {
+      // Set the start time
+      videoElement.currentTime = startSeconds;
+      
+      // Log actual video duration for debugging
+      console.log(`Full video duration: ${videoElement.duration} seconds`);
+      
+      // Add event listener to handle looping or stopping at end of clip
+      videoElement.addEventListener('timeupdate', () => {
+        // Use the precomputed endSeconds instead of calculating it each time
+        
+        // If we've reached the end of our clip segment, either loop or pause
+        if (videoElement.currentTime >= endSeconds) {
+          console.log(`Reached end of clip segment at ${endSeconds} seconds`);
+          
+          // Option 1: Pause at the end
+          videoElement.pause();
+          
+          // Option 2: Loop back to start of clip
+          // videoElement.currentTime = startSeconds;
+          // videoElement.play();
+        }
+      });
+    });
+    
+    // Create stars in background
+    const starsContainer = document.getElementById('stars');
+    for (let i = 0; i < 100; i++) {
+      const star = document.createElement('div');
+      star.classList.add('star');
+      
+      // Random position
+      star.style.left = `${Math.random() * 100}%`;
+      star.style.top = `${Math.random() * 100}%`;
+      
+      // Random size
+      const size = Math.random() * 2 + 1;
+      star.style.width = `${size}px`;
+      star.style.height = `${size}px`;
+      
+      // Random animation delay
+      star.style.animationDelay = `${Math.random() * 3}s`;
+      
+      starsContainer.appendChild(star);
+    }
+    
+    // Connect play button to video playback
+    const playBtn = document.querySelector('.play-btn');
+    const playIcon = playBtn.querySelector('i');
+    
+    function updatePlayButtonState() {
+      if (videoElement.paused) {
+        playIcon.classList.remove('fa-pause');
+        playIcon.classList.add('fa-play');
+      } else {
+        playIcon.classList.remove('fa-play');
+        playIcon.classList.add('fa-pause');
+      }
+    }
+    
+    // Initialize the play button state
+    updatePlayButtonState();
+    
+    // Toggle play/pause when the play button is clicked
+    playBtn.addEventListener('click', () => {
+      if (videoElement.paused) {
+        videoElement.play();
+      } else {
+        videoElement.pause();
+      }
+      updatePlayButtonState();
+    });
+    
+    // Update the play button if user clicks on the video directly
+    videoElement.addEventListener('play', updatePlayButtonState);
+    videoElement.addEventListener('pause', updatePlayButtonState);
+    
+    // Download button functionality - actually downloads the clip
+    const downloadBtn = document.querySelector('.action-primary');
+    downloadBtn.addEventListener('click', () => {
+      // Check if we can use the Clip API (real implementation), or need to do it manually
+      const clipParam = urlParams.get('clipUrl');
+      
+      if (clipParam) {
+        // If a real clip URL is provided, download it directly
+        const downloadLink = document.createElement('a');
+        downloadLink.href = clipParam;
+        downloadLink.download = `Jesko-AI-Clip-${clipNumber}.mp4`;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+      } else {
+        // For demo purposes - attempt to download the video using MediaRecorder
+        try {
+          // Create a message to show the user we're processing the clip
+          const messageDiv = document.createElement('div');
+          messageDiv.textContent = 'Preparing clip for download...';
+          messageDiv.style.position = 'fixed';
+          messageDiv.style.top = '50%';
+          messageDiv.style.left = '50%';
+          messageDiv.style.transform = 'translate(-50%, -50%)';
+          messageDiv.style.padding = '1rem 2rem';
+          messageDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+          messageDiv.style.color = 'white';
+          messageDiv.style.borderRadius = '0.5rem';
+          messageDiv.style.zIndex = '9999';
+          document.body.appendChild(messageDiv);
+          
+          // For simplicity, direct the user to save the video
+          setTimeout(() => {
+            document.body.removeChild(messageDiv);
+            
+            const downloadLink = document.createElement('a');
+            downloadLink.href = videoUrl;
+            downloadLink.download = `Jesko-AI-Clip-${clipNumber}.mp4`;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+          }, 1500);
+        } catch (err) {
+          console.error('Error creating clip download:', err);
+          alert('Could not prepare clip for download. Try downloading the video directly.');
+        }
+      }
+    });
+    
+    // Connect timeline to video playback
+    const timeline = document.querySelector('.timeline');
+    const progress = document.querySelector('.progress');
+    
+    // Update timeline progress based on playback within our clip segment
+    videoElement.addEventListener('timeupdate', () => {
+      // Calculate percent based on position within the clip segment
+      const clipPosition = videoElement.currentTime - startSeconds;
+      const clipPercent = (clipPosition / durationSeconds) * 100;
+      // Constrain percent between 0-100
+      const boundedPercent = Math.max(0, Math.min(100, clipPercent));
+      progress.style.width = `${boundedPercent}%`;
+    });
+    
+    // Allow seeking by clicking on the timeline, but constrain to our clip segment
+    timeline.addEventListener('click', (e) => {
+      const rect = timeline.getBoundingClientRect();
+      const pos = (e.clientX - rect.left) / rect.width;
+      
+      // Calculate the time within our clip segment
+      const clipTime = pos * durationSeconds + startSeconds;
+      
+      // Make sure we don't seek beyond the clip end
+      // Use the precomputed endSeconds variable
+      const boundedTime = Math.min(endSeconds, Math.max(startSeconds, clipTime));
+      
+      videoElement.currentTime = boundedTime;
+    });
+  </script>
+</body>
+</html>

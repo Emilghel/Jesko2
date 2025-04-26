@@ -82,6 +82,11 @@ const MemberCounter = ({ className = '' }: CounterProps) => {
   // Format the number with commas
   const formattedCount = displayedCount.toLocaleString();
 
+  // Return null to hide the member counter completely
+  return null;
+  
+  // Original code commented out below
+  /*
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       <UsersIcon size={18} className="text-cyan-500" />
@@ -106,6 +111,7 @@ const MemberCounter = ({ className = '' }: CounterProps) => {
       )}
     </div>
   );
+  */
 };
 
 export default MemberCounter;

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="120" height="60" viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Premium UFO with glass/chrome finish and subtle gradients -->
+  <defs>
+    <!-- Glass/Chrome Gradients -->
+    <linearGradient id="glass-body" x1="60" y1="10" x2="60" y2="30" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="0.4" stop-color="#d0f3ff" stop-opacity="0.7"/>
+      <stop offset="0.6" stop-color="#90e0ff" stop-opacity="0.6"/>
+      <stop offset="0.9" stop-color="#60c8ff" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#40a0ff" stop-opacity="0.3"/>
+    </linearGradient>
+    
+    <!-- Dome Glass Gradient -->
+    <radialGradient id="dome-glass" cx="60" cy="17" r="12" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.95"/>
+      <stop offset="0.5" stop-color="#a0e0ff" stop-opacity="0.8"/>
+      <stop offset="0.9" stop-color="#60c0ff" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#4080ff" stop-opacity="0.4"/>
+    </radialGradient>
+    
+    <!-- Ring Gradient -->
+    <linearGradient id="ring-gradient" x1="40" y1="30" x2="80" y2="30" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8040ff" stop-opacity="0.1"/>
+      <stop offset="0.5" stop-color="#a080ff" stop-opacity="0.3"/>
+      <stop offset="1" stop-color="#8040ff" stop-opacity="0.1"/>
+    </linearGradient>
+    
+    <!-- Pulsing Beam -->
+    <linearGradient id="beam-gradient" x1="60" y1="30" x2="60" y2="55" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#80c0ff" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#80c0ff" stop-opacity="0"/>
+    </linearGradient>
+    
+    <!-- Glow Filter for UFO -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feFlood flood-color="#50a0ff" flood-opacity="0.8" result="glow-color"/>
+      <feComposite operator="in" in="glow-color" in2="blur" result="soft-glow"/>
+      <feComposite operator="over" in="SourceGraphic" in2="soft-glow"/>
+    </filter>
+    
+    <!-- Subtle Detail Filter -->
+    <filter id="detail-shadow" x="-10%" y="-10%" width="120%" height="120%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="1" stdDeviation="0.5" flood-color="#203040" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- UFO Components -->
+  <!-- Glow behind the UFO -->
+  <ellipse cx="60" cy="30" rx="40" ry="7" fill="#50a0ff" opacity="0.2" filter="url(#glow)"/>
+  
+  <!-- Main UFO Body -->
+  <ellipse cx="60" cy="30" rx="40" ry="7" fill="url(#glass-body)" filter="url(#detail-shadow)"/>
+  
+  <!-- Dome -->
+  <ellipse cx="60" cy="17" rx="12" ry="10" fill="url(#dome-glass)" filter="url(#detail-shadow)"/>
+  
+  <!-- Bottom Ring -->
+  <ellipse cx="60" cy="30" rx="28" ry="3" fill="url(#ring-gradient)" opacity="0.7"/>
+  
+  <!-- Light Beam (Will be animated with CSS) -->
+  <path d="M45 30 L60 55 L75 30 Z" fill="url(#beam-gradient)" opacity="0.0" class="beam">
+    <animate attributeName="opacity" values="0;0.3;0" dur="3s" repeatCount="indefinite"/>
+  </path>
+  
+  <!-- Subtle Details -->
+  <ellipse cx="48" cy="30" rx="1.5" ry="0.8" fill="#90e0ff" opacity="0.9"/>
+  <ellipse cx="72" cy="30" rx="1.5" ry="0.8" fill="#90e0ff" opacity="0.9"/>
+  <ellipse cx="60" cy="30" rx="1.5" ry="0.8" fill="#90e0ff" opacity="0.9"/>
+  
+  <!-- Interior Dome Light -->
+  <ellipse cx="60" cy="17" rx="6" ry="5" fill="#ffffff" opacity="0.2"/>
+</svg>

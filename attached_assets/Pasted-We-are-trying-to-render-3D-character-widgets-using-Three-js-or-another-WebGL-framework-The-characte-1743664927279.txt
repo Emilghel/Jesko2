@@ -1,0 +1,59 @@
+We are trying to render 3D character widgets using Three.js or another WebGL framework. The characters are not showing up in the app. Try the following steps in order:
+
+1. **Check Canvas Mounting:**
+   - Make sure the `<canvas>` element created by Three.js is correctly mounted inside the HTML.
+   - Ensure the container is not hidden by CSS or blocked by other elements (e.g., `display: none`, `opacity: 0`, `z-index` issues).
+
+2. **Camera and Scene Setup:**
+   - Confirm there is a camera positioned to actually "see" the model.
+   - Check if the scene has lighting (ambient + directional or point light). Without lights, models may render invisible.
+
+3. **Model Loading:**
+   - If loading GLTF/GLB models:
+     - Confirm the model path is correct.
+     - Add a console log to check if `GLTFLoader` is succeeding or failing (`onError` callback).
+     - Ensure the model file is uploaded correctly in the Replit `files` tab.
+
+4. **Renderer Resizing:**
+   - Set the renderer size properly using:
+     ```js
+     renderer.setSize(window.innerWidth, window.innerHeight);
+     ```
+   - Also make sure:
+     ```js
+     camera.aspect = window.innerWidth / window.innerHeight;
+     camera.updateProjectionMatrix();
+     ```
+
+5. **Debug Overlay:**
+   - Temporarily add a `console.log(scene.children)` after loading to confirm objects are present.
+   - Change the background color of the renderer to something bright to confirm visibility:
+     ```js
+     renderer.setClearColor(0xff00ff); // Magenta for visibility
+     ```
+
+6. **Minimal Working Example:**
+   - Strip down to a very basic Three.js scene: cube + camera + light.
+   - If that shows up, the issue is in model loading or positioning.
+
+7. **Replit Hosting Notes:**
+   - Avoid using absolute paths like `/models/model.gltf` unless it's served correctly.
+   - Use relative paths like `./model.gltf` and make sure the file is in the `public/` folder or the root.
+
+8. **Ensure Animation Loop is Running:**
+   - Add:
+     ```js
+     function animate() {
+       requestAnimationFrame(animate);
+       renderer.render(scene, camera);
+     }
+     animate();
+     ```
+
+If none of this works, load a basic cube as a sanity test:
+
+```js
+const geometry = new THREE.BoxGeometry();
+const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+const cube = new THREE.Mesh(geometry, material);
+scene.add(cube);

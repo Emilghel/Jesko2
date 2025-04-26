@@ -1,666 +1,642 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useLocation, Link, useRoute, useRouter } from 'wouter';
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
-import { useToast } from '@/hooks/use-toast';
-import { Label } from '@/components/ui/label';
-import { Loader2, CheckCircle2, AlertCircle, ArrowLeft, CreditCard } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { availablePlans, usePlan } from '@/contexts/plan-context';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
+import { useToast } from '@/hooks/use-toast';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Loader2, CreditCard, ShieldCheck, Lock, ArrowLeft, Info, CheckCircle2 } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { createSubscriptionPaymentIntent, getStripe, verifyPayment } from '@/lib/stripe';
+import StripeCheckoutForm from '@/components/checkout/StripeCheckoutForm';
+import CustomCreditCardForm from '@/components/checkout/CustomCreditCardForm';
 
-// Define PayPal types to fix TypeScript errors
-declare global {
-  interface Window {
-    paypal?: {
-      Buttons: (config: any) => { render: (selector: string) => void };
-    };
+// Plan type definition
+interface Plan {
+  name: string;
+  price: number;
+  billing: string;
+  features: string[];
+  hasTrial?: boolean;
+  freeTrialDays?: number;
+}
+
+// Plan data
+const PLANS: Record<string, Plan> = {
+  'jesko-ai-starter': {
+    name: 'Jesko AI Starter',
+    price: 18,
+    billing: 'month',
+    freeTrialDays: 7,
+    hasTrial: true,
+    features: [
+      'AI agent for automated lead communication',
+      'Voice/text message capabilities',
+      'Phone number included',
+      'Basic reporting',
+      '7-day free trial'
+    ]
+  },
+  'jesko-ai-standard': {
+    name: 'Jesko AI Standard',
+    price: 49,
+    billing: 'month',
+    freeTrialDays: 14,
+    hasTrial: true,
+    features: [
+      'Everything in Starter',
+      'Custom AI agent personality',
+      'Advanced call analysis',
+      'Priority support',
+      'Extended call duration',
+      '14-day free trial'
+    ]
+  },
+  'jesko-ai-pro': {
+    name: 'Jesko AI Pro',
+    price: 98,
+    billing: 'month',
+    hasTrial: false,
+    features: [
+      'Everything in Standard',
+      'Multiple AI agents',
+      'Unlimited calls',
+      'API access',
+      'White-label options',
+      'Dedicated account manager'
+    ]
+  },
+  'jesko-ai-enterprise': {
+    name: 'Jesko AI Enterprise',
+    price: 399,
+    billing: 'month',
+    hasTrial: false,
+    features: [
+      'Custom enterprise solution',
+      'Dedicated infrastructure',
+      'Custom integrations',
+      'SLA guarantees',
+      'Team training'
+    ]
   }
-}
+};
 
-interface PayPalSubscriptionActions {
-  subscription: {
-    create: (params: { plan_id: string }) => Promise<string>;
-  };
-}
-
-interface PayPalApproveData {
-  subscriptionID: string;
-}
-
-interface PayPalButtonConfig {
-  style: {
-    shape: string;
-    color: string;
-    layout: string;
-    label: string;
-  };
-  createSubscription: (data: any, actions: PayPalSubscriptionActions) => Promise<string>;
-  onApprove: (data: PayPalApproveData, actions: any) => void;
-}
-
-// Form schema
-const checkoutFormSchema = z.object({
-  fullName: z.string().min(2, { message: "Full name must be at least 2 characters" }),
-  email: z.string().email({ message: "Please enter a valid email address" }),
-  companyName: z.string().optional(),
-  phoneNumber: z.string().min(10, { message: "Please enter a valid phone number" }),
-  agreeToTerms: z.boolean().refine(val => val === true, {
-    message: "You must agree to the terms and conditions",
-  }),
-});
-
-type CheckoutFormValues = z.infer<typeof checkoutFormSchema>;
-
-enum CheckoutStep {
-  FormEntry,
-  Processing,
-  Success,
-  Error,
-}
-
-export default function CheckoutPage() {
+const CheckoutPage: React.FC = () => {
+  const [location, setLocation] = useLocation();
   const { user } = useAuth();
   const { toast } = useToast();
-  const [, setLocation] = useLocation();
-  const [location] = useLocation();
-  const [, params] = useRoute("/checkout/:planId"); 
-  const { selectedPlan, selectPlanById } = usePlan();
-  const [checkoutStep, setCheckoutStep] = useState<CheckoutStep>(CheckoutStep.FormEntry);
-  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [planId, setPlanId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [paymentTab, setPaymentTab] = useState('credit-card');
   
-  // Initialize form with react-hook-form
-  const form = useForm<CheckoutFormValues>({
-    resolver: zodResolver(checkoutFormSchema),
-    defaultValues: {
-      fullName: user?.displayName || '',
-      email: user?.email || '',
-      companyName: '',
-      phoneNumber: '',
-      agreeToTerms: false,
-    },
-    mode: "onChange", // Validate on change instead of only on submit
-  });
-
-  // Load plan from URL params
-  useEffect(() => {
-    const planId = params?.planId || new URLSearchParams(location.split('?')[1]).get('plan');
+  // Form state
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardName, setCardName] = useState('');
+  const [expiry, setExpiry] = useState('');
+  const [cvc, setCvc] = useState('');
+  const [email, setEmail] = useState(user?.email || '');
+  const [address, setAddress] = useState('');
+  const [city, setCity] = useState('');
+  const [state, setState] = useState('');
+  const [zip, setZip] = useState('');
+  const [country, setCountry] = useState('United States');
+  
+  // Format card number with spaces
+  const formatCardNumber = (value: string) => {
+    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    const matches = v.match(/\d{4,16}/g);
+    const match = matches && matches[0] || '';
+    const parts = [];
     
-    if (planId && Object.keys(availablePlans).includes(planId)) {
-      selectPlanById(planId);
-    } else if (!selectedPlan) {
-      // Redirect if no valid plan selected
+    for (let i = 0, len = match.length; i < len; i += 4) {
+      parts.push(match.substring(i, i + 4));
+    }
+    
+    if (parts.length) {
+      return parts.join(' ');
+    } else {
+      return value;
+    }
+  };
+  
+  // Format expiry date
+  const formatExpiry = (value: string) => {
+    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    
+    if (v.length > 2) {
+      return `${v.substring(0, 2)}/${v.substring(2, 4)}`;
+    }
+    
+    return v;
+  };
+  
+  // Parse query parameters on load
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const plan = params.get('plan');
+    
+    if (plan && PLANS[plan as keyof typeof PLANS]) {
+      setPlanId(plan);
+    } else {
+      // Redirect back to pricing if no valid plan
       toast({
-        title: "No plan selected",
-        description: "Please select a plan from the pricing page.",
-        variant: "destructive",
+        title: "Invalid Plan",
+        description: "Please select a valid plan from our pricing page.",
+        variant: "destructive"
       });
       setLocation('/pricing');
     }
-  }, [params, location, selectPlanById, selectedPlan, toast, setLocation]);
+    
+    // Pre-fill with user data if available
+    if (user) {
+      setEmail(user.email || '');
+      setCardName(user.displayName || user.username || '');
+    }
+  }, [user, setLocation, toast]);
   
-  // Load PayPal script for plans with direct PayPal integration
+  // Calculate order summary
+  const selectedPlan = planId ? PLANS[planId as keyof typeof PLANS] : null;
+  const subtotal = selectedPlan ? selectedPlan.price : 0;
+  const tax = subtotal * 0.0; // No tax for now
+  const total = subtotal + tax;
+  const hasFreeTrialOffer = selectedPlan?.hasTrial || false;
+  const trialDays = selectedPlan?.freeTrialDays || 0;
+  
+  // State for Stripe
+  const [clientSecret, setClientSecret] = useState<string>('');
+  const [paymentIntentId, setPaymentIntentId] = useState<string>('');
+  
+  // Create a payment intent when the plan changes
   useEffect(() => {
-    const isDirectPayPalPlan = selectedPlan?.id === 'ai-secretary-starter' || 
-                              selectedPlan?.id === 'ai-secretary-standard' || 
-                              selectedPlan?.id === 'ai-secretary-pro';
-    
-    if (isDirectPayPalPlan && checkoutStep === CheckoutStep.FormEntry) {
-      // Use a small delay to ensure the DOM is fully rendered before loading the script
-      // This fixes the "element does not exist" error that happens when the script loads too early
-      const timerId = setTimeout(() => {
-        // Get plan-specific PayPal container ID and plan ID
-        let paypalContainerId = '';
-        let planId = '';
-        
-        if (selectedPlan?.id === 'ai-secretary-starter') {
-          paypalContainerId = 'paypal-button-container-P-6H912450BC000780SM7UXKVI';
-          planId = 'P-6H912450BC000780SM7UXKVI';
-        } else if (selectedPlan?.id === 'ai-secretary-standard') {
-          paypalContainerId = 'paypal-button-container-P-0AU893367F5884614M7UXJDA';
-          planId = 'P-0AU893367F5884614M7UXJDA';
-        } else if (selectedPlan?.id === 'ai-secretary-pro') {
-          paypalContainerId = 'paypal-button-container-P-2UA32207898067051M7UYGVQ';
-          planId = 'P-2UA32207898067051M7UYGVQ';
-        }
-        
-        // Check if the container element exists
-        const paypalContainer = document.getElementById(paypalContainerId);
-        
-        if (!paypalContainer) {
-          console.warn(`PayPal container element not found for ${selectedPlan?.id}, skipping script load`);
-          return;
-        }
-        
-        // Create the script element
-        const script = document.createElement('script');
-        script.src = "https://www.paypal.com/sdk/js?client-id=Af7G68O9uhv8g9s_E1_yiL0_mCXddIXN0ODXd-kW2eofsjZwJwPV-pI9vQ8oItvgtlCyXSuq0cHl0wQP&vault=true&intent=subscription";
-        script.setAttribute('data-sdk-integration-source', 'button-factory');
-        script.async = true;
-        
-        // Append the script
-        document.body.appendChild(script);
-        
-        // Initialize PayPal buttons when script is loaded
-        script.onload = () => {
-          if (window.paypal) {
-            window.paypal.Buttons({
-              style: {
-                shape: 'rect',
-                color: 'gold',
-                layout: 'vertical',
-                label: 'subscribe'
-              },
-              createSubscription: function(data: any, actions: PayPalSubscriptionActions) {
-                return actions.subscription.create({
-                  /* Creates the subscription */
-                  plan_id: planId
-                });
-              },
-              onApprove: function(data: PayPalApproveData, actions: any) {
-                alert(data.subscriptionID); // You can add optional success message for the subscriber here
-                // After showing alert, redirect to success page
-                window.location.href = `/checkout-success?subscriptionId=${data.subscriptionID}`;
-              }
-            }).render(`#${paypalContainerId}`); // Renders the PayPal button
-          }
-        };
-      }, 500); // 500ms delay to ensure DOM is ready
+    const initializePaymentIntent = async () => {
+      if (!planId || !selectedPlan) return;
       
-      // Cleanup
-      return () => {
-        clearTimeout(timerId);
-        // Remove any scripts we may have added
-        const paypalScript = document.querySelector('script[src*="paypal.com/sdk/js"]');
-        if (paypalScript && paypalScript.parentNode) {
-          paypalScript.parentNode.removeChild(paypalScript);
-        }
-      };
-    }
-  }, [selectedPlan, checkoutStep]);
-
-  const onSubmit = async (data: CheckoutFormValues) => {
-    if (!selectedPlan) return;
-    
-    // Start payment processing
-    setCheckoutStep(CheckoutStep.Processing);
-    
-    try {
-      // Extract the price from selectedPlan.price (removing $ symbol)
-      const amount = selectedPlan.price.replace(/[^0-9.]/g, '');
-      
-      // Check if we should use the demo mode (temporary solution while PayPal credentials are being fixed)
-      const useDemo = true; // Set to true for now until PayPal is configured
-      
-      if (useDemo) {
-        // Simulate payment processing delay
-        await new Promise(resolve => setTimeout(resolve, 2000));
+      try {
+        setIsLoading(true);
         
-        // Simulate successful payment (demo mode)
-        setCheckoutStep(CheckoutStep.Success);
+        // Create a payment intent with our API
+        const result = await createSubscriptionPaymentIntent(planId);
         
-        // Show notification about demo mode
+        setClientSecret(result.clientSecret);
+        setPaymentIntentId(result.paymentIntentId);
+      } catch (error) {
+        console.error('Error creating payment intent:', error);
         toast({
-          title: "Demo Mode",
-          description: "Using simulated payment for demonstration. In production, real PayPal payment would be processed.",
-          duration: 5000,
+          title: "Payment Setup Failed",
+          description: "We couldn't set up the payment process. Please try again or contact support.",
+          variant: "destructive"
         });
-        
-        return;
+      } finally {
+        setIsLoading(false);
       }
-      
-      // Create a PayPal order through our server API
-      const response = await fetch('/api/paypal/create-order', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          amount,
-          planId: selectedPlan.id,
-        }),
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create payment order');
-      }
-      
-      // Get the order details
-      const orderData = await response.json();
-      
-      // Find the approval URL to redirect to PayPal
-      const approvalUrl = orderData.links.find((link: any) => link.rel === 'approve').href;
-      
-      if (!approvalUrl) {
-        throw new Error('PayPal approval URL not found');
-      }
-      
-      // Redirect the user to PayPal to complete the payment
-      window.location.href = approvalUrl;
-      
-      // The page will be redirected, so no need to update state here
-      // When payment is completed, PayPal will redirect back to our /api/paypal/payment-success endpoint
-      // which will then redirect to checkout-success page
-      
-    } catch (error) {
-      console.error('Payment processing error:', error);
-      
-      // Temporarily provide a fallback to demo mode if PayPal integration fails
-      toast({
-        title: "PayPal Integration Issue",
-        description: "Payment processing with PayPal failed. Using demo mode instead.",
-        variant: "destructive",
-        duration: 5000,
-      });
-      
-      // Simulate delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Proceed with demo success for now
-      setCheckoutStep(CheckoutStep.Success);
-    }
+    };
+    
+    initializePaymentIntent();
+  }, [planId, selectedPlan, toast]);
+  
+  // Handle payment success
+  const handlePaymentSuccess = (paymentIntentId: string, params: URLSearchParams) => {
+    const successMessage = hasFreeTrialOffer
+      ? `You've successfully started your ${trialDays}-day free trial of the ${selectedPlan?.name} plan. Your subscription will begin after the trial period.`
+      : `You've successfully subscribed to the ${selectedPlan?.name} plan.`;
+    
+    toast({
+      title: hasFreeTrialOffer ? "Free Trial Started!" : "Payment Successful!",
+      description: successMessage,
+    });
+    
+    // Redirect to success page
+    setLocation(`/payment-success?${params.toString()}`);
   };
-
-  // Function to retry payment after error
-  const retryPayment = () => {
-    setPaymentError(null);
-    setCheckoutStep(CheckoutStep.FormEntry);
+  
+  // Handle payment error
+  const handlePaymentError = (error: Error) => {
+    console.error('Payment error:', error);
+    toast({
+      title: "Payment Failed",
+      description: "There was an error processing your payment. Please try again.",
+      variant: "destructive"
+    });
   };
-
-  // Function to go to dashboard after successful payment
-  const goToDashboard = () => {
-    setLocation('/dashboard');
+  
+  // Function to mask card number for display
+  const getDisplayCardNumber = () => {
+    if (!cardNumber) return '';
+    const digits = cardNumber.replace(/\s/g, '');
+    if (digits.length < 4) return digits;
+    return '•••• '.repeat(Math.floor((digits.length-4)/4)) + digits.slice(-4);
   };
-
-  if (!selectedPlan) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#0A0F16]">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-[#33C3BD] mx-auto mb-4" />
-          <p className="text-gray-300">Loading your plan information...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Check if we're looking at plans with direct PayPal integration
-  const isStarterPlan = selectedPlan?.id === 'ai-secretary-starter';
-  const isStandardPlan = selectedPlan?.id === 'ai-secretary-standard';
-  const isProPlan = selectedPlan?.id === 'ai-secretary-pro';
-  const hasDirectPayPalIntegration = isStarterPlan || isStandardPlan || isProPlan;
-
-  const renderStep = () => {
-    switch (checkoutStep) {
-      case CheckoutStep.FormEntry:
-        return (
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="fullName">Full Name*</Label>
-                <Input
-                  id="fullName"
-                  placeholder="John Doe"
-                  {...form.register("fullName")}
-                  className="bg-[#141B29] border-[#1E293B] mt-1"
-                />
-                {form.formState.errors.fullName && (
-                  <p className="text-red-500 text-sm mt-1">{form.formState.errors.fullName.message}</p>
-                )}
-              </div>
-              
-              <div>
-                <Label htmlFor="email">Email Address*</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="john@example.com"
-                  {...form.register("email")}
-                  className="bg-[#141B29] border-[#1E293B] mt-1"
-                />
-                {form.formState.errors.email && (
-                  <p className="text-red-500 text-sm mt-1">{form.formState.errors.email.message}</p>
-                )}
-              </div>
-              
-              <div>
-                <Label htmlFor="companyName">Company Name (Optional)</Label>
-                <Input
-                  id="companyName"
-                  placeholder="Your Company"
-                  {...form.register("companyName")}
-                  className="bg-[#141B29] border-[#1E293B] mt-1"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="phoneNumber">Phone Number*</Label>
-                <Input
-                  id="phoneNumber"
-                  placeholder="+1 (555) 123-4567"
-                  {...form.register("phoneNumber")}
-                  className="bg-[#141B29] border-[#1E293B] mt-1"
-                />
-                {form.formState.errors.phoneNumber && (
-                  <p className="text-red-500 text-sm mt-1">{form.formState.errors.phoneNumber.message}</p>
-                )}
-              </div>
-            </div>
-            
-            <div className="pt-4 border-t border-[#1E293B]">
-              <div className="flex items-start space-x-2">
-                <Checkbox
-                  id="terms"
-                  checked={form.watch("agreeToTerms")}
-                  onCheckedChange={(checked) => {
-                    form.setValue("agreeToTerms", checked === true, { shouldValidate: true });
-                  }}
-                  className="mt-1 data-[state=checked]:bg-[#33C3BD] data-[state=checked]:border-[#33C3BD]"
-                />
-                <Label 
-                  htmlFor="terms" 
-                  className="text-sm leading-tight cursor-pointer"
-                  onClick={() => {
-                    form.setValue("agreeToTerms", !form.watch("agreeToTerms"), { shouldValidate: true });
-                  }}
-                >
-                  I agree to the <a href="#" className="text-[#33C3BD] hover:underline">Terms of Service</a> and <a href="#" className="text-[#33C3BD] hover:underline">Privacy Policy</a>
-                </Label>
-              </div>
-              {form.formState.errors.agreeToTerms && (
-                <p className="text-red-500 text-sm mt-1">{form.formState.errors.agreeToTerms.message}</p>
-              )}
-            </div>
-            
-            <div className="pt-4">
-              {hasDirectPayPalIntegration ? (
-                // Direct PayPal subscription button
-                <div>
-                  <div className="bg-gray-800 p-4 rounded-lg mb-6">
-                    {/* Credit Card Option - Now larger, above PayPal, and clickable with direct URL */}
-                    <div 
-                      className="p-5 border-2 border-blue-400 rounded-md bg-blue-900/30 shadow-[0_0_35px_rgba(59,130,246,0.7)] mb-6 cursor-pointer hover:bg-blue-900/40 transition-colors animate-pulse"
-                      onClick={() => {
-                        // Use the direct URL provided by the user for credit card checkout
-                        if (isStarterPlan) {
-                          // URL for $99 starter plan with direct credit card checkout
-                          window.open("https://www.paypal.com/checkoutnow?atomic-event-state=eyJkb21haW4iOiJzZGtfcGF5cGFsX3Y1IiwiZXZlbnRzIjpbXSwiaW50ZW50IjoiY2xpY2tfcGF5bWVudF9jYXJkX2J1dHRvbiIsImludGVudFR5cGUiOiJjbGljayIsImludGVyYWN0aW9uU3RhcnRUaW1lIjoyMDc0MSwidGltZVN0YW1wIjoyMDc0MSwidGltZU9yaWdpbiI6MTc0MzM1MzkyMzg3NS42LCJ0YXNrIjoic2VsZWN0X29uZV90aW1lX2NoZWNrb3V0IiwiZmxvdyI6Im9uZS10aW1lLWNoZWNrb3V0IiwidWlTdGF0ZSI6IndhaXRpbmciLCJwYXRoIjoiL3NtYXJ0L2J1dHRvbnMiLCJ2aWV3TmFtZSI6InBheXBhbC1zZGsifQ%3D%3D&sessionID=uid_49c65ae105_mty6ndc6mdu&buttonSessionID=uid_5e2b94556c_mty6ntg6ndm&stickinessID=uid_027b48e630_mty6mjy6mzu&smokeHash=&sign_out_user=false&fundingSource=card&buyerCountry=RO&locale.x=en_GB&commit=true&client-metadata-id=uid_49c65ae105_mty6ndc6mdu&clientID=Af7G68O9uhv8g9s_E1_yiL0_mCXddIXN0ODXd-kW2eofsjZwJwPV-pI9vQ8oItvgtlCyXSuq0cHl0wQP&env=production&sdkMeta=eyJ1cmwiOiJodHRwczovL3d3dy5wYXlwYWwuY29tL3Nkay9qcz9jbGllbnQtaWQ9QWY3RzY4Tzl1aHY4ZzlzX0UxX3lpTDBfbUNYZGRJWE4wT0RYZC1rVzJlb2Zzalp3SndQVi1wSTl2UThvSXR2Z3RsQ3lYU3VxMGNIbDB3UVAmdmF1bHQ9dHJ1ZSZpbnRlbnQ9c3Vic2NyaXB0aW9uIiwiYXR0cnMiOnsiZGF0YS1zZGstaW50ZWdyYXRpb24tc291cmNlIjoiYnV0dG9uLWZhY3RvcnkiLCJkYXRhLXVpZCI6InVpZF9tamhuYmR2dGpxc2VnaHppZXVvZWFidGh6anJsYmcifX0&country.x=GB&xcomponent=1&version=5.0.476&token=9WE1737949335061W", "_blank");
-                        } else if (isStandardPlan) {
-                          // URL for $299 standard plan with direct credit card checkout
-                          window.open("https://www.paypal.com/checkoutnow?atomic-event-state=eyJkb21haW4iOiJzZGtfcGF5cGFsX3Y1IiwiZXZlbnRzIjpbXSwiaW50ZW50IjoiY2xpY2tfcGF5bWVudF9jYXJkX2J1dHRvbiIsImludGVudFR5cGUiOiJjbGljayIsImludGVyYWN0aW9uU3RhcnRUaW1lIjoyMDc0MSwidGltZVN0YW1wIjoyMDc0MSwidGltZU9yaWdpbiI6MTc0MzM1MzkyMzg3NS42LCJ0YXNrIjoic2VsZWN0X29uZV90aW1lX2NoZWNrb3V0IiwiZmxvdyI6Im9uZS10aW1lLWNoZWNrb3V0IiwidWlTdGF0ZSI6IndhaXRpbmciLCJwYXRoIjoiL3NtYXJ0L2J1dHRvbnMiLCJ2aWV3TmFtZSI6InBheXBhbC1zZGsifQ%3D%3D&sessionID=uid_49c65ae105_mty6ndc6mdu&buttonSessionID=uid_5e2b94556c_mty6ntg6ndm&stickinessID=uid_027b48e630_mty6mjy6mzu&smokeHash=&sign_out_user=false&fundingSource=card&buyerCountry=RO&locale.x=en_GB&commit=true&client-metadata-id=uid_49c65ae105_mty6ndc6mdu&clientID=Af7G68O9uhv8g9s_E1_yiL0_mCXddIXN0ODXd-kW2eofsjZwJwPV-pI9vQ8oItvgtlCyXSuq0cHl0wQP&env=production&sdkMeta=eyJ1cmwiOiJodHRwczovL3d3dy5wYXlwYWwuY29tL3Nkay9qcz9jbGllbnQtaWQ9QWY3RzY4Tzl1aHY4ZzlzX0UxX3lpTDBfbUNYZGRJWE4wT0RYZC1rVzJlb2Zzalp3SndQVi1wSTl2UThvSXR2Z3RsQ3lYU3VxMGNIbDB3UVAmdmF1bHQ9dHJ1ZSZpbnRlbnQ9c3Vic2NyaXB0aW9uIiwiYXR0cnMiOnsiZGF0YS1zZGstaW50ZWdyYXRpb24tc291cmNlIjoiYnV0dG9uLWZhY3RvcnkiLCJkYXRhLXVpZCI6InVpZF9tamhuYmR2dGpxc2VnaHppZXVvZWFidGh6anJsYmcifX0&country.x=GB&xcomponent=1&version=5.0.476&token=9WE1737949335061W", "_blank");
-                        } else if (isProPlan) {
-                          // URL for $799 pro plan with direct credit card checkout
-                          window.open("https://www.paypal.com/checkoutnow?atomic-event-state=eyJkb21haW4iOiJzZGtfcGF5cGFsX3Y1IiwiZXZlbnRzIjpbXSwiaW50ZW50IjoiY2xpY2tfcGF5bWVudF9idXR0b24iLCJpbnRlbnRUeXBlIjoiY2xpY2siLCJpbnRlcmFjdGlvblN0YXJ0VGltZSI6MTY4Mi41OTk5OTk5NjQyMzcyLCJ0aW1lU3RhbXAiOjE2ODMsInRpbWVPcmlnaW4iOjE3NDMzNTc4Nzk1NzYsInRhc2siOiJzZWxlY3Rfb25lX3RpbWVfY2hlY2tvdXQiLCJmbG93Ijoib25lLXRpbWUtY2hlY2tvdXQiLCJ1aVN0YXRlIjoid2FpdGluZyIsInBhdGgiOiIvc21hcnQvYnV0dG9ucyIsInZpZXdOYW1lIjoicGF5cGFsLXNkayJ9&sessionID=uid_878ce71b6a_mtg6mdq6mdy&buttonSessionID=uid_e00844ae59_mtg6mdq6mzk&stickinessID=uid_c025410ecb_mty6mdy6mdy&smokeHash=&sign_out_user=false&fundingSource=card&buyerCountry=RO&locale.x=en_GB&commit=true&client-metadata-id=uid_878ce71b6a_mtg6mdq6mdy&clientID=Af7G68O9uhv8g9s_E1_yiL0_mCXddIXN0ODXd-kW2eofsjZwJwPV-pI9vQ8oItvgtlCyXSuq0cHl0wQP&env=production&sdkMeta=eyJ1cmwiOiJodHRwczovL3d3dy5wYXlwYWwuY29tL3Nkay9qcz9jbGllbnQtaWQ9QWY3RzY4Tzl1aHY4ZzlzX0UxX3lpTDBfbUNYZGRJWE4wT0RYZC1rVzJlb2Zzalp3SndQVi1wSTl2UThvSXR2Z3RsQ3lYU3VxMGNIbDB3UVAmdmF1bHQ9dHJ1ZSZpbnRlbnQ9c3Vic2NyaXB0aW9uIiwiYXR0cnMiOnsiZGF0YS1zZGstaW50ZWdyYXRpb24tc291cmNlIjoiYnV0dG9uLWZhY3RvcnkiLCJkYXRhLXVpZCI6InVpZF9tamhuYmR2dGpxc2VnaHppZXVvZWFidGh6anJsYmcifX0&country.x=GB&xcomponent=1&version=5.0.476&token=4RJ698171A786030R", "_blank");
-                        }
-                      }}
-                    >
-                      <h3 className="text-white font-semibold text-lg mb-1 flex items-center">
-                        <CreditCard className="h-5 w-5 mr-2 text-blue-300" />
-                        Pay with Debit or Credit Card
-                      </h3>
-                      <p className="text-gray-300 text-sm ml-7 font-medium">
-                        No PayPal account needed - pay securely with your card
-                      </p>
-                      <p className="text-blue-300 text-sm ml-7 mt-3">
-                        Click here to proceed with card payment →
-                      </p>
-                    </div>
-                    
-                    <h3 className="text-white font-semibold text-lg mb-2">Or Subscribe with PayPal</h3>
-                    <p className="text-gray-400 text-sm mb-4">
-                      Use your PayPal account to subscribe to our {selectedPlan?.name} for {selectedPlan?.price}/month.
-                    </p>
-                    
-                    {/* Show the appropriate PayPal button container based on the plan */}
-                    {isStarterPlan && (
-                      <div id="paypal-button-container-P-6H912450BC000780SM7UXKVI" className="mb-2"></div>
-                    )}
-                    
-                    {isStandardPlan && (
-                      <div id="paypal-button-container-P-0AU893367F5884614M7UXJDA" className="mb-2"></div>
-                    )}
-                    
-                    {isProPlan && (
-                      <div id="paypal-button-container-P-2UA32207898067051M7UYGVQ" className="mb-2"></div>
-                    )}
-                  </div>
-                  
-                  <div className="border-t border-gray-700 pt-4 mt-2">
-                    <p className="text-gray-500 text-sm text-center">- OR -</p>
-                  </div>
-                  
-                  <Button 
-                    type="button" 
-                    className="w-full py-6 text-base bg-gradient-to-r from-[#33C3BD] to-[#0075FF] hover:opacity-90 mt-4"
-                    onClick={() => {
-                      // Use the same direct URLs as the credit card payment option at the top
-                      if (isStarterPlan) {
-                        // URL for $99 starter plan with direct credit card checkout
-                        window.open("https://www.paypal.com/checkoutnow?atomic-event-state=eyJkb21haW4iOiJzZGtfcGF5cGFsX3Y1IiwiZXZlbnRzIjpbXSwiaW50ZW50IjoiY2xpY2tfcGF5bWVudF9jYXJkX2J1dHRvbiIsImludGVudFR5cGUiOiJjbGljayIsImludGVyYWN0aW9uU3RhcnRUaW1lIjoyMDc0MSwidGltZVN0YW1wIjoyMDc0MSwidGltZU9yaWdpbiI6MTc0MzM1MzkyMzg3NS42LCJ0YXNrIjoic2VsZWN0X29uZV90aW1lX2NoZWNrb3V0IiwiZmxvdyI6Im9uZS10aW1lLWNoZWNrb3V0IiwidWlTdGF0ZSI6IndhaXRpbmciLCJwYXRoIjoiL3NtYXJ0L2J1dHRvbnMiLCJ2aWV3TmFtZSI6InBheXBhbC1zZGsifQ%3D%3D&sessionID=uid_49c65ae105_mty6ndc6mdu&buttonSessionID=uid_5e2b94556c_mty6ntg6ndm&stickinessID=uid_027b48e630_mty6mjy6mzu&smokeHash=&sign_out_user=false&fundingSource=card&buyerCountry=RO&locale.x=en_GB&commit=true&client-metadata-id=uid_49c65ae105_mty6ndc6mdu&clientID=Af7G68O9uhv8g9s_E1_yiL0_mCXddIXN0ODXd-kW2eofsjZwJwPV-pI9vQ8oItvgtlCyXSuq0cHl0wQP&env=production&sdkMeta=eyJ1cmwiOiJodHRwczovL3d3dy5wYXlwYWwuY29tL3Nkay9qcz9jbGllbnQtaWQ9QWY3RzY4Tzl1aHY4ZzlzX0UxX3lpTDBfbUNYZGRJWE4wT0RYZC1rVzJlb2Zzalp3SndQVi1wSTl2UThvSXR2Z3RsQ3lYU3VxMGNIbDB3UVAmdmF1bHQ9dHJ1ZSZpbnRlbnQ9c3Vic2NyaXB0aW9uIiwiYXR0cnMiOnsiZGF0YS1zZGstaW50ZWdyYXRpb24tc291cmNlIjoiYnV0dG9uLWZhY3RvcnkiLCJkYXRhLXVpZCI6InVpZF9tamhuYmR2dGpxc2VnaHppZXVvZWFidGh6anJsYmcifX0&country.x=GB&xcomponent=1&version=5.0.476&token=9WE1737949335061W", "_blank");
-                      } else if (isStandardPlan) {
-                        // URL for $299 standard plan with direct credit card checkout
-                        window.open("https://www.paypal.com/checkoutnow?atomic-event-state=eyJkb21haW4iOiJzZGtfcGF5cGFsX3Y1IiwiZXZlbnRzIjpbXSwiaW50ZW50IjoiY2xpY2tfcGF5bWVudF9jYXJkX2J1dHRvbiIsImludGVudFR5cGUiOiJjbGljayIsImludGVyYWN0aW9uU3RhcnRUaW1lIjoyMDc0MSwidGltZVN0YW1wIjoyMDc0MSwidGltZU9yaWdpbiI6MTc0MzM1MzkyMzg3NS42LCJ0YXNrIjoic2VsZWN0X29uZV90aW1lX2NoZWNrb3V0IiwiZmxvdyI6Im9uZS10aW1lLWNoZWNrb3V0IiwidWlTdGF0ZSI6IndhaXRpbmciLCJwYXRoIjoiL3NtYXJ0L2J1dHRvbnMiLCJ2aWV3TmFtZSI6InBheXBhbC1zZGsifQ%3D%3D&sessionID=uid_49c65ae105_mty6ndc6mdu&buttonSessionID=uid_5e2b94556c_mty6ntg6ndm&stickinessID=uid_027b48e630_mty6mjy6mzu&smokeHash=&sign_out_user=false&fundingSource=card&buyerCountry=RO&locale.x=en_GB&commit=true&client-metadata-id=uid_49c65ae105_mty6ndc6mdu&clientID=Af7G68O9uhv8g9s_E1_yiL0_mCXddIXN0ODXd-kW2eofsjZwJwPV-pI9vQ8oItvgtlCyXSuq0cHl0wQP&env=production&sdkMeta=eyJ1cmwiOiJodHRwczovL3d3dy5wYXlwYWwuY29tL3Nkay9qcz9jbGllbnQtaWQ9QWY3RzY4Tzl1aHY4ZzlzX0UxX3lpTDBfbUNYZGRJWE4wT0RYZC1rVzJlb2Zzalp3SndQVi1wSTl2UThvSXR2Z3RsQ3lYU3VxMGNIbDB3UVAmdmF1bHQ9dHJ1ZSZpbnRlbnQ9c3Vic2NyaXB0aW9uIiwiYXR0cnMiOnsiZGF0YS1zZGstaW50ZWdyYXRpb24tc291cmNlIjoiYnV0dG9uLWZhY3RvcnkiLCJkYXRhLXVpZCI6InVpZF9tamhuYmR2dGpxc2VnaHppZXVvZWFidGh6anJsYmcifX0&country.x=GB&xcomponent=1&version=5.0.476&token=9WE1737949335061W", "_blank");
-                      } else if (isProPlan) {
-                        // URL for $799 pro plan with direct credit card checkout
-                        window.open("https://www.paypal.com/checkoutnow?atomic-event-state=eyJkb21haW4iOiJzZGtfcGF5cGFsX3Y1IiwiZXZlbnRzIjpbXSwiaW50ZW50IjoiY2xpY2tfcGF5bWVudF9idXR0b24iLCJpbnRlbnRUeXBlIjoiY2xpY2siLCJpbnRlcmFjdGlvblN0YXJ0VGltZSI6MTY4Mi41OTk5OTk5NjQyMzcyLCJ0aW1lU3RhbXAiOjE2ODMsInRpbWVPcmlnaW4iOjE3NDMzNTc4Nzk1NzYsInRhc2siOiJzZWxlY3Rfb25lX3RpbWVfY2hlY2tvdXQiLCJmbG93Ijoib25lLXRpbWUtY2hlY2tvdXQiLCJ1aVN0YXRlIjoid2FpdGluZyIsInBhdGgiOiIvc21hcnQvYnV0dG9ucyIsInZpZXdOYW1lIjoicGF5cGFsLXNkayJ9&sessionID=uid_878ce71b6a_mtg6mdq6mdy&buttonSessionID=uid_e00844ae59_mtg6mdq6mzk&stickinessID=uid_c025410ecb_mty6mdy6mdy&smokeHash=&sign_out_user=false&fundingSource=card&buyerCountry=RO&locale.x=en_GB&commit=true&client-metadata-id=uid_878ce71b6a_mtg6mdq6mdy&clientID=Af7G68O9uhv8g9s_E1_yiL0_mCXddIXN0ODXd-kW2eofsjZwJwPV-pI9vQ8oItvgtlCyXSuq0cHl0wQP&env=production&sdkMeta=eyJ1cmwiOiJodHRwczovL3d3dy5wYXlwYWwuY29tL3Nkay9qcz9jbGllbnQtaWQ9QWY3RzY4Tzl1aHY4ZzlzX0UxX3lpTDBfbUNYZGRJWE4wT0RYZC1rVzJlb2Zzalp3SndQVi1wSTl2UThvSXR2Z3RsQ3lYU3VxMGNIbDB3UVAmdmF1bHQ9dHJ1ZSZpbnRlbnQ9c3Vic2NyaXB0aW9uIiwiYXR0cnMiOnsiZGF0YS1zZGstaW50ZWdyYXRpb24tc291cmNlIjoiYnV0dG9uLWZhY3RvcnkiLCJkYXRhLXVpZCI6InVpZF9tamhuYmR2dGpxc2VnaHppZXVvZWFidGh6anJsYmcifX0&country.x=GB&xcomponent=1&version=5.0.476&token=4RJ698171A786030R", "_blank");
-                      }
-                    }}
-                  >
-                    {selectedPlan.hasTrial ? "Start Free Trial" : "Complete Payment"} with Credit Card
-                  </Button>
-                </div>
-              ) : (
-                // Regular button for other plans
-                <Button 
-                  type="submit" 
-                  className="w-full py-6 text-base bg-gradient-to-r from-[#33C3BD] to-[#0075FF] hover:opacity-90"
-                >
-                  {selectedPlan.hasTrial ? "Start Free Trial" : "Complete Payment"}
-                </Button>
-              )}
-              
-              <div className="flex justify-center mt-4">
-                <img 
-                  src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_74x46.jpg" 
-                  alt="PayPal Acceptance Mark" 
-                  className="h-8"
-                />
-              </div>
-              
-              <p className="text-gray-400 text-xs text-center mt-3">
-                Your payment will be processed securely through PayPal.
-                No payment information is stored on our servers.
-              </p>
-            </div>
-          </form>
-        );
-        
-      case CheckoutStep.Processing:
-        return (
-          <div className="text-center py-10">
-            <Loader2 className="h-16 w-16 animate-spin text-[#33C3BD] mx-auto mb-6" />
-            <h3 className="text-xl font-semibold text-white mb-2">Processing Your Payment</h3>
-            <p className="text-gray-300">Please wait while we complete your transaction...</p>
-          </div>
-        );
-        
-      case CheckoutStep.Success:
-        return (
-          <div className="text-center py-10">
-            <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle2 className="h-10 w-10 text-green-500" />
-            </div>
-            <h3 className="text-xl font-semibold text-white mb-2">Payment Successful!</h3>
-            <p className="text-gray-300 mb-6">
-              {selectedPlan.hasTrial 
-                ? `Your ${selectedPlan.trialDays}-day free trial has been activated.` 
-                : "Your subscription has been activated."}
-            </p>
-            <Button 
-              onClick={goToDashboard}
-              className="py-6 px-8 text-base bg-gradient-to-r from-[#33C3BD] to-[#0075FF] hover:opacity-90"
-            >
-              Continue to Dashboard
-            </Button>
-          </div>
-        );
-        
-      case CheckoutStep.Error:
-        return (
-          <div className="text-center py-10">
-            <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <AlertCircle className="h-10 w-10 text-red-500" />
-            </div>
-            <h3 className="text-xl font-semibold text-white mb-2">Payment Failed</h3>
-            <p className="text-gray-300 mb-6">{paymentError || "An error occurred during payment processing."}</p>
-            <Button 
-              onClick={retryPayment}
-              className="py-6 px-8 text-base bg-gray-600 hover:bg-gray-700"
-            >
-              Try Again
-            </Button>
-          </div>
-        );
-    }
-  };
-
+  
   return (
-    <div className="bg-[#0A0F16] min-h-screen">
-      {/* Global Animated Starry Background */}
-      <div className="fixed inset-0 overflow-hidden z-0">
-        <div className="stars-container absolute inset-0">
-          <div className="stars-small"></div>
-          <div className="stars-medium"></div>
-          <div className="stars-large"></div>
+    <div className="min-h-screen bg-[#0A0F16] text-gray-200">
+      {/* Starry background effect */}
+      <div className="fixed inset-0 z-0">
+        <div className="absolute inset-0 bg-[#0A0F16]">
+          <div className="stars-container">
+            <div className="stars"></div>
+            <div className="stars2"></div>
+            <div className="stars3"></div>
+          </div>
         </div>
       </div>
       
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 bg-[#0A0F16]/90 backdrop-blur-md border-b border-[#1E293B] z-50 h-16 flex items-center">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between">
-            <Link href="/pricing">
-              <div className="flex items-center gap-2 cursor-pointer">
-                <ArrowLeft className="h-5 w-5 text-gray-400" />
-                <span className="text-xl font-bold bg-gradient-to-r from-[#33C3BD] to-[#0075FF] bg-clip-text text-transparent">
-                  WarmLeadNetwork AI
-                </span>
-              </div>
-            </Link>
+      <div className="relative z-10 container mx-auto px-4 py-12">
+        {/* Back button */}
+        <Button 
+          variant="ghost" 
+          className="mb-6 text-gray-400 hover:text-gray-200"
+          onClick={() => setLocation('/pricing')}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Pricing
+        </Button>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Checkout form section */}
+          <div className="lg:col-span-2">
+            <Card className="bg-gray-900/50 border-gray-800">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-2xl">Complete Your Purchase</CardTitle>
+                  {hasFreeTrialOffer && (
+                    <div className="bg-gradient-to-r from-green-600 to-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium">
+                      {trialDays}-Day Free Trial
+                    </div>
+                  )}
+                </div>
+                <CardDescription className="text-gray-400">
+                  {planId && selectedPlan ? (
+                    <>
+                      You're subscribing to {selectedPlan.name} plan
+                      {hasFreeTrialOffer 
+                        ? ` with a ${trialDays}-day free trial` 
+                        : ` for $${selectedPlan.price}/${selectedPlan.billing}`
+                      }
+                    </>
+                  ) : (
+                    'Please select a plan to continue'
+                  )}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {!clientSecret ? (
+                  <div className="flex justify-center items-center py-8">
+                    <Loader2 className="mr-2 h-6 w-6 animate-spin text-blue-500" />
+                    <span>Setting up secure payment...</span>
+                  </div>
+                ) : (
+                  <Elements stripe={getStripe()} options={{ 
+                    clientSecret,
+                    appearance: {
+                      theme: 'night',
+                      variables: {
+                        colorPrimary: '#3b82f6',
+                        colorBackground: '#111827',
+                        colorText: '#f9fafb',
+                        colorDanger: '#ef4444',
+                        fontFamily: 'system-ui, sans-serif',
+                        borderRadius: '6px',
+                        spacingUnit: '4px',
+                        spacingGridRow: '16px'
+                      },
+                      rules: {
+                        '.Input': {
+                          border: '1px solid #374151',
+                          boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.05)'
+                        },
+                        '.Input:focus': {
+                          border: '1px solid #3b82f6',
+                        }
+                      }
+                    }
+                  }}>
+                    <Tabs value={paymentTab} onValueChange={setPaymentTab}>
+                      <TabsList className="grid w-full grid-cols-2 bg-gray-800/70">
+                        <TabsTrigger value="credit-card">
+                          <CreditCard className="h-4 w-4 mr-2" />
+                          Credit Card
+                        </TabsTrigger>
+                        <TabsTrigger value="paypal">
+                          <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.291-.077.446-.964 5.236-4.27 7.2-8.563 7.2h-2.17c-.664 0-1.223.42-1.327 1.073l-.948 5.75c-.068.462-.396.771-.86.771h-3.14zm8.725-15.2c.228-1.469-1.3-2.427-2.8-2.427h-5.5l-1.39 8.53h5.43c2.54 0 3.717-1.42 4.26-3.7.364-1.53.185-2.403 0-2.403z"/>
+                          </svg>
+                          PayPal
+                        </TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="credit-card" className="pt-4">
+                        {/* Use our custom credit card form component */}
+                        <CustomCreditCardForm
+                          onSubmit={async (formData) => {
+                            try {
+                              setIsLoading(true);
+                              
+                              // In a real implementation, this would use Stripe.js to create a token
+                              // For now, we'll just simulate a successful payment
+                              setTimeout(() => {
+                                toast({
+                                  title: hasFreeTrialOffer ? "Free Trial Started!" : "Payment Successful!",
+                                  description: hasFreeTrialOffer
+                                    ? `You've successfully started your ${trialDays}-day free trial of the ${selectedPlan?.name} plan.`
+                                    : `You've successfully subscribed to the ${selectedPlan?.name} plan.`,
+                                });
+                                
+                                // Simulate a successful payment
+                                const mockPaymentId = `pi_${Date.now()}`;
+                                const successParams = new URLSearchParams({
+                                  type: 'subscription',
+                                  plan: planId || '',
+                                });
+                                
+                                handlePaymentSuccess(mockPaymentId, successParams);
+                                setIsLoading(false);
+                              }, 2000);
+                            } catch (error) {
+                              console.error('Payment error:', error);
+                              setIsLoading(false);
+                              handlePaymentError(error instanceof Error ? error : new Error('Payment failed'));
+                            }
+                          }}
+                          isProcessing={isLoading}
+                          buttonText={hasFreeTrialOffer ? `Start ${trialDays}-Day Free Trial` : "Subscribe Now"}
+                        />
+                        
+                        {/* Keep Stripe checkout form hidden as backup */}
+                        <div className="hidden">
+                          <StripeCheckoutForm 
+                            hasTrial={hasFreeTrialOffer}
+                            trialDays={trialDays}
+                            planName={selectedPlan?.name || ''}
+                            planId={planId || ''}
+                            onSuccess={handlePaymentSuccess}
+                            onError={handlePaymentError}
+                          />
+                        </div>
+                      </TabsContent>
+                      <TabsContent value="paypal" className="pt-4">
+                        <div className="text-center py-8">
+                          <div className="bg-blue-900/20 p-6 rounded-lg mb-4">
+                            <svg className="h-12 w-12 mx-auto mb-4 text-blue-400" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.291-.077.446-.964 5.236-4.27 7.2-8.563 7.2h-2.17c-.664 0-1.223.42-1.327 1.073l-.948 5.75c-.068.462-.396.771-.86.771h-3.14zm8.725-15.2c.228-1.469-1.3-2.427-2.8-2.427h-5.5l-1.39 8.53h5.43c2.54 0 3.717-1.42 4.26-3.7.364-1.53.185-2.403 0-2.403z"/>
+                            </svg>
+                            <p className="text-gray-300">You'll be redirected to PayPal to complete your purchase securely.</p>
+                          </div>
+                          <Button 
+                            type="button" 
+                            className="w-full bg-blue-600 hover:bg-blue-700"
+                            onClick={() => {
+                              toast({
+                                title: "PayPal Checkout",
+                                description: "PayPal integration will be implemented in the future.",
+                              });
+                            }}
+                          >
+                            Continue with PayPal
+                          </Button>
+                        </div>
+                      </TabsContent>
+                    </Tabs>
+                  </Elements>
+                )}
+                  
+                  <div className="mt-6">
+                    <h3 className="text-lg font-semibold mb-3">Billing Information</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="email">Email</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          placeholder="your@email.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="bg-gray-800/50 border-gray-700 mt-1"
+                          required
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="address">Address</Label>
+                        <Input
+                          id="address"
+                          placeholder="123 Main St"
+                          value={address}
+                          onChange={(e) => setAddress(e.target.value)}
+                          className="bg-gray-800/50 border-gray-700 mt-1"
+                          required
+                        />
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="city">City</Label>
+                          <Input
+                            id="city"
+                            placeholder="New York"
+                            value={city}
+                            onChange={(e) => setCity(e.target.value)}
+                            className="bg-gray-800/50 border-gray-700 mt-1"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="state">State</Label>
+                          <Input
+                            id="state"
+                            placeholder="NY"
+                            value={state}
+                            onChange={(e) => setState(e.target.value)}
+                            className="bg-gray-800/50 border-gray-700 mt-1"
+                            required
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="zip">ZIP Code</Label>
+                          <Input
+                            id="zip"
+                            placeholder="10001"
+                            value={zip}
+                            onChange={(e) => setZip(e.target.value)}
+                            className="bg-gray-800/50 border-gray-700 mt-1"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="country">Country</Label>
+                          <Input
+                            id="country"
+                            placeholder="United States"
+                            value={country}
+                            onChange={(e) => setCountry(e.target.value)}
+                            className="bg-gray-800/50 border-gray-700 mt-1"
+                            required
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Submit button removed as Stripe Elements has its own submit button */}
+                  {/* Form ending tag removed here as we don't need a traditional form - Stripe handles the form submission */}
+              </CardContent>
+              <CardFooter className="flex justify-center text-sm text-gray-400">
+                <div className="flex items-center">
+                  <Lock className="h-4 w-4 mr-2 text-green-500" />
+                  <span>Your payment is secured with 256-bit encryption</span>
+                </div>
+              </CardFooter>
+            </Card>
           </div>
-        </div>
-      </header>
-      
-      {/* Main content */}
-      <main className="relative z-10 pt-28 pb-16">
-        <div className="container mx-auto px-4 md:px-6 max-w-4xl">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
-            {/* Left column - Checkout form */}
-            <div className="md:col-span-3">
-              <Card className="border-[#1E293B] bg-[#0F172A]/80 backdrop-blur-sm shadow-xl">
-                <CardHeader>
-                  <CardTitle className="text-white text-2xl">
-                    {checkoutStep === CheckoutStep.Success ? "Thank You!" : "Complete Your Order"}
-                  </CardTitle>
-                  <CardDescription className="text-gray-400">
-                    {checkoutStep === CheckoutStep.Success 
-                      ? "Your subscription has been activated successfully" 
-                      : "Please enter your details to continue"}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {renderStep()}
-                </CardContent>
-              </Card>
-            </div>
-            
-            {/* Right column - Order summary */}
-            <div className="md:col-span-2">
-              <Card className="border-[#1E293B] bg-[#0F172A]/80 backdrop-blur-sm shadow-xl">
-                <CardHeader>
-                  <CardTitle className="text-white text-xl">Order Summary</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className={`p-4 rounded-lg ${
-                    selectedPlan.isPopular ? 'bg-[#33C3BD]/10 border border-[#33C3BD]/40' : 
-                    selectedPlan.isPremium ? 'bg-purple-500/10 border border-purple-500/40' : 
-                    'bg-[#141B29] border border-[#1E293B]'
-                  }`}>
-                    <h3 className="font-medium text-white">{selectedPlan.name}</h3>
+          
+          {/* Order summary section */}
+          <div>
+            <Card className="bg-gray-900/50 border-gray-800 sticky top-6">
+              <CardHeader>
+                <CardTitle>Order Summary</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {selectedPlan ? (
+                  <>
+                    <div className="space-y-4">
+                      <div className="bg-gray-800/70 rounded-lg p-4">
+                        <h3 className="font-medium text-lg text-white mb-2">{selectedPlan.name}</h3>
+                        <div className="flex justify-between mb-1">
+                          <span>Price</span>
+                          <span>
+                            {hasFreeTrialOffer ? (
+                              <span className="flex flex-col items-end">
+                                <span className="text-green-400 font-medium">$0.00 for {trialDays} days</span>
+                                <span className="text-sm text-gray-400">then ${selectedPlan.price.toFixed(2)}/{selectedPlan.billing}</span>
+                              </span>
+                            ) : (
+                              <span>${selectedPlan.price.toFixed(2)}/{selectedPlan.billing}</span>
+                            )}
+                          </span>
+                        </div>
+                        {hasFreeTrialOffer && (
+                          <div className="mt-2 bg-blue-900/30 p-2 rounded border border-blue-500/30 flex items-center">
+                            <CheckCircle2 className="h-5 w-5 mr-2 text-blue-400" />
+                            <div>
+                              <p className="text-blue-300 font-medium">Free Trial Included</p>
+                              <p className="text-sm text-blue-200/70">
+                                Your first {trialDays} days are completely free
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                        <p className="text-sm text-gray-400 mt-2">
+                          Billed {selectedPlan.billing}ly {hasFreeTrialOffer ? `after ${trialDays}-day trial` : ''}
+                        </p>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span>Subtotal</span>
+                          {hasFreeTrialOffer ? (
+                            <div className="flex items-center">
+                              <span className="line-through text-gray-500 mr-2">${subtotal.toFixed(2)}</span>
+                              <span className="text-green-400 font-medium">$0.00</span>
+                            </div>
+                          ) : (
+                            <span>${subtotal.toFixed(2)}</span>
+                          )}
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Tax</span>
+                          {hasFreeTrialOffer ? (
+                            <div className="flex items-center">
+                              <span className="line-through text-gray-500 mr-2">${tax.toFixed(2)}</span>
+                              <span className="text-green-400 font-medium">$0.00</span>
+                            </div>
+                          ) : (
+                            <span>${tax.toFixed(2)}</span>
+                          )}
+                        </div>
+                        <Separator className="my-2 bg-gray-700" />
+                        <div className="flex justify-between font-semibold text-lg">
+                          <span>{hasFreeTrialOffer ? 'Total (first period)' : 'Total'}</span>
+                          {hasFreeTrialOffer ? (
+                            <span className="text-green-400">$0.00</span>
+                          ) : (
+                            <span>${total.toFixed(2)}</span>
+                          )}
+                        </div>
+                        {hasFreeTrialOffer && (
+                          <div className="flex justify-between text-sm text-gray-400">
+                            <span>After trial ({trialDays} days)</span>
+                            <span>${total.toFixed(2)}/{selectedPlan.billing}</span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="bg-gray-800/50 rounded-lg p-4 text-sm">
+                        <h4 className="font-medium flex items-center mb-2">
+                          <Info className="h-4 w-4 mr-2 text-blue-400" />
+                          Subscription details
+                        </h4>
+                        {hasFreeTrialOffer ? (
+                          <>
+                            <p className="text-gray-400 mb-2">
+                              Your {trialDays}-day free trial starts immediately after signup.
+                            </p>
+                            <p className="text-gray-400 mb-2">
+                              Your payment method will be authorized but not charged until the trial ends.
+                            </p>
+                            <p className="text-gray-400">
+                              You can cancel anytime during the trial period at no cost.
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="text-gray-400 mb-2">
+                              Your subscription will begin immediately after your payment is processed.
+                            </p>
+                            <p className="text-gray-400">
+                              You can cancel anytime from your account settings.
+                            </p>
+                          </>
+                        )}
+                      </div>
+                    </div>
                     
-                    {selectedPlan.hasTrial ? (
-                      <div className="mt-2">
-                        <p className="text-sm text-gray-300">
-                          <span className="font-semibold text-yellow-400">{selectedPlan.trialDays}-Day Free Trial</span>
-                        </p>
-                        <p className="text-xs text-gray-400 mt-1">
-                          Then {selectedPlan.price}/{selectedPlan.billing}
-                        </p>
-                      </div>
-                    ) : (
-                      <p className="mt-2 text-lg font-bold text-white">
-                        {selectedPlan.price}
-                        <span className="text-sm font-normal text-gray-400">/{selectedPlan.billing}</span>
-                      </p>
-                    )}
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-white">What's included:</p>
-                    <ul className="space-y-1">
+                    <div className="mt-6 space-y-2">
+                      <h4 className="font-medium mb-2">Included in your plan:</h4>
                       {selectedPlan.features.map((feature, index) => (
-                        <li key={index} className="flex text-sm">
-                          <CheckCircle2 className="h-4 w-4 text-[#33C3BD] mr-2 mt-0.5 flex-shrink-0" />
+                        <div key={index} className="flex items-start">
+                          <CheckCircle2 className="h-5 w-5 mr-2 text-green-500 shrink-0 mt-0.5" />
                           <span className="text-gray-300">{feature}</span>
-                        </li>
+                        </div>
                       ))}
-                    </ul>
-                  </div>
-                  
-                  {/* Payment method */}
-                  <div className="pt-4 border-t border-[#1E293B]">
-                    <p className="text-sm font-medium text-white mb-2">Payment Method</p>
-                    <div className="flex items-center">
-                      <CreditCard className="h-4 w-4 text-gray-400 mr-2" />
-                      <span className="text-gray-300 text-sm">PayPal</span>
                     </div>
+                  </>
+                ) : (
+                  <div className="text-center text-gray-400 py-8">
+                    <Info className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                    <p>Please select a plan to see order details</p>
                   </div>
-                  
-                  {/* Price breakdown */}
-                  <div className="pt-4 border-t border-[#1E293B]">
-                    <div className="flex justify-between mb-1">
-                      <span className="text-gray-300">Subtotal</span>
-                      <span className="text-white">{selectedPlan.price}</span>
-                    </div>
-                    {selectedPlan.hasTrial && (
-                      <div className="flex justify-between mb-1">
-                        <span className="text-gray-300">Free Trial Discount</span>
-                        <span className="text-green-500">-{selectedPlan.price}</span>
-                      </div>
-                    )}
-                    <div className="flex justify-between font-bold pt-2 border-t border-[#1E293B] mt-2">
-                      <span className="text-white">Total Due Today</span>
-                      <span className="text-white">
-                        {selectedPlan.hasTrial ? '$0.00' : selectedPlan.price}
-                      </span>
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="border-t border-[#1E293B] pt-4">
-                  <p className="text-gray-400 text-xs">
-                    By completing your purchase, you agree to our Terms of Service and Privacy Policy.
-                    {selectedPlan.hasTrial && " Your free trial will automatically convert to a paid subscription unless canceled before the trial period ends."}
-                  </p>
-                </CardFooter>
-              </Card>
-            </div>
+                )}
+              </CardContent>
+              <CardFooter className="border-t border-gray-800 flex justify-center">
+                <div className="flex items-center text-xs text-gray-400">
+                  <ShieldCheck className="h-3 w-3 mr-1 text-green-500" />
+                  <span>30-day money-back guarantee</span>
+                </div>
+              </CardFooter>
+            </Card>
           </div>
         </div>
-      </main>
+        
+        <div className="mt-12 text-center text-sm text-gray-400">
+          <p>© 2025 Jesko AI. All rights reserved.</p>
+        </div>
+      </div>
     </div>
   );
-}
+};
+
+export default CheckoutPage;

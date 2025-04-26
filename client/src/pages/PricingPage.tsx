@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Link, useLocation, useRouter } from "wouter";
 import { Check, Star, ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
 import VideoBackground from "@/components/VideoBackground";
 import AdvancedStarryBackground from "@/components/AdvancedStarryBackground";
 
@@ -110,8 +111,9 @@ function PricingCard({
   isPopular = false,
   isPremium = false,
   badge,
-  buttonText = "Select Plan"
-}: PricingCardProps) {
+  buttonText = "Select Plan",
+  buttonClick
+}: PricingCardProps & { buttonClick?: () => void }) {
   return (
     <div 
       className={`relative flex flex-col h-full rounded-xl border ${
@@ -206,28 +208,131 @@ function PricingCard({
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </a>
+        ) : buttonClick ? (
+          <Button 
+            onClick={buttonClick}
+            className={`w-full ${
+              isPremium ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700' : 
+              isPopular ? 'bg-gradient-to-r from-[#33C3BD] to-[#0075FF] hover:opacity-90' : 
+              'bg-[#3B82F6] hover:bg-[#2563EB]'
+            } text-white`}
+          >
+            {hasTrial ? "Start Free Trial" : buttonText}
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
         ) : (
-          <Link href={`/checkout/${id}`}>
-            <Button 
-              className={`w-full ${
-                isPremium ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700' : 
-                isPopular ? 'bg-gradient-to-r from-[#33C3BD] to-[#0075FF] hover:opacity-90' : 
-                'bg-[#3B82F6] hover:bg-[#2563EB]'
-              } text-white`}
-            >
-              {hasTrial ? "Start Free Trial" : buttonText}
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </Link>
+          <Button 
+            onClick={() => {
+              console.log(`Plan selected: ${id}, redirecting to checkout`);
+              window.location.href = `/checkout?plan=${id}`;
+            }}
+            className={`w-full ${
+              isPremium ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700' : 
+              isPopular ? 'bg-gradient-to-r from-[#33C3BD] to-[#0075FF] hover:opacity-90' : 
+              'bg-[#3B82F6] hover:bg-[#2563EB]'
+            } text-white`}
+          >
+            {hasTrial ? "Start Free Trial" : buttonText}
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
         )}
       </div>
     </div>
   );
 }
 
+// Debug function to show all buttons are working correctly
+function debugPlanSelection(id: string) {
+  console.log(`DEBUG: Button click detected for plan: ${id}`);
+  const message = document.createElement('div');
+  message.style.position = 'fixed';
+  message.style.top = '50%';
+  message.style.left = '50%';
+  message.style.transform = 'translate(-50%, -50%)';
+  message.style.backgroundColor = 'rgba(0,0,0,0.8)';
+  message.style.color = 'white';
+  message.style.padding = '20px';
+  message.style.borderRadius = '10px';
+  message.style.zIndex = '9999';
+  message.innerText = `Button clicked for plan: ${id}. Checkout features have been removed.`;
+  document.body.appendChild(message);
+  
+  // Remove after 3 seconds
+  setTimeout(() => {
+    document.body.removeChild(message);
+  }, 3000);
+}
+
+// Helper function to handle plan selection and redirect to checkout
+function handlePlanSelection(id: string, user: any, setLocation: (path: string) => void, toast: any) {
+  if (!user) {
+    toast({
+      title: "Login Required",
+      description: "Please login to subscribe to a plan",
+      variant: "destructive"
+    });
+    localStorage.setItem('selectedPricingPlan', id);
+    setLocation('/auth');
+    return;
+  }
+  
+  // Redirect to checkout page with the selected plan
+  console.log(`PricingPage: Plan ${id} selected, redirecting to checkout page`);
+  setLocation(`/checkout?plan=${id}`);
+  
+  return true;
+}
+
 export default function PricingPage() {
+  const { user } = useAuth();
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  
+  // Check if there's a stored plan selection after login
+  useEffect(() => {
+    if (user) {
+      const savedPlan = localStorage.getItem('selectedPricingPlan');
+      if (savedPlan) {
+        // Clear the saved selection
+        localStorage.removeItem('selectedPricingPlan');
+        
+        // Show notification about the previously selected plan
+        toast({
+          title: "Previous Plan Selection",
+          description: `You previously selected the ${savedPlan} plan. Proceeding to checkout.`,
+          duration: 5000,
+        });
+        
+        console.log(`PricingPage: Found saved plan ${savedPlan}, redirecting to checkout`);
+        
+        // Redirect to checkout with the saved plan
+        setLocation(`/checkout?plan=${savedPlan}`);
+      }
+    }
+  }, [user, toast, setLocation]);
+  
+  // Create a wrapper component for PricingCard to handle authentication
+  const AuthPricingCard = (props: PricingCardProps) => {
+    // For the enterprise plan, we don't need auth check as it goes to Calendly
+    if (props.id === 'jesko-ai-enterprise') {
+      return <PricingCard {...props} />;
+    }
+    
+    // Create a custom PricingCard with modified link behavior
+    return (
+      <div className="relative">
+        <PricingCard 
+          {...props} 
+          buttonClick={() => handlePlanSelection(props.id, user, setLocation, toast)}
+        />
+      </div>
+    );
+  };
+  
+  // DirectNavLinks component has been removed
+
   return (
-    <React.Fragment>
+    <div>
       {/* Add CSS for animations and effects */}
       <style dangerouslySetInnerHTML={{
         __html: `
@@ -291,7 +396,7 @@ export default function PricingPage() {
             {/* Pricing grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
               {/* Plan 1: Jesko AI Starter */}
-              <PricingCard
+              <AuthPricingCard
                 id="jesko-ai-starter"
                 name="Jesko AI Starter"
                 price="$18"
@@ -311,7 +416,7 @@ export default function PricingPage() {
               />
               
               {/* Plan 2: Jesko AI Standard */}
-              <PricingCard
+              <AuthPricingCard
                 id="jesko-ai-standard"
                 name="Jesko AI Standard"
                 price="$49"
@@ -327,7 +432,7 @@ export default function PricingPage() {
               />
               
               {/* Plan 3: Jesko AI Pro */}
-              <PricingCard
+              <AuthPricingCard
                 id="jesko-ai-pro"
                 name="Jesko AI Pro"
                 price="$98"
@@ -344,7 +449,7 @@ export default function PricingPage() {
               />
               
               {/* Plan 4: Jesko AI Enterprise */}
-              <PricingCard
+              <AuthPricingCard
                 id="jesko-ai-enterprise"
                 name="Jesko AI Enterprise"
                 price="Custom"
@@ -534,6 +639,6 @@ export default function PricingPage() {
           </div>
         </div>
       </div>
-    </React.Fragment>
+    </div>
   );
 }

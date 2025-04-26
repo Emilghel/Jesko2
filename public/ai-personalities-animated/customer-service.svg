@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background with gradient -->
+  <circle cx="80" cy="80" r="75" fill="url(#serviceBg)" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;0.9;0.8" dur="5s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Customer service headset -->
+  <g opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="1s" begin="0.5s" fill="freeze"/>
+    
+    <!-- Headset band -->
+    <path d="M50 70C50 55 65 45 80 45C95 45 110 55 110 70" 
+          stroke="#64DFDF" stroke-width="3" stroke-linecap="round" fill="none">
+      <animate attributeName="stroke-dasharray" values="0 120;120 0" dur="2s" begin="0.5s" fill="freeze"/>
+    </path>
+    
+    <!-- Left ear cup -->
+    <g>
+      <ellipse cx="50" cy="80" rx="8" ry="12" fill="#64DFDF" opacity="0">
+        <animate attributeName="opacity" values="0;1" dur="0.5s" begin="2.5s" fill="freeze"/>
+        <animate attributeName="ry" values="10;12;10" dur="4s" begin="3s" repeatCount="indefinite"/>
+      </ellipse>
+      
+      <!-- Sound waves left -->
+      <path d="M42 80C38 80 35 83 35 87" stroke="#B8F2E6" stroke-width="1.5" stroke-linecap="round" opacity="0">
+        <animate attributeName="opacity" values="0;1;0" dur="2s" begin="3.5s" repeatCount="indefinite"/>
+      </path>
+      
+      <path d="M40 75C34 75 30 80 30 85" stroke="#B8F2E6" stroke-width="1.5" stroke-linecap="round" opacity="0">
+        <animate attributeName="opacity" values="0;1;0" dur="2s" begin="4s" repeatCount="indefinite"/>
+      </path>
+      
+      <path d="M40 85C34 85 30 80 30 75" stroke="#B8F2E6" stroke-width="1.5" stroke-linecap="round" opacity="0">
+        <animate attributeName="opacity" values="0;1;0" dur="2s" begin="4.5s" repeatCount="indefinite"/>
+      </path>
+    </g>
+    
+    <!-- Right ear cup -->
+    <g>
+      <ellipse cx="110" cy="80" rx="8" ry="12" fill="#64DFDF" opacity="0">
+        <animate attributeName="opacity" values="0;1" dur="0.5s" begin="2.5s" fill="freeze"/>
+        <animate attributeName="ry" values="10;12;10" dur="4s" begin="3s" repeatCount="indefinite"/>
+      </ellipse>
+      
+      <!-- Sound waves right -->
+      <path d="M118 80C122 80 125 83 125 87" stroke="#B8F2E6" stroke-width="1.5" stroke-linecap="round" opacity="0">
+        <animate attributeName="opacity" values="0;1;0" dur="2s" begin="3.5s" repeatCount="indefinite"/>
+      </path>
+      
+      <path d="M120 75C126 75 130 80 130 85" stroke="#B8F2E6" stroke-width="1.5" stroke-linecap="round" opacity="0">
+        <animate attributeName="opacity" values="0;1;0" dur="2s" begin="4s" repeatCount="indefinite"/>
+      </path>
+      
+      <path d="M120 85C126 85 130 80 130 75" stroke="#B8F2E6" stroke-width="1.5" stroke-linecap="round" opacity="0">
+        <animate attributeName="opacity" values="0;1;0" dur="2s" begin="4.5s" repeatCount="indefinite"/>
+      </path>
+    </g>
+    
+    <!-- Microphone -->
+    <path d="M50 92C50 92 65 105 80 105C95 105 110 92 110 92" 
+          stroke="#64DFDF" stroke-width="3" stroke-linecap="round" opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.5s" begin="5s" fill="freeze"/>
+    </path>
+    
+    <rect x="77" y="105" width="6" height="15" rx="3" fill="#64DFDF" opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.5s" begin="5.5s" fill="freeze"/>
+    </rect>
+  </g>
+  
+  <!-- Chat bubbles -->
+  <g>
+    <!-- Left bubble (questions) -->
+    <g opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.5s" begin="6s" fill="freeze"/>
+      
+      <path d="M40 120C40 120 30 120 30 110C30 100 40 100 45 100C50 100 55 100 55 110C55 120 50 120 45 120" 
+            fill="#5E60CE" opacity="0.8">
+        <animate attributeName="d" 
+                values="M40 120C40 120 30 120 30 110C30 100 40 100 45 100C50 100 55 100 55 110C55 120 50 120 45 120;
+                        M40 118C40 118 32 118 32 108C32 98 40 98 45 98C50 98 53 98 53 108C53 118 50 118 45 118;
+                        M40 120C40 120 30 120 30 110C30 100 40 100 45 100C50 100 55 100 55 110C55 120 50 120 45 120" 
+                dur="6s" repeatCount="indefinite"/>
+      </path>
+      
+      <!-- Question mark -->
+      <path d="M42 110C42 107 45 106 45 106C45 106 48 107 48 110C48 112 45 114 45 115M45 118L45 119" 
+            stroke="#B8F2E6" stroke-width="1.5" stroke-linecap="round"/>
+    </g>
+    
+    <!-- Right bubble (answers) -->
+    <g opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.5s" begin="7s" fill="freeze"/>
+      
+      <path d="M120 120C120 120 130 120 130 110C130 100 120 100 115 100C110 100 105 100 105 110C105 120 110 120 115 120" 
+            fill="#7400B8" opacity="0.8">
+        <animate attributeName="d" 
+                values="M120 120C120 120 130 120 130 110C130 100 120 100 115 100C110 100 105 100 105 110C105 120 110 120 115 120;
+                        M120 122C120 122 132 122 132 112C132 102 120 102 115 102C110 102 107 102 107 112C107 122 110 122 115 122;
+                        M120 120C120 120 130 120 130 110C130 100 120 100 115 100C110 100 105 100 105 110C105 120 110 120 115 120" 
+                dur="5s" repeatCount="indefinite" begin="0.5s"/>
+      </path>
+      
+      <!-- Checkmark -->
+      <path d="M110 110L115 115L120 107" stroke="#B8F2E6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+  </g>
+  
+  <!-- Pulsing center ring representing customer satisfaction -->
+  <circle cx="80" cy="80" r="20" fill="none" stroke="url(#satisfactionGradient)" stroke-width="3" opacity="0">
+    <animate attributeName="opacity" values="0;0.8" dur="1s" begin="8s" fill="freeze"/>
+    <animate attributeName="r" values="15;20;15" dur="5s" begin="8s" repeatCount="indefinite"/>
+    <animate attributeName="stroke-width" values="2;3;2" dur="5s" begin="8s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Happy face in center -->
+  <g opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="1s" begin="9s" fill="freeze"/>
+    
+    <circle cx="80" cy="80" r="12" fill="#64DFDF"/>
+    
+    <!-- Eyes -->
+    <circle cx="75" cy="77" r="2" fill="#7400B8"/>
+    <circle cx="85" cy="77" r="2" fill="#7400B8"/>
+    
+    <!-- Smile -->
+    <path d="M74 84C74 86 77 88 80 88C83 88 86 86 86 84" 
+          stroke="#7400B8" stroke-width="1.5" stroke-linecap="round" fill="none">
+      <animate attributeName="d" 
+              values="M74 84C74 86 77 88 80 88C83 88 86 86 86 84;
+                      M74 85C74 87 77 89 80 89C83 89 86 87 86 85;
+                      M74 84C74 86 77 88 80 88C83 88 86 86 86 84" 
+              dur="3s" repeatCount="indefinite"/>
+    </path>
+  </g>
+  
+  <!-- Connection lines -->
+  <g stroke="#5E60CE" stroke-width="1" stroke-dasharray="4 2" opacity="0.7">
+    <line x1="55" y1="110" x2="75" y2="90" opacity="0">
+      <animate attributeName="opacity" values="0;0.7" dur="0.5s" begin="9.5s" fill="freeze"/>
+      <animate attributeName="stroke-dashoffset" values="0;12" dur="2s" repeatCount="indefinite"/>
+    </line>
+    
+    <line x1="105" y1="110" x2="85" y2="90" opacity="0">
+      <animate attributeName="opacity" values="0;0.7" dur="0.5s" begin="9.5s" fill="freeze"/>
+      <animate attributeName="stroke-dashoffset" values="0;12" dur="2s" repeatCount="indefinite"/>
+    </line>
+  </g>
+  
+  <!-- Star ratings -->
+  <g opacity="0" fill="#FFBE0B">
+    <animate attributeName="opacity" values="0;0.9" dur="1s" begin="10s" fill="freeze"/>
+    
+    <path d="M115 50L117 55L122 55L118 58L120 63L115 60L110 63L112 58L108 55L113 55L115 50Z">
+      <animate attributeName="fill" values="#FFBE0B;#FFD60A;#FFBE0B" dur="3s" repeatCount="indefinite"/>
+    </path>
+    
+    <path d="M130 60L132 65L137 65L133 68L135 73L130 70L125 73L127 68L123 65L128 65L130 60Z">
+      <animate attributeName="fill" values="#FFBE0B;#FFD60A;#FFBE0B" dur="3s" begin="0.5s" repeatCount="indefinite"/>
+    </path>
+    
+    <path d="M45 50L47 55L52 55L48 58L50 63L45 60L40 63L42 58L38 55L43 55L45 50Z">
+      <animate attributeName="fill" values="#FFBE0B;#FFD60A;#FFBE0B" dur="3s" begin="1s" repeatCount="indefinite"/>
+    </path>
+    
+    <path d="M30 60L32 65L37 65L33 68L35 73L30 70L25 73L27 68L23 65L28 65L30 60Z">
+      <animate attributeName="fill" values="#FFBE0B;#FFD60A;#FFBE0B" dur="3s" begin="1.5s" repeatCount="indefinite"/>
+    </path>
+  </g>
+  
+  <!-- Gradients and definitions -->
+  <defs>
+    <linearGradient id="serviceBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3A0CA3"/>
+      <stop offset="100%" stop-color="#4361EE"/>
+    </linearGradient>
+    
+    <linearGradient id="satisfactionGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#64DFDF">
+        <animate attributeName="stop-color" values="#64DFDF;#B8F2E6;#64DFDF" dur="3s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="100%" stop-color="#5E60CE">
+        <animate attributeName="stop-color" values="#5E60CE;#7400B8;#5E60CE" dur="3s" repeatCount="indefinite"/>
+      </stop>
+    </linearGradient>
+  </defs>
+</svg>

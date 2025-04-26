@@ -1,0 +1,251 @@
+Start generating
+These endpoints all kick off tasks to create generations.
+
+Generate a video from an image
+POST
+/v1/image_to_video
+This endpoint will start a new task to generate a video from an image prompt.
+
+Authentication
+Authorization
+Use the HTTP Authorization header with the Bearer scheme along with an API key.
+
+Headers
+X-Runway-Version
+Required
+string
+This field must be set to the exact value 2024-11-06.
+
+Request body
+promptImage
+Required
+string or Array of PromptImages (objects)
+string <uri>
+A HTTPS URL or data URI containing an encoded image to be used as the first frame of the generated video. See our docs on image inputs for more information.
+
+Array of objects
+An array of objects representing images to be used in the output video. No two provided images may have the same position value.
+
+uri
+Required
+string
+<uri>
+A HTTPS URL or data URI containing an encoded image. See our docs on image inputs for more information.
+
+position
+Required
+string
+Accepted values:
+"first"
+"last"
+The position of the image in the output video. "first" will use the image as the first frame of the video, "last" will use the image as the last frame of the video.
+
+"last" is currently supported for gen3a_turbo only.
+
+model
+Required
+string
+Accepted values:
+"gen4_turbo"
+"gen3a_turbo"
+The model variant to use.
+
+seed
+integer
+[ 0 .. 4294967295 ]
+If unspecified, a random number is chosen. Varying the seed integer is a way to get different results for the same other request parameters. Using the same seed integer for an identical request will produce similar results.
+
+promptText
+string
+<= 1000 characters
+A non-empty string up to 1000 UTF-16 code points in length (that is, promptText.length === 1000 in JavaScript). This should describe in detail what should appear in the output.
+
+duration
+integer
+Default:
+10
+Accepted values:
+5
+10
+The number of seconds of duration for the output video.
+
+ratio
+string
+Accepted values:
+"1280:720"
+"720:1280"
+"1104:832"
+"832:1104"
+"960:960"
+"1584:672"
+"1280:768"
+"768:1280"
+The resolution of the output video.
+
+gen4_turbo supports the following values:
+
+1280:720
+720:1280
+1104:832
+832:1104
+960:960
+1584:672
+gen3a_turbo supports the following values:
+
+1280:768
+768:1280
+Responses
+200
+The task has been successfully created.
+
+429
+You have exceeded the rate limit for this endpoint.
+
+Node SDK
+Python SDK
+cURL
+fetch()
+httpx
+// npm install --save @runwayml/sdk
+import RunwayML from '@runwayml/sdk';
+
+// The env var RUNWAYML_API_SECRET is expected to contain your API key.
+const client = new RunwayML();
+
+async main() {
+  const task = await client.imageToVideo.create({
+    model: 'gen4_turbo',
+    promptImage: 'https://example.com/assets/bunny.jpg',
+    promptText: 'The bunny is eating a carrot',
+  });
+  console.log(task.id);
+}
+
+main();
+200
+
+{
+"id": "497f6eca-6276-4993-bfeb-53cbbbba6f08"
+}
+Task management
+Endpoints for managing tasks that have been submitted.
+
+Get task detail
+GET
+/v1/tasks/{id}
+Return details about a task. Consumers of this API should not expect updates more frequent than once every five seconds for a given task.
+
+Authentication
+Authorization
+Use the HTTP Authorization header with the Bearer scheme along with an API key.
+
+Path parameters
+id
+Required
+string
+<uuid>
+The ID of a previously-submitted task that has not been canceled or deleted.
+
+Headers
+X-Runway-Version
+Required
+string
+This field must be set to the exact value 2024-11-06.
+
+Responses
+200
+The task status.
+
+404
+The task does not exist, or was deleted or canceled.
+
+Node SDK
+Python SDK
+cURL
+fetch()
+httpx
+// npm install --save @runwayml/sdk
+import RunwayML from '@runwayml/sdk';
+
+// The env var RUNWAYML_API_SECRET is expected to contain your API key.
+const client = new RunwayML();
+
+async main(taskId: string) {
+  const task = await client.tasks.retrieve(taskId);
+  console.log(task);
+}
+
+main('17f20503-6c24-4c16-946b-35dbbce2af2f');
+200
+
+
+An example of a pending task
+An example of a pending task
+{
+"id": "17f20503-6c24-4c16-946b-35dbbce2af2f",
+"status": "PENDING",
+"createdAt": "2024-06-27T19:49:32.334Z"
+}
+Cancel or delete a task
+DELETE
+/v1/tasks/{id}
+Tasks that are running, pending, or throttled can be canceled by invoking this method. Invoking this method for other tasks will delete them.
+
+The output data associated with a deleted task will be deleted from persistent storage in accordance with our data retention policy. Aborted and deleted tasks will not be able to be fetched again in the future.
+
+Authentication
+Authorization
+Use the HTTP Authorization header with the Bearer scheme along with an API key.
+
+Path parameters
+id
+Required
+string
+<uuid>
+The ID of a previously-submitted task that has not been canceled or deleted.
+
+Headers
+X-Runway-Version
+Required
+string
+This field must be set to the exact value 2024-11-06.
+
+Responses
+204
+This endpoint will produce a 204 No Content response indicating successful cancellation or deletion. Calling this endpoint for tasks which have already been deleted or aborted will result in a 404: for idempotency purposes, it is safe to ignore these 404 errors.
+
+Node SDK
+Python SDK
+cURL
+fetch()
+httpx
+// npm install --save @runwayml/sdk
+import RunwayML from '@runwayml/sdk';
+
+// The env var RUNWAYML_API_SECRET is expected to contain your API key.
+const client = new RunwayML();
+
+async main(taskId: string) {
+  await client.tasks.delete(taskId);
+}
+
+main('17f20503-6c24-4c16-946b-35dbbce2af2f');
+Organization
+Get organization information
+GET
+/v1/organization
+Get usage tier and credit balance information about the organization associated with the API key used to make the request.
+
+Authentication
+Authorization
+Use the HTTP Authorization header with the Bearer scheme along with an API key.
+
+Headers
+X-Runway-Version
+Required
+string
+This field must be set to the exact value 2024-11-06.
+
+Responses
+200
+The organization information.

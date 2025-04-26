@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="90" height="50" viewBox="0 0 90 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- UFO Body - Sleeker, more futuristic design -->
+  <ellipse cx="45" cy="20" rx="30" ry="6" fill="url(#sleek-body-gradient)" filter="url(#sleek-glow-effect)"/>
+  
+  <!-- UFO Top Section -->
+  <ellipse cx="45" cy="15" rx="18" ry="6" fill="url(#sleek-top-gradient)" filter="url(#sleek-dome-glow)"/>
+  
+  <!-- Cockpit/Window -->
+  <ellipse cx="45" cy="14" rx="8" ry="4" fill="url(#sleek-window-gradient)" opacity="0.8"/>
+  
+  <!-- Light Beam - subtle -->
+  <path d="M45 26L53 40H37L45 26Z" fill="url(#sleek-beam-gradient)" opacity="0.4"/>
+  
+  <!-- Small Accent Lights -->
+  <circle cx="30" cy="20" r="1" fill="#40FFFF" filter="url(#sleek-light-glow)"/>
+  <circle cx="60" cy="20" r="1" fill="#40FFFF" filter="url(#sleek-light-glow)"/>
+  <circle cx="38" cy="20" r="0.7" fill="#40FFFF" filter="url(#sleek-light-glow)"/>
+  <circle cx="52" cy="20" r="0.7" fill="#40FFFF" filter="url(#sleek-light-glow)"/>
+  
+  <!-- Definitions -->
+  <defs>
+    <!-- Body Gradient -->
+    <linearGradient id="sleek-body-gradient" x1="15" y1="20" x2="75" y2="20" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#113a4a"/>
+      <stop offset="0.3" stop-color="#0d6d8c"/>
+      <stop offset="0.7" stop-color="#0d6d8c"/>
+      <stop offset="1" stop-color="#113a4a"/>
+    </linearGradient>
+    
+    <!-- Top Gradient -->
+    <linearGradient id="sleek-top-gradient" x1="27" y1="12" x2="63" y2="18" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#04859b" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#05b8d4" stop-opacity="0.7"/>
+    </linearGradient>
+    
+    <!-- Window Gradient -->
+    <radialGradient id="sleek-window-gradient" cx="45" cy="14" r="8" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7affff" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#00bbcc" stop-opacity="0.5"/>
+    </radialGradient>
+    
+    <!-- Beam Gradient -->
+    <linearGradient id="sleek-beam-gradient" x1="45" y1="26" x2="45" y2="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0df2ff" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#0df2ff" stop-opacity="0"/>
+    </linearGradient>
+    
+    <!-- Glow Effects -->
+    <filter id="sleek-glow-effect" x="5" y="4" width="80" height="32" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    
+    <filter id="sleek-dome-glow" x="17" y="1" width="56" height="28" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    
+    <filter id="sleek-light-glow" x="-4" y="-4" width="12" height="12" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="1.2" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+</svg>

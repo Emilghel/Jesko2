@@ -1,107 +1,85 @@
-# Jesko AI - Partner Management & AI Video Platform
+# Jesko AI Platform
 
-Jesko AI is an advanced AI-powered partner management platform that delivers secure, intelligent administrative workflows through cutting-edge security design and user-centric technologies.
+An advanced AI-powered communication and workflow automation platform that enables intelligent interaction management through sophisticated AI integrations.
 
 ## Core Features
 
-- AI Video Generation & Editing
-- Partner Ecosystem Management
-- Lead Management System
-- Voice Synthesis & Audio Processing
-- Admin Dashboard & Controls
-- Secure User Authentication
-- Coin-based Credit System
-- Automated Agent Management
+- **AI Video Magic**: Transform static images into videos with text prompts using Runway API
+- **AI Clip Studio**: Generate short-form social media clips from long-form content
+- **Audio Transcription**: Transcribe audio files with OpenAI Whisper API
+- **Leads Management**: Organize contact information and import leads from various sources
+- **AI Agent Calling**: Enable AI agents to make automated sales calls using Twilio
+- **Knowledge Base**: Provide AI agents with domain-specific information
+- **Calendar Integration**: Allow AI agents to schedule appointments directly
+- **SalesGPT Integration**: AI-powered sales conversations with voice capabilities
 
-## Technology Stack
+## SalesGPT Twilio Integration
 
-- **Frontend**: React, TypeScript, Tailwind CSS, Shadcn UI Components
-- **Backend**: Node.js, Express, PostgreSQL
-- **AI Integration**: OpenAI, ElevenLabs, Runway ML
-- **Database**: PostgreSQL with Drizzle ORM
-- **Authentication**: JWT Tokens, bcrypt password hashing
-- **Audio Processing**: Whisper, ElevenLabs
-- **Video Generation**: Runway ML
+The SalesGPT Twilio Integration combines several powerful technologies:
 
-## Environment Variables
+1. **SalesGPT**: A LangChain-based AI sales agent framework
+2. **ElevenLabs**: High-quality voice synthesis
+3. **Twilio**: Telephony and voice call management
 
-The application requires the following environment variables to be set:
+### Key Features
 
-```env
-# Database
-DATABASE_URL=postgresql://username:password@hostname:port/database
+- Chat with a sales AI agent via API endpoints
+- Convert text responses to speech using ElevenLabs
+- Handle incoming and outgoing Twilio phone calls
+- Maintain conversation context across interactions
+- Customize agent personality and product knowledge
 
-# Authentication
-JWT_SECRET=your_jwt_secret_key
+### Getting Started
 
-# AI Services
-OPENAI_API_KEY=your_openai_api_key
-ELEVENLABS_API_KEY=your_elevenlabs_api_key
-RUNWAY_API_KEY=your_runway_api_key
+1. Install the required dependencies:
+   ```
+   pip install fastapi uvicorn pydantic python-dotenv openai langchain requests pydub elevenlabs
+   ```
 
-# Optional Services
-GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=your_google_client_secret
-STRIPE_SECRET_KEY=your_stripe_secret_key
-STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
-```
+2. Set up environment variables in `app/.env`:
+   ```
+   OPENAI_API_KEY=your_openai_key
+   ELEVENLABS_API_KEY=your_elevenlabs_key
+   TWILIO_ACCOUNT_SID=your_twilio_sid
+   TWILIO_AUTH_TOKEN=your_twilio_token
+   TWILIO_PHONE_NUMBER=your_twilio_number
+   ```
 
-## Deployment to Render
+3. Run the FastAPI server:
+   ```
+   python app.py
+   ```
 
-### Prerequisites
+4. The server will be available at http://localhost:8000
 
-1. A PostgreSQL database (can be provisioned on Render)
-2. API keys for OpenAI, ElevenLabs, and Runway ML
-3. A Render account
+### API Endpoints
 
-### Steps
+- **GET /** - HTML landing page with instructions
+- **POST /chat** - Chat with the sales agent
+- **POST /voice** - Generate text response and convert to speech
+- **POST /twilio/audio** - Generate TwiML for Twilio to play audio
+- **POST /twilio/input** - Handle speech input from Twilio
 
-1. **Create a PostgreSQL Database on Render**
-   - Go to the Render Dashboard
-   - Click "New" → "PostgreSQL"
-   - Fill out the form (name, region, etc.)
-   - Click "Create Database"
-   - Note the connection details (hostname, port, username, password, database name)
+### Twilio Configuration
 
-2. **Create a Web Service on Render**
-   - Click "New" → "Web Service"
-   - Connect your GitHub repository
-   - Fill out the form:
-     - Name: "jesko-ai" (or preferred name)
-     - Environment: "Node.js"
-     - Build Command: `npm install`
-     - Start Command: `npm run dev`
+To use the Twilio integration, set up a webhook in your Twilio phone number configuration:
 
-3. **Configure Environment Variables**
-   - Go to the "Environment" tab
-   - Add all the required environment variables
-   - Important: Add `DATABASE_URL` from your PostgreSQL database
-   - Set `NODE_ENV=production`
+1. **Voice Configuration** → **A Call Comes In**
+2. Set the webhook URL to `https://your-server.com/twilio/audio`
+3. Method: `POST`
 
-4. **Deploy the Application**
-   - Click "Create Web Service"
-   - Wait for the build to complete
+### Customization
 
-5. **Verify the Deployment**
-   - Open the application URL
-   - The application should be running and connected to the database
+You can customize the sales agent's behavior by modifying:
 
-## Local Development
+- Agent name, role, and personality traits
+- Product catalog and feature descriptions
+- Voice settings for ElevenLabs TTS
+- Conversation goals and stage tracking
 
-```bash
-# Install dependencies
-npm install
+## Credits
 
-# Start the database (if using Docker)
-docker-compose up -d db
-
-# Start the development server
-npm run dev
-```
-
-## Important Notes
-
-- The uploads directory is not included in the repository due to its size. It will be automatically created by the application.
-- The workflow is configured to run `npm run dev` to start the application.
-- Express is configured to run on port 3000 by default but will use `PORT` environment variable if set.
-- Setting `trust proxy` in Express is needed if running behind a proxy like Render's.
+- OpenAI API for text generation capabilities
+- ElevenLabs for voice synthesis technology
+- Twilio for telephony services
+- LangChain for providing the framework components

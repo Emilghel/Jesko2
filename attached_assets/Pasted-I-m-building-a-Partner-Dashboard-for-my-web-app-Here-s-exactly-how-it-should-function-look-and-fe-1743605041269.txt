@@ -1,0 +1,61 @@
+I’m building a Partner Dashboard for my web app. Here’s exactly how it should function, look, and feel:
+
+🔐 Access Control
+	•	Only admin can create a partner account.
+	•	Partners must log in to access the /partner-dashboard route.
+	•	Unauthorized users should be redirected to the main site or login page.
+
+📊 Partner Dashboard Features
+	1.	Affiliate System
+
+	•	Each partner gets a unique affiliate link they can copy/share.
+	•	That link should track traffic, free trial signups, and purchases back to that partner.
+	•	Show real-time stats:
+	•	Visitors from their link
+	•	Number of people on free trial
+	•	Number of purchases
+	•	Number of active memberships
+	•	Users who bought tokens
+
+	2.	Customer Data
+
+	•	Show a table of referred customers:
+	•	Name
+	•	Phone number
+	•	Email
+	•	Membership type
+	•	Number of coins they have
+
+	3.	Earnings & Withdrawals
+
+	•	Show total earnings from referred clients
+	•	Button to request withdrawal of funds
+	•	Withdraw options: PayPal and Bitcoin
+	•	Include a simple withdrawal form and display payout status (pending, paid)
+	•	Add animations for the withdraw flow (subtle glow, coin sounds, smooth modal)
+
+	4.	Traffic Tracking
+
+	•	Show how much traffic has come in through their affiliate link
+	•	Display as a graph + number of unique visitors
+
+🎨 Design Requirements
+	•	Sleek & modern dashboard UI
+	•	Responsive layout (desktop + mobile)
+	•	Animated buttons with soft glows
+	•	Beautiful graphics for icons, charts, and cards
+	•	Include light sound effects for buttons or notifications (toggleable)
+	•	Use modern fonts, spacing, and shadow effects
+
+🧰 Tools & Stack
+Use whatever stack fits best, but preferably:
+	•	Frontend: React + TailwindCSS or Chakra UI
+	•	Backend: Node.js or Firebase
+	•	Auth: JWT or Firebase Auth
+	•	Database: MongoDB or Firestore
+
+Also:
+	•	Use animation libraries like Framer Motion for subtle movement
+	•	Use chart libraries like Chart.js or Recharts for visual stats
+
+Please generate the folder structure, key backend routes (e.g. /create-partner, /dashboard-data, /withdraw-request), and a React dashboard component with animations and basic dummy data so I can wire it up.

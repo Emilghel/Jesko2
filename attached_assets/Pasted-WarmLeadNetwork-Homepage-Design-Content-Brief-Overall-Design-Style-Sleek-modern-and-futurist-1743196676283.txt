@@ -1,0 +1,45 @@
+WarmLeadNetwork Homepage – Design & Content Brief
+
+Overall Design Style:
+Sleek, modern, and futuristic. Minimal layout with smooth animations, conversational flow, and high-end feel. Use motion, interactive elements, and clean typography to make the experience feel intelligent and alive. Fully responsive across devices.
+	1.	Hero Section — “Welcome to the Future of AI”
+Fullscreen, above-the-fold hero
+Headline: “Build With AI. Scale With Intelligence.”
+Subheadline: “WarmLeadNetwork’s AI platform helps you automate, scale, and sell — using the most advanced conversational AI on the market.”
+Visual: Subtle motion background or intelligent waveform animation
+CTAs: Try the AI / Start Your AI Business
+Additional: Include a floating or fixed AI Voice Bot widget that users can speak to directly from the homepage — no login required.
+	2.	Conversational AI – “Talk to Your Future”
+Layout: Left (text content), Right (embedded chat or animation)
+Copy Highlights:
+– 24/7 human-like conversations
+– Real-time responses, context-aware
+– Fully automated support and interaction
+Micro-animation: AI typing indicator, glowing input, fluid transitions
+	3.	AI Clone – “Your AI That Works For You”
+Highlights what the AI clone can do for the user
+Text Points:
+– Handles online tasks like scheduling, sending emails, answering customer questions
+– Voice + Text input
+– Works across multiple platforms
+Visual: Interactive demo, animation of AI completing tasks in real-time
+	4.	License the AI – “Own the Business of Tomorrow”
+Headline: “License the Tech. Launch Your Empire.”
+Copy:
+– Become a licensed partner of WarmLeadNetwork
+– Offer conversational and task-based AI as your own product
+– Includes white-label platform, training, and support
+Visual: Preview of the backend dashboard, earnings analytics, or white-labeled agent
+CTA: Become a Licensee
+	5.	Testimonials / Social Proof
+Include video testimonials, chat-based reviews, or quote bubbles
+Show results from real users of the AI platform
+Optionally include partner logos or “Powered by” sections
+	6.	Footer
+Includes:
+– Product
+– About
+– Licensing
+– Support
+– Contact
+Optional: Newsletter subscription

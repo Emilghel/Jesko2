@@ -1,0 +1,29 @@
+Design 3D **miniature, 3rd-person character widgets** (cool, stylized avatars) to represent each niche. Each character should be animated and feel alive — idle animations, blinking, subtle breathing, etc. Make each one unique and eye-catching, like game mascots or heroes.
+
+Characters (mini 3D avatars):
+1. **Real Estate Agent** – Dressed in a blazer, holding a tablet and keys. Idle animation: checking listings on a floating hologram.
+2. **E-commerce Pro** – Modern hoodie, VR glasses, carrying packages or shopping cart items. Idle animation: tapping on a floating store interface.
+3. **Content Creator** – Ring light, camera on shoulder, headphones around neck. Idle animation: taking a selfie or pointing at ideas in the air.
+4. **Law Firm Rep** – Suit and tie, holding a gavel and legal docs. Idle animation: stamping papers with authority.
+5. **Marketing Agency Boss** – Stylish outfit, tablet with graphs floating around. Idle animation: typing fast in mid-air with floating ads.
+6. **Insurance Agent** – Business casual, clipboard and umbrella (symbolizing coverage). Idle animation: shielding with umbrella or shaking hands.
+7. **Crypto Project Leader** – Futuristic armor/techwear, floating coins and a digital wallet. Idle animation: flipping tokens or typing on a holographic screen.
+8. **Event Planner** – Dressed sharp, holding a clipboard and balloon/confetti cannon. Idle animation: popping confetti or pointing at a venue layout.
+
+**Page Layout:**
+- **Left side:** One selected character in full 3D, hovering slightly above the ground with light shadows and smooth looping animations.
+- **Right side:** Character selection carousel or grid with mini animated thumbnails. Clicking one updates the full 3D character on the left.
+- Below each full character, display a short tagline like:
+  > “As a Content Creator, the AI will help you script videos, generate captions, and plan viral content.”
+
+**Design Notes:**
+- Use WebGL or Three.js to render all 3D character widgets with real lighting, shadows, and material textures.
+- Each character should look modern, polished, fun, and full of personality — like a helper bot, but professional and stylized.
+- Background should be a dynamic gradient or subtle animation (light particles, glow effects).
+- Add subtle UI sound effects and hover animations for interactivity.
+
+**Functionality:**
+- Once a user selects a character, store that selection in their account profile.
+- Explain that this character helps personalize their AI dashboard — tailored tools, responses, and performance optimized for that niche.
+
+Make it feel like the user is choosing their *AI Partner* — a fun but functional ally to help them succeed.

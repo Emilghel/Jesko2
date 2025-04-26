@@ -1,0 +1,28 @@
+Implement a coin-based credit system in a full-stack web app. Use Node.js with Express for the backend and HTML/CSS/JavaScript (or React if available) for the frontend. Here’s how the system should work:
+
+Each newly registered user should start with 100 coins automatically upon signup. This value should be stored in the database and associated with the user account.
+
+Create an /ai-voiceover page where users can input text and click a “Generate Voice” button. When the user clicks the button:
+	•	Count the number of words in the input text
+	•	Deduct 1 coin per word from the user’s balance (e.g., 50 words = 50 coins)
+	•	Prevent submission if the user does not have enough coins
+	•	Send the request to the backend for voice generation
+
+Coin deduction must happen only when the voice is actually generated, not just when typing. All coin calculations and deductions must be done on the backend for security.
+
+Create a /pricing page that displays three coin purchase options:
+	•	100 coins for $4.87
+	•	500 coins for $9.87
+	•	5000 coins for $28.87
+Each option should include a “Buy Coins” button that connects to a simulated or real checkout endpoint.
+
+Display the user’s current coin balance in the top navigation bar on every page. Next to the balance, show an animated, rotating gold coin icon that glows and spins in place. This coin should look premium, flashy, and valuable.
+
+Frontend should update the coin balance in real time after purchases and voice generation. Disable the “Generate Voice” button if the input text exceeds the user’s current coin balance (e.g., they try to use 80 words with only 60 coins).
+
+Backend API routes to implement:
+	•	GET /api/user/coins – returns the user’s current coin balance
+	•	POST /api/voiceover/use – accepts input text, calculates word count, checks coin balance, deducts coins, generates voice, and returns result or error
+	•	POST /api/coins/buy – accepts a package ID (100, 500, or 5000), adds that number of coins to the user’s account, and simulates a purchase
+
+Use MongoDB or SQLite to manage user accounts and coin balances. Use session-based or JWT authentication. All coin balance updates must be secure and performed server-side only.

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="140" height="70" viewBox="0 0 140 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Sleek Advanced UFO with Silver/Blue Design -->
+  <defs>
+    <!-- Modern Metallic Gradient -->
+    <linearGradient id="metallic-body" x1="70" y1="20" x2="70" y2="45" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f0f8ff" stop-opacity="0.9"/>
+      <stop offset="0.2" stop-color="#e0f0ff" stop-opacity="0.8"/>
+      <stop offset="0.5" stop-color="#c8e0f8" stop-opacity="0.7"/>
+      <stop offset="0.8" stop-color="#a0c0e0" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#90a8c0" stop-opacity="0.5"/>
+    </linearGradient>
+    
+    <!-- Top Glass Gradient - Multi-layered -->
+    <radialGradient id="top-glass" cx="70" cy="30" r="20" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="0.3" stop-color="#e0f0ff" stop-opacity="0.8"/>
+      <stop offset="0.6" stop-color="#c0e0ff" stop-opacity="0.6"/>
+      <stop offset="0.9" stop-color="#a0c0ff" stop-opacity="0.4"/>
+      <stop offset="1" stop-color="#80a0e0" stop-opacity="0.3"/>
+    </radialGradient>
+    
+    <!-- Wing Gradient -->
+    <linearGradient id="wing-gradient" x1="30" y1="35" x2="110" y2="35" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#406080" stop-opacity="0.4"/>
+      <stop offset="0.5" stop-color="#6080a0" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#406080" stop-opacity="0.4"/>
+    </linearGradient>
+    
+    <!-- Engine Glow Gradient -->
+    <radialGradient id="engine-glow" cx="70" cy="45" r="10" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#60c0ff" stop-opacity="0.7"/>
+      <stop offset="1" stop-color="#40a0e0" stop-opacity="0"/>
+    </radialGradient>
+    
+    <!-- Light Beam -->
+    <linearGradient id="beam-gradient" x1="70" y1="45" x2="70" y2="65" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#80c0ff" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#80c0ff" stop-opacity="0"/>
+    </linearGradient>
+    
+    <!-- Blue Glow Filter -->
+    <filter id="blue-glow" x="-50%" y="-50%" width="200%" height="200%" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feFlood flood-color="#60c0ff" flood-opacity="0.6" result="glow-color"/>
+      <feComposite operator="in" in="glow-color" in2="blur" result="soft-glow"/>
+      <feComposite operator="over" in="SourceGraphic" in2="soft-glow"/>
+    </filter>
+    
+    <!-- Metallic Detail Shadow -->
+    <filter id="metallic-shadow" x="-10%" y="-10%" width="120%" height="120%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="1.5" stdDeviation="1" flood-color="#203040" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+  
+  <!-- UFO Components -->
+  <!-- Background Aura - Subtle Blue -->
+  <ellipse cx="70" cy="45" rx="55" ry="10" fill="#60c0ff" opacity="0.1" filter="url(#blue-glow)"/>
+  
+  <!-- Main Body - Flat & Wide -->
+  <ellipse cx="70" cy="45" rx="50" ry="7" fill="url(#metallic-body)" filter="url(#metallic-shadow)"/>
+  
+  <!-- Side Wings -->
+  <path d="M30 45 Q70 55, 110 45 Q70 35, 30 45 Z" fill="url(#wing-gradient)" filter="url(#metallic-shadow)" opacity="0.6"/>
+  
+  <!-- Top Dome/Cockpit -->
+  <ellipse cx="70" cy="30" rx="20" ry="15" fill="url(#top-glass)" filter="url(#metallic-shadow)"/>
+  
+  <!-- Engine Glow -->
+  <ellipse cx="70" cy="45" rx="10" ry="5" fill="url(#engine-glow)" opacity="0.7"/>
+  
+  <!-- Light Beam (Will be animated with CSS) -->
+  <path d="M55 45 L70 65 L85 45 Z" fill="url(#beam-gradient)" opacity="0.0" class="beam">
+    <animate attributeName="opacity" values="0;0.5;0" dur="5s" repeatCount="indefinite"/>
+  </path>
+  
+  <!-- Accent Details - Tech Lines -->
+  <line x1="50" y1="43" x2="90" y2="43" stroke="#80c0ff" stroke-width="0.3" opacity="0.8"/>
+  <line x1="45" y1="45" x2="95" y2="45" stroke="#80c0ff" stroke-width="0.3" opacity="0.8"/>
+  <line x1="50" y1="47" x2="90" y2="47" stroke="#80c0ff" stroke-width="0.3" opacity="0.8"/>
+  
+  <!-- Accent Lights -->
+  <circle cx="35" cy="45" r="1" fill="#40a0ff" opacity="0.8">
+    <animate attributeName="opacity" values="0.3;0.8;0.3" dur="3s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="105" cy="45" r="1" fill="#40a0ff" opacity="0.8">
+    <animate attributeName="opacity" values="0.3;0.8;0.3" dur="3s" repeatCount="indefinite" begin="1.5s"/>
+  </circle>
+  
+  <!-- Detail Rings -->
+  <circle cx="70" cy="45" r="5" stroke="#80c0ff" stroke-width="0.3" fill="none" opacity="0.6"/>
+  <circle cx="70" cy="45" r="8" stroke="#80c0ff" stroke-width="0.2" fill="none" opacity="0.4"/>
+  
+  <!-- Glass Interior Highlight -->
+  <ellipse cx="70" cy="30" rx="12" ry="9" fill="#ffffff" opacity="0.15"/>
+</svg>

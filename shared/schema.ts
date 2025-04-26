@@ -8,8 +8,10 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
   displayName: text("display_name"),
-  phoneNumber: text("phone_number"), // Added phone number field
-  registrationIp: text("registration_ip"), // Added registration IP for rate limiting
+  // phoneNumber field removed as it doesn't exist in the database
+  // phoneNumber: text("phone_number"),
+  // registrationIp field removed as it doesn't exist in the database
+  // registrationIp: text("registration_ip"), 
   createdAt: timestamp("created_at").defaultNow().notNull(),
   lastLogin: timestamp("last_login"),
   isAdmin: boolean("is_admin").default(false).notNull(),
@@ -58,8 +60,8 @@ export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
   password: true,
   displayName: true,
-  phoneNumber: true,
-  registrationIp: true,
+  // phoneNumber: true, // Removed because the column doesn't exist in the database
+  // registrationIp: true, // Removed because the column doesn't exist in the database
   isAdmin: true,
   lastLogin: true,
   profession: true,

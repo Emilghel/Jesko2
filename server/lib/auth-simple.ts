@@ -384,7 +384,8 @@ export function isAdmin(req: Request, res: Response, next: NextFunction) {
 }
 
 // Register a new user
-export async function registerUser(username: string, email: string, password: string, displayName?: string, isAdmin: boolean = false, phoneNumber?: string, ipAddress?: string) {
+export async function registerUser(username: string, email: string, password: string, displayName?: string, isAdmin: boolean = false) {
+  // phoneNumber and ipAddress parameters have been removed as they don't exist in the database
   try {
     // Check if user with this email already exists
     const existingUserByEmail = await storage.getUserByEmail(email);
@@ -398,21 +399,7 @@ export async function registerUser(username: string, email: string, password: st
       throw new Error('Username already in use');
     }
 
-    // If IP address is provided, check if this IP has reached the limit (max 2 accounts per IP)
-    if (ipAddress) {
-      // Get count of users with this IP address
-      const { rows } = await pool.query(
-        'SELECT COUNT(*) as count FROM users WHERE registration_ip = $1',
-        [ipAddress]
-      );
-      
-      const count = parseInt(rows[0]?.count || '0');
-      if (count >= 2) {
-        throw new Error('Maximum number of accounts per IP address reached (2)');
-      }
-      
-      console.log(`IP address ${ipAddress} has ${count} existing accounts. Registration allowed.`);
-    }
+    // IP address check removed entirely as we're no longer tracking IP addresses
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -425,8 +412,8 @@ export async function registerUser(username: string, email: string, password: st
       displayName: displayName || username,
       isAdmin,
       lastLogin: new Date(),
-      phoneNumber,
-      registrationIp: ipAddress,
+      // phoneNumber field removed as it doesn't exist in the database
+      // registrationIp field removed as it doesn't exist in the database
     });
 
     // Add a transaction record for the initial 100 coins
@@ -463,50 +450,95 @@ export async function loginUser(email: string, password: string) {
     
     if (!user) {
       console.log(`No user found with email: ${email}`);
-      throw new Error('Invalid email or password');
+      throw new Error('Incorrect email or password');
     }
     
-    // Compare passwords
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      console.log(`Password mismatch for user ${email}`);
-      throw new Error('Invalid email or password');
+    // Verify password
+    const isValid = await bcrypt.compare(password, user.password);
+    console.log(`Password validation result for ${email}: ${isValid}`);
+    
+    if (!isValid) {
+      throw new Error('Incorrect email or password');
     }
     
-    // Update last login time
-    await storage.updateLastLogin(user.id);
+    // Update last login
+    await storage.updateUser(user.id, { lastLogin: new Date() });
+    console.log(`Authentication successful for ${email}, user ID: ${user.id}`);
     
-    console.log(`User ${email} authenticated successfully`);
+    // Generate a token with 7-day expiration
+    const token = generateToken();
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7);
     
-    // Generate and register token
-    const token = await registerToken(user);
+    // Store the token in memory
+    activeTokens.set(token, {
+      userId: user.id,
+      expiresAt
+    });
     
-    return { user, token };
+    // Also persist to database
+    await pool.query(
+      'INSERT INTO auth_tokens (token, user_id, expires_at) VALUES ($1, $2, $3) ON CONFLICT (token) DO UPDATE SET expires_at = $3, user_id = $2',
+      [token, user.id, expiresAt]
+    );
+    
+    console.log(`Token generated for user ${email}: ${token.substring(0, 10)}...`);
+    console.log(`Token will expire at: ${expiresAt.toISOString()}`);
+    console.log(`Current active tokens count: ${activeTokens.size}`);
+    
+    // For security reasons, don't include the password in the response
+    const safeUserData = {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      displayName: user.displayName,
+      createdAt: user.createdAt,
+      lastLogin: user.lastLogin,
+      isAdmin: user.isAdmin,
+      coins: user.coins,
+      profession: user.profession
+    };
+    
+    return {
+      ...safeUserData,
+      token,
+      expiresAt
+    };
   } catch (error) {
+    console.error(`Authentication error:`, error);
     throw error;
   }
 }
 
-// Logout a user
+// Logout a user by invalidating their token
 export async function logoutUser(token: string) {
   try {
-    // Check if token exists in active tokens
-    if (!activeTokens.has(token)) {
-      return false;
+    // Remove token from memory
+    if (activeTokens.has(token)) {
+      console.log(`Invalidating token: ${token.substring(0, 10)}...`);
+      activeTokens.delete(token);
     }
     
-    // Remove from memory
-    activeTokens.delete(token);
-    
-    // Remove from database
-    await pool.query(
-      'DELETE FROM auth_tokens WHERE token = $1',
+    // Also remove from database
+    const result = await pool.query(
+      'DELETE FROM auth_tokens WHERE token = $1 RETURNING token',
       [token]
     );
     
-    return true;
+    // Check if any rows were affected by the delete operation
+    const rowsDeleted = result?.rowCount ?? 0;
+    const removed = rowsDeleted > 0 || activeTokens.has(token);
+    
+    if (removed) {
+      console.log(`Token successfully invalidated: ${token.substring(0, 10)}...`);
+      return true;
+    } else {
+      console.log(`Token not found for logout: ${token.substring(0, 10)}...`);
+      return false;
+    }
   } catch (error) {
-    console.error("Error during logout:", error);
-    return false;
+    console.error(`Error during logout:`, error);
+    // Still return true to allow the client to clear their token
+    return true;
   }
 }

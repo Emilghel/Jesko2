@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="130" height="70" viewBox="0 0 130 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Premium Futuristic UFO with purple accents -->
+  <defs>
+    <!-- Body Chrome/Metal Gradient -->
+    <linearGradient id="chrome-body" x1="65" y1="25" x2="65" y2="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f8f8f8" stop-opacity="0.8"/>
+      <stop offset="0.3" stop-color="#e0e0e8" stop-opacity="0.7"/>
+      <stop offset="0.6" stop-color="#c0c0d0" stop-opacity="0.6"/>
+      <stop offset="0.8" stop-color="#a0a0c0" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#8080a0" stop-opacity="0.4"/>
+    </linearGradient>
+    
+    <!-- Center Cockpit Gradient -->
+    <radialGradient id="cockpit-glass" cx="65" cy="25" r="18" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="0.4" stop-color="#e0d8ff" stop-opacity="0.8"/>
+      <stop offset="0.7" stop-color="#c0b0ff" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#a080ff" stop-opacity="0.4"/>
+    </radialGradient>
+    
+    <!-- Ring Gradient with Purple Accents -->
+    <linearGradient id="ring-gradient" x1="25" y1="40" x2="105" y2="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8040ff" stop-opacity="0.1"/>
+      <stop offset="0.5" stop-color="#b090ff" stop-opacity="0.3"/>
+      <stop offset="1" stop-color="#8040ff" stop-opacity="0.1"/>
+    </linearGradient>
+    
+    <!-- Pulsing Beam -->
+    <linearGradient id="beam-gradient" x1="65" y1="40" x2="65" y2="65" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#a080ff" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#a080ff" stop-opacity="0"/>
+    </linearGradient>
+    
+    <!-- Purple Glow Filter -->
+    <filter id="purple-glow" x="-50%" y="-50%" width="200%" height="200%" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feFlood flood-color="#9060ff" flood-opacity="0.7" result="glow-color"/>
+      <feComposite operator="in" in="glow-color" in2="blur" result="soft-glow"/>
+      <feComposite operator="over" in="SourceGraphic" in2="soft-glow"/>
+    </filter>
+    
+    <!-- Detail Shadow -->
+    <filter id="detail-shadow" x="-10%" y="-10%" width="120%" height="120%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="1" stdDeviation="0.8" flood-color="#302040" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+  
+  <!-- UFO Components -->
+  <!-- Subtle Ambient Glow -->
+  <ellipse cx="65" cy="40" rx="50" ry="8" fill="#9060ff" opacity="0.15" filter="url(#purple-glow)"/>
+  
+  <!-- Main UFO Body - Sleek and Elongated -->
+  <ellipse cx="65" cy="40" rx="45" ry="6" fill="url(#chrome-body)" filter="url(#detail-shadow)"/>
+  
+  <!-- Upper Central Section - Glass-like -->
+  <ellipse cx="65" cy="25" rx="18" ry="15" fill="url(#cockpit-glass)" filter="url(#detail-shadow)"/>
+  
+  <!-- Bottom Light Ring -->
+  <ellipse cx="65" cy="40" rx="32" ry="3.5" fill="url(#ring-gradient)" opacity="0.8"/>
+  
+  <!-- Light Beam (Will be animated with CSS) -->
+  <path d="M50 40 L65 60 L80 40 Z" fill="url(#beam-gradient)" opacity="0.0" class="beam">
+    <animate attributeName="opacity" values="0;0.4;0" dur="4s" repeatCount="indefinite"/>
+  </path>
+  
+  <!-- Accent Details -->
+  <circle cx="50" cy="40" r="1.2" fill="#b090ff" opacity="0.9"/>
+  <circle cx="65" cy="40" r="1.2" fill="#b090ff" opacity="0.9"/>
+  <circle cx="80" cy="40" r="1.2" fill="#b090ff" opacity="0.9"/>
+  
+  <!-- Detail Lines -->
+  <path d="M35 38 C45 36, 85 36, 95 38" stroke="#b090ff" stroke-width="0.5" opacity="0.6" fill="none"/>
+  <path d="M40 35 C50 33, 80 33, 90 35" stroke="#b090ff" stroke-width="0.5" opacity="0.6" fill="none"/>
+  
+  <!-- Interior Cockpit Light -->
+  <ellipse cx="65" cy="25" rx="10" ry="8" fill="#ffffff" opacity="0.2"/>
+  
+  <!-- Small Navigation Lights -->
+  <circle cx="45" cy="38" r="0.8" fill="#ff60a0" opacity="0.9">
+    <animate attributeName="opacity" values="0.4;0.9;0.4" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="85" cy="38" r="0.8" fill="#60ffb0" opacity="0.9">
+    <animate attributeName="opacity" values="0.4;0.9;0.4" dur="2.5s" repeatCount="indefinite"/>
+  </circle>
+</svg>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="100" cy="100" r="100" fill="url(#tech-gradient)"/>
+  
+  <!-- Tech Guide Avatar Elements -->
+  <path d="M100 60C87.85 60 78 69.85 78 82C78 94.15 87.85 104 100 104C112.15 104 122 94.15 122 82C122 69.85 112.15 60 100 60Z" fill="white"/>
+  <path d="M100 112C81.5 112 66 127.5 66 146V164H134V146C134 127.5 118.5 112 100 112Z" fill="white"/>
+  
+  <!-- Tech Outfit -->
+  <path d="M88 112V164H112V112H100L88 112Z" fill="#00BCD4"/>
+  <path d="M100 112L112 118L100 124L88 118L100 112Z" fill="#0097A7"/>
+  
+  <!-- Tech Glasses -->
+  <rect x="80" y="78" width="16" height="8" rx="2" fill="#263238"/>
+  <rect x="104" y="78" width="16" height="8" rx="2" fill="#263238"/>
+  <rect x="96" y="82" width="8" height="1" fill="#263238"/>
+  
+  <!-- Circuit Board Elements -->
+  <circle cx="134" cy="140" r="12" fill="#00BCD4"/>
+  <path d="M134 129V140H145" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="134" cy="140" r="2" fill="white"/>
+  <circle cx="145" cy="140" r="2" fill="white"/>
+  <circle cx="134" cy="129" r="2" fill="white"/>
+  
+  <!-- Gradients -->
+  <defs>
+    <linearGradient id="tech-gradient" x1="0" y1="0" x2="200" y2="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#00BCD4"/>
+      <stop offset="1" stop-color="#0288D1"/>
+    </linearGradient>
+  </defs>
+</svg>

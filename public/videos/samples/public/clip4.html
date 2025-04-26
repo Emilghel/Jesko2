@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sample Clip 4</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #000;
+      color: white;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+    }
+    .container {
+      text-align: center;
+      padding: 2rem;
+      max-width: 80%;
+      background: rgba(20, 20, 40, 0.8);
+      border-radius: 10px;
+      box-shadow: 0 0 30px rgba(138, 43, 226, 0.4);
+    }
+    h1 {
+      color: #bb86fc;
+      margin-bottom: 1rem;
+    }
+    p {
+      margin-bottom: 1.5rem;
+      font-size: 1.2rem;
+      line-height: 1.5;
+    }
+    .highlight {
+      color: #03dac6;
+      font-weight: bold;
+    }
+    .star {
+      position: absolute;
+      background-color: white;
+      width: 2px;
+      height: 2px;
+      border-radius: 50%;
+      opacity: 0.8;
+      animation: twinkle 3s infinite;
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Sample Clip 4</h1>
+    <p>This is a <span class="highlight">placeholder</span> for your AI-generated video clip.</p>
+    <p>The actual clips would be extracted from your uploaded video and optimized for social sharing.</p>
+  </div>
+
+  <script>
+    // Add star background effect
+    for (let i = 0; i < 100; i++) {
+      const star = document.createElement("div");
+      star.classList.add("star");
+      star.style.left = Math.random() * 100 + "%";
+      star.style.top = Math.random() * 100 + "%";
+      star.style.animationDelay = Math.random() * 3 + "s";
+      document.body.appendChild(star);
+    }
+  </script>
+</body>
+</html>

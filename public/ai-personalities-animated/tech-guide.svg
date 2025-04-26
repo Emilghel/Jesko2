@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background with gradient -->
+  <circle cx="80" cy="80" r="75" fill="url(#techBg)" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;0.9;0.8" dur="5s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Circuit board paths -->
+  <g stroke="#00B4D8" stroke-width="1.5" stroke-linecap="round">
+    <!-- Horizontal lines -->
+    <line x1="30" y1="40" x2="130" y2="40" opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.5s" begin="0s" fill="freeze"/>
+      <animate attributeName="stroke-dasharray" values="0 100;100 0" dur="2s" begin="0s" fill="freeze"/>
+    </line>
+    
+    <line x1="30" y1="80" x2="130" y2="80" opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.5s" begin="0.5s" fill="freeze"/>
+      <animate attributeName="stroke-dasharray" values="0 100;100 0" dur="2s" begin="0.5s" fill="freeze"/>
+    </line>
+    
+    <line x1="30" y1="120" x2="130" y2="120" opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.5s" begin="1s" fill="freeze"/>
+      <animate attributeName="stroke-dasharray" values="0 100;100 0" dur="2s" begin="1s" fill="freeze"/>
+    </line>
+    
+    <!-- Vertical lines -->
+    <line x1="40" y1="30" x2="40" y2="130" opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.5s" begin="1.5s" fill="freeze"/>
+      <animate attributeName="stroke-dasharray" values="0 100;100 0" dur="2s" begin="1.5s" fill="freeze"/>
+    </line>
+    
+    <line x1="80" y1="30" x2="80" y2="130" opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.5s" begin="2s" fill="freeze"/>
+      <animate attributeName="stroke-dasharray" values="0 100;100 0" dur="2s" begin="2s" fill="freeze"/>
+    </line>
+    
+    <line x1="120" y1="30" x2="120" y2="130" opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.5s" begin="2.5s" fill="freeze"/>
+      <animate attributeName="stroke-dasharray" values="0 100;100 0" dur="2s" begin="2.5s" fill="freeze"/>
+    </line>
+  </g>
+  
+  <!-- Circuit nodes -->
+  <g>
+    <circle cx="40" cy="40" r="3" fill="#00B4D8" opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.3s" begin="3s" fill="freeze"/>
+      <animate attributeName="r" values="0;3;2.5;3" dur="4s" begin="3s" repeatCount="indefinite"/>
+    </circle>
+    
+    <circle cx="40" cy="80" r="3" fill="#00B4D8" opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.3s" begin="3.2s" fill="freeze"/>
+      <animate attributeName="r" values="0;3;2.5;3" dur="4s" begin="3.2s" repeatCount="indefinite"/>
+    </circle>
+    
+    <circle cx="40" cy="120" r="3" fill="#00B4D8" opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.3s" begin="3.4s" fill="freeze"/>
+      <animate attributeName="r" values="0;3;2.5;3" dur="4s" begin="3.4s" repeatCount="indefinite"/>
+    </circle>
+    
+    <circle cx="80" cy="40" r="3" fill="#00B4D8" opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.3s" begin="3.6s" fill="freeze"/>
+      <animate attributeName="r" values="0;3;2.5;3" dur="4s" begin="3.6s" repeatCount="indefinite"/>
+    </circle>
+    
+    <circle cx="80" cy="80" r="5" fill="url(#techCenter)" opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="1s" begin="4s" fill="freeze"/>
+      <animate attributeName="r" values="3;5;4;5" dur="3s" begin="4s" repeatCount="indefinite"/>
+    </circle>
+    
+    <circle cx="80" cy="120" r="3" fill="#00B4D8" opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.3s" begin="4.2s" fill="freeze"/>
+      <animate attributeName="r" values="0;3;2.5;3" dur="4s" begin="4.2s" repeatCount="indefinite"/>
+    </circle>
+    
+    <circle cx="120" cy="40" r="3" fill="#00B4D8" opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.3s" begin="4.4s" fill="freeze"/>
+      <animate attributeName="r" values="0;3;2.5;3" dur="4s" begin="4.4s" repeatCount="indefinite"/>
+    </circle>
+    
+    <circle cx="120" cy="80" r="3" fill="#00B4D8" opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.3s" begin="4.6s" fill="freeze"/>
+      <animate attributeName="r" values="0;3;2.5;3" dur="4s" begin="4.6s" repeatCount="indefinite"/>
+    </circle>
+    
+    <circle cx="120" cy="120" r="3" fill="#00B4D8" opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.3s" begin="4.8s" fill="freeze"/>
+      <animate attributeName="r" values="0;3;2.5;3" dur="4s" begin="4.8s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Data pulses traveling through circuits -->
+  <g>
+    <circle cx="40" cy="40" r="2" fill="#48CAE4" opacity="0">
+      <animate attributeName="cx" values="40;80;120" dur="2s" begin="5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0.8;0" dur="2s" begin="5s" repeatCount="indefinite"/>
+    </circle>
+    
+    <circle cx="80" cy="40" r="2" fill="#48CAE4" opacity="0">
+      <animate attributeName="cy" values="40;80;120" dur="2s" begin="5.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0.8;0" dur="2s" begin="5.5s" repeatCount="indefinite"/>
+    </circle>
+    
+    <circle cx="120" cy="120" r="2" fill="#48CAE4" opacity="0">
+      <animate attributeName="cx" values="120;80;40" dur="2s" begin="6s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0.8;0" dur="2s" begin="6s" repeatCount="indefinite"/>
+    </circle>
+    
+    <circle cx="40" cy="80" r="2" fill="#48CAE4" opacity="0">
+      <animate attributeName="cy" values="80;40" dur="1s" begin="6.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0.8;0" dur="1s" begin="6.5s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Central processor chip -->
+  <g opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="1s" begin="7s" fill="freeze"/>
+    
+    <rect x="70" y="70" width="20" height="20" fill="url(#chipGradient)" rx="2">
+      <animate attributeName="width" values="0;20" dur="0.5s" begin="7s" fill="freeze"/>
+      <animate attributeName="height" values="0;20" dur="0.5s" begin="7s" fill="freeze"/>
+    </rect>
+    
+    <!-- Chip pins -->
+    <line x1="68" y1="73" x2="70" y2="73" stroke="#90E0EF" stroke-width="1">
+      <animate attributeName="x1" values="70;68" dur="0.2s" begin="7.5s" fill="freeze"/>
+    </line>
+    
+    <line x1="68" y1="77" x2="70" y2="77" stroke="#90E0EF" stroke-width="1">
+      <animate attributeName="x1" values="70;68" dur="0.2s" begin="7.6s" fill="freeze"/>
+    </line>
+    
+    <line x1="68" y1="81" x2="70" y2="81" stroke="#90E0EF" stroke-width="1">
+      <animate attributeName="x1" values="70;68" dur="0.2s" begin="7.7s" fill="freeze"/>
+    </line>
+    
+    <line x1="68" y1="85" x2="70" y2="85" stroke="#90E0EF" stroke-width="1">
+      <animate attributeName="x1" values="70;68" dur="0.2s" begin="7.8s" fill="freeze"/>
+    </line>
+    
+    <line x1="92" y1="73" x2="90" y2="73" stroke="#90E0EF" stroke-width="1">
+      <animate attributeName="x1" values="90;92" dur="0.2s" begin="7.5s" fill="freeze"/>
+    </line>
+    
+    <line x1="92" y1="77" x2="90" y2="77" stroke="#90E0EF" stroke-width="1">
+      <animate attributeName="x1" values="90;92" dur="0.2s" begin="7.6s" fill="freeze"/>
+    </line>
+    
+    <line x1="92" y1="81" x2="90" y2="81" stroke="#90E0EF" stroke-width="1">
+      <animate attributeName="x1" values="90;92" dur="0.2s" begin="7.7s" fill="freeze"/>
+    </line>
+    
+    <line x1="92" y1="85" x2="90" y2="85" stroke="#90E0EF" stroke-width="1">
+      <animate attributeName="x1" values="90;92" dur="0.2s" begin="7.8s" fill="freeze"/>
+    </line>
+    
+    <line x1="73" y1="68" x2="73" y2="70" stroke="#90E0EF" stroke-width="1">
+      <animate attributeName="y1" values="70;68" dur="0.2s" begin="7.9s" fill="freeze"/>
+    </line>
+    
+    <line x1="77" y1="68" x2="77" y2="70" stroke="#90E0EF" stroke-width="1">
+      <animate attributeName="y1" values="70;68" dur="0.2s" begin="8.0s" fill="freeze"/>
+    </line>
+    
+    <line x1="81" y1="68" x2="81" y2="70" stroke="#90E0EF" stroke-width="1">
+      <animate attributeName="y1" values="70;68" dur="0.2s" begin="8.1s" fill="freeze"/>
+    </line>
+    
+    <line x1="85" y1="68" x2="85" y2="70" stroke="#90E0EF" stroke-width="1">
+      <animate attributeName="y1" values="70;68" dur="0.2s" begin="8.2s" fill="freeze"/>
+    </line>
+    
+    <line x1="73" y1="92" x2="73" y2="90" stroke="#90E0EF" stroke-width="1">
+      <animate attributeName="y1" values="90;92" dur="0.2s" begin="7.9s" fill="freeze"/>
+    </line>
+    
+    <line x1="77" y1="92" x2="77" y2="90" stroke="#90E0EF" stroke-width="1">
+      <animate attributeName="y1" values="90;92" dur="0.2s" begin="8.0s" fill="freeze"/>
+    </line>
+    
+    <line x1="81" y1="92" x2="81" y2="90" stroke="#90E0EF" stroke-width="1">
+      <animate attributeName="y1" values="90;92" dur="0.2s" begin="8.1s" fill="freeze"/>
+    </line>
+    
+    <line x1="85" y1="92" x2="85" y2="90" stroke="#90E0EF" stroke-width="1">
+      <animate attributeName="y1" values="90;92" dur="0.2s" begin="8.2s" fill="freeze"/>
+    </line>
+  </g>
+  
+  <!-- Binary code animation -->
+  <g font-family="monospace" font-size="8" fill="#90E0EF" opacity="0.7">
+    <text x="45" y="45">01</text>
+    <text x="85" y="45">10</text>
+    <text x="125" y="45">11</text>
+    <text x="45" y="85">10</text>
+    <text x="125" y="85">01</text>
+    <text x="45" y="125">11</text>
+    <text x="85" y="125">01</text>
+    <text x="125" y="125">10</text>
+    
+    <animate attributeName="opacity" values="0;0.7;0.3;0.7" dur="4s" begin="6s" repeatCount="indefinite"/>
+  </g>
+  
+  <!-- Outer data ring -->
+  <circle cx="80" cy="80" r="60" stroke="url(#dataRing)" stroke-width="2" fill="none" opacity="0">
+    <animate attributeName="opacity" values="0;0.8" dur="1s" begin="8.5s" fill="freeze"/>
+    <animate attributeName="r" values="60;62;60" dur="4s" begin="8.5s" repeatCount="indefinite"/>
+    <animateTransform attributeName="transform" type="rotate" from="0 80 80" to="360 80 80" dur="30s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Gradients and definitions -->
+  <defs>
+    <linearGradient id="techBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#03045E"/>
+      <stop offset="100%" stop-color="#023E8A"/>
+    </linearGradient>
+    
+    <radialGradient id="techCenter" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#90E0EF"/>
+      <stop offset="100%" stop-color="#00B4D8"/>
+    </radialGradient>
+    
+    <linearGradient id="chipGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0077B6"/>
+      <stop offset="100%" stop-color="#0096C7"/>
+    </linearGradient>
+    
+    <linearGradient id="dataRing" x1="0%" y1="0%" x2="100%" y2="100%" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#00B4D8">
+        <animate attributeName="stop-color" values="#00B4D8;#90E0EF;#00B4D8" dur="4s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="50%" stop-color="#90E0EF">
+        <animate attributeName="stop-color" values="#90E0EF;#0077B6;#90E0EF" dur="4s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="100%" stop-color="#00B4D8">
+        <animate attributeName="stop-color" values="#00B4D8;#90E0EF;#00B4D8" dur="4s" repeatCount="indefinite"/>
+      </stop>
+    </linearGradient>
+  </defs>
+</svg>

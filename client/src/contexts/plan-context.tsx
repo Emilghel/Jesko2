@@ -17,6 +17,39 @@ export interface PlanDetails {
 
 // Available plans data
 export const availablePlans: Record<string, PlanDetails> = {
+  // Jesko AI Plans
+  'jesko-ai-starter': {
+    id: 'jesko-ai-starter',
+    name: 'Jesko AI Starter',
+    price: '$18',
+    billing: 'month',
+    features: [
+      '1 Conversational Agent',
+      'Book Appointments',
+      'Handle Client Queries',
+      '50 Dials',
+      'CRM',
+      'Automated AI Calls'
+    ],
+    hasTrial: true,
+    trialDays: 7,
+    trialIncludes: '100 coins',
+    badge: 'Great for Beginners'
+  },
+  'jesko-ai-standard': {
+    id: 'jesko-ai-standard',
+    name: 'Jesko AI Standard',
+    price: '$49',
+    billing: 'month',
+    features: [
+      'Everything from $18 membership +',
+      '150 dials',
+      '2 languages'
+    ],
+    hasTrial: true,
+    trialDays: 7,
+    trialIncludes: '100 coins'
+  },
   'ai-secretary-starter': {
     id: 'ai-secretary-starter',
     name: 'AI Secretary Starter',
@@ -84,6 +117,45 @@ export const availablePlans: Record<string, PlanDetails> = {
     hasTrial: false,
     isPremium: true,
     badge: 'Schedule a Call'
+  },
+  
+  // AI Tokens Packages
+  '100': {
+    id: '100',
+    name: '100 AI Tokens',
+    price: '$4.87',
+    billing: 'one-time',
+    features: [
+      '100 AI tokens for voice generation',
+      'Tokens never expire',
+      'Best for small projects'
+    ],
+    hasTrial: false
+  },
+  '500': {
+    id: '500',
+    name: '500 AI Tokens',
+    price: '$9.87',
+    billing: 'one-time',
+    features: [
+      '500 AI tokens for voice generation',
+      'Tokens never expire',
+      'Most popular choice'
+    ],
+    hasTrial: false,
+    isPopular: true
+  },
+  '5000': {
+    id: '5000',
+    name: '5000 AI Tokens',
+    price: '$28.87',
+    billing: 'one-time',
+    features: [
+      '5000 AI tokens for voice generation',
+      'Tokens never expire',
+      'Best value for money'
+    ],
+    hasTrial: false
   }
 };
 
@@ -103,11 +175,33 @@ export const PlanProvider = ({ children }: { children: ReactNode }) => {
   const [selectedPlan, setSelectedPlan] = useState<PlanDetails | null>(null);
 
   const selectPlanById = (id: string) => {
+    console.log(`PlanContext: Selecting plan by ID "${id}"`);
+    
+    // Check if this is a token package
+    const isTokenId = id === '100' || id === '500' || id === '5000';
+    console.log(`PlanContext: Is token package: ${isTokenId}`);
+    
     const plan = availablePlans[id];
     if (plan) {
+      console.log(`PlanContext: Found plan:`, plan);
       setSelectedPlan(plan);
     } else {
-      console.error(`Plan with ID "${id}" not found`);
+      console.error(`PlanContext: Plan with ID "${id}" not found in availablePlans`);
+      
+      // Special fallback for token packages if not found in availablePlans
+      if (isTokenId) {
+        console.log(`PlanContext: Creating fallback token plan for ${id}`);
+        const tokenPlan: PlanDetails = {
+          id: id,
+          name: `${id} AI Tokens`,
+          price: id === '100' ? '$4.87' : id === '500' ? '$9.87' : '$28.87',
+          billing: 'one-time',
+          features: [`${id} AI tokens for voice generation`],
+          hasTrial: false
+        };
+        console.log(`PlanContext: Setting fallback token plan:`, tokenPlan);
+        setSelectedPlan(tokenPlan);
+      }
     }
   };
 

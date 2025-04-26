@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="100" cy="100" r="100" fill="url(#creative-gradient)"/>
+  
+  <!-- Creative Writer Avatar Elements -->
+  <path d="M100 60C87.85 60 78 69.85 78 82C78 94.15 87.85 104 100 104C112.15 104 122 94.15 122 82C122 69.85 112.15 60 100 60Z" fill="white"/>
+  <path d="M100 112C81.5 112 66 127.5 66 146V164H134V146C134 127.5 118.5 112 100 112Z" fill="white"/>
+  
+  <!-- Creative Outfit -->
+  <path d="M88 112V164H112V112H100L88 112Z" fill="#9C27B0"/>
+  <path d="M100 112L112 118L100 124L88 118L100 112Z" fill="#7B1FA2"/>
+  
+  <!-- Artist Beret -->
+  <path d="M78 65C78 65 84 55 100 55C116 55 122 65 122 65C122 65 115 60 100 60C85 60 78 65 78 65Z" fill="#7B1FA2"/>
+  
+  <!-- Paint Brush -->
+  <rect x="78" y="76" width="4" height="16" rx="2" fill="#795548"/>
+  <path d="M78 76C78 76 80 72 82 76" stroke="#795548" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- Ink Splatter -->
+  <circle cx="134" cy="140" r="12" fill="#9C27B0"/>
+  <path d="M130 137C130 137 132 133 138 137M138 137C144 141 134 144 138 137Z" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+  <circle cx="141" cy="143" r="2" fill="white"/>
+  <circle cx="129" cy="141" r="1" fill="white"/>
+  <circle cx="137" cy="145" r="1.5" fill="white"/>
+  
+  <!-- Gradients -->
+  <defs>
+    <linearGradient id="creative-gradient" x1="0" y1="0" x2="200" y2="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#9C27B0"/>
+      <stop offset="1" stop-color="#673AB7"/>
+    </linearGradient>
+  </defs>
+</svg>

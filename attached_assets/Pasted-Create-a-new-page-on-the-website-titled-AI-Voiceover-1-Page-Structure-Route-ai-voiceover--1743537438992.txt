@@ -1,0 +1,52 @@
+Create a new page on the website titled “AI Voiceover”.
+	1.	Page Structure
+– Route: /ai-voiceover
+– Page Title: “AI Voiceover - Powered by Play.ht”
+– Layout: Full-width responsive layout matching the current site design
+– Background: Same animated star or matrix-style theme used across the dashboard for design consistency
+	2.	Header Section
+– Hero title: “Convert Text to Speech Using AI”
+– Subtitle: “Human-like voiceovers for your videos, content, and more — powered by Play.ht”
+– Include a call-to-action input box with a text input area and a “Generate Voice” button
+	3.	Key Features Section
+Add a section labeled “Key Features” with icon bullet points:
+– Extensive Voice Library: Access over 800 voices in 142 languages and accents
+– Voice Cloning: Train the system with recordings to create custom voices
+– Customization Options: Control pitch, speed, emotion, and speaking styles
+– Multilingual Support: Generate speech in 60+ languages
+– Developer API: Integrate Play.ht into your apps or sites
+– Audio Editing Tools: Trim, split, merge clips, and add music or effects
+	4.	Use Cases Section
+Add a second section labeled “Use Cases” with icons and blurbs:
+– Video Voiceovers
+– Audiobook Narration
+– E-Learning Content
+– Podcasts
+– Customer Service (IVR)
+	5.	Voice Generation Functionality
+– Below the text input box, include:
+– A dropdown to choose from popular voices
+– A dropdown to choose language/accent
+– Optional sliders for pitch and speed
+– When the user clicks “Generate Voice”, send a POST request to the Play.ht API
+	6.	API Details (Backend Only)
+– Use this API Key (backend only): d54c02298bed426fab4736984d96677c
+– User ID: eDyfocGSpQOUCUJsKrzofVVwl7H2
+– Endpoint: https://play.ht/api/v2/tts
+– Pass text, voiceId, and options (like speed, pitch) in the request
+– Wait for audio response, then play it on the frontend using <audio> tag
+	7.	Security Note
+– Do NOT expose the secret API key or user ID in the frontend
+– Handle all API communication server-side and only return processed audio to the frontend
+	8.	Design Elements
+– Use glow effects, smooth hover animations, and glassmorphism card styles
+– Add subtle particle effects in the background
+– Keep buttons and inputs consistent with the dashboard theme
+	9.	Final Layout
+– Header
+– Input and generation section
+– Key features section
+– Use cases section
+– Footer consistent with the main website
+
+Ensure all text, voice options, and generated audio playback work smoothly without affecting website performance. Use caching or queuing if needed for audio generation delays.

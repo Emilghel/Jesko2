@@ -526,6 +526,11 @@ const HeroSection = () => {
                 Start Your AI Business
               </Button>
             </Link>
+            <Link href="/partner/direct-access">
+              <Button size="lg" variant="outline" className="border-green-500 text-green-500 hover:bg-green-500/10">
+                Partner Dashboard
+              </Button>
+            </Link>
           </div>
         </div>
 

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="100" cy="100" r="100" fill="url(#sales-gradient)"/>
+  
+  <!-- Sales Avatar Elements -->
+  <path d="M100 60C87.85 60 78 69.85 78 82C78 94.15 87.85 104 100 104C112.15 104 122 94.15 122 82C122 69.85 112.15 60 100 60Z" fill="white"/>
+  <path d="M100 112C81.5 112 66 127.5 66 146V164H134V146C134 127.5 118.5 112 100 112Z" fill="white"/>
+  
+  <!-- Sales Outfit -->
+  <path d="M88 112V164H112V112H100L88 112Z" fill="#E91E63"/>
+  <path d="M100 112L112 118L100 124L88 118L100 112Z" fill="#C2185B"/>
+  
+  <!-- Sunglasses -->
+  <path d="M80 80C80 78.3431 81.3431 77 83 77H93C94.6569 77 96 78.3431 96 80V82C96 83.6569 94.6569 85 93 85H83C81.3431 85 80 83.6569 80 82V80Z" fill="#212121"/>
+  <path d="M104 80C104 78.3431 105.343 77 107 77H117C118.657 77 120 78.3431 120 80V82C120 83.6569 118.657 85 117 85H107C105.343 85 104 83.6569 104 82V80Z" fill="#212121"/>
+  <rect x="96" y="80" width="8" height="2" fill="#212121"/>
+  
+  <!-- Handshake Icon -->
+  <rect x="134" y="140" width="24" height="24" rx="12" fill="#FF5722"/>
+  <path d="M147 147.5L144 150.5L141 147.5L139 149.5L144 154.5L149 149.5L147 147.5Z" fill="white"/>
+  <path d="M152 149.5C152 145.082 148.418 141.5 144 141.5C139.582 141.5 136 145.082 136 149.5C136 153.918 139.582 157.5 144 157.5C148.418 157.5 152 153.918 152 149.5Z" stroke="white" stroke-width="2"/>
+  
+  <!-- Gradients -->
+  <defs>
+    <linearGradient id="sales-gradient" x1="0" y1="0" x2="200" y2="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FF4081"/>
+      <stop offset="1" stop-color="#E91E63"/>
+    </linearGradient>
+  </defs>
+</svg>

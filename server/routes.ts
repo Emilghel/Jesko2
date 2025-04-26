@@ -1061,6 +1061,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register SalesGPT Proxy Router for other AI sales conversations endpoints
   app.use('/api/salesgpt', salesGptProxyRouter);
   
+  // Register Stripe payment routes
+  app.use('/api', stripeRouter);
+  
   // Register Admin Panel routes - temporarily disabled
   // app.use(adminRoutes);
   
@@ -2843,7 +2846,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`Registration request for ${email} with role: ${isPartner ? 'partner' : 'regular user'}`);
       
       // Register the user (pass isAdmin=false, the partner status will be handled separately)
-      const user = await registerUser(username, email, password, displayName, false, phoneNumber, ipAddress as string);
+      // phoneNumber and ipAddress parameters removed as they don't exist in the database
+      const user = await registerUser(username, email, password, displayName, false);
       
       // If user is a partner, update their role in the database
       if (isPartner && user) {
@@ -4304,7 +4308,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // If sanitization worked, use the fixed number and log for debugging
         console.log(`[API] Sanitized phone number: "${phoneNumberStr}" → "${sanitized}"`);
-        phoneNumber = sanitized;
+        let sanitizedPhoneNumber = sanitized;
       }
       
       // Get the base URL for webhooks
@@ -9524,6 +9528,36 @@ app.get('/api/elevenlabs/voices/play/:voiceId', async (req, res) => {
       });
     }
   });
+
+  // For client-side routes (handles in production mode only) - in development, setupVite middleware handles this
+  if (process.env.NODE_ENV === 'production') {
+    app.get(['*', '/checkout', '/token-checkout', '/subscription-checkout'], (req, res, next) => {
+      // Skip API routes
+      if (req.path.startsWith('/api/')) {
+        return next();
+      }
+
+      // Skip routes for static content
+      if (req.path.startsWith('/static/') || req.path.startsWith('/public/') || 
+          req.path.startsWith('/assets/') || req.path.startsWith('/temp/')) {
+        return next();
+      }
+
+      // Tell express to serve the index.html, allowing the client-side router to handle the route
+      const indexPath = path.join(process.cwd(), 'client', 'dist', 'index.html');
+      
+      // Check if the file exists
+      if (fs.existsSync(indexPath)) {
+        console.log(`[Production] Serving index.html for route ${req.path}`);
+        res.sendFile(indexPath);
+      } else {
+        console.error(`Cannot find index.html at ${indexPath}`);
+        next();
+      }
+    });
+  } else {
+    console.log("Running in development mode - Vite will handle client-side routing");
+  }
 
   return httpServer;
 }

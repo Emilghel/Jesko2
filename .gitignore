@@ -1,24 +1,43 @@
-# Dependencies
 node_modules
+dist
+.DS_Store
+server/public
+vite.config.ts.*
+*.tar.gz
+
+# Cache folders
 .cache
 __pycache__
 *.pyc
 
-# Build outputs
-dist
-build
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Environment variables
+# Large directories
+uploads/*
+temp/*
+whisper_transcription_app/*
+SalesGPT/*
+
+# Large files
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.mp3
+*.mp4
+*.mov
+*.wav
+
+# Environment
 .env
 .env.local
 .env.*.local
 
-# Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-*.log
-
-# OS files
-.DS_Store
-Thumbs.db
+# Test directories
+test-data/*
+coverage/*

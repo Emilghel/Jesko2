@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: jesko-ai
+    plan: standard
+    env: node
+    runtime: node
+    buildCommand: |
+      # Create static directory for assets
+      mkdir -p static
+      # Copy all image files to static
+      cp -r attached_assets/* static/ 2>/dev/null || echo "No assets copied"
+      # Install dependencies and build
+      npm install
+      npm run build
+    startCommand: npm run start
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false # User will manually set this secret
+      - key: JWT_SECRET
+        sync: false # User will manually set this secret
+      - key: GOOGLE_CLIENT_ID
+        sync: false # User will manually set this secret
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false # User will manually set this secret
+      - key: OPENAI_API_KEY
+        sync: false # User will manually set this secret

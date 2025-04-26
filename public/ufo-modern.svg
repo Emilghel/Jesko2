@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="80" height="40" viewBox="0 0 80 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- UFO Body -->
+  <ellipse cx="40" cy="16" rx="24" ry="8" fill="url(#body-gradient)" filter="url(#glow-effect)"/>
+  
+  <!-- UFO Dome -->
+  <ellipse cx="40" cy="12" rx="12" ry="8" fill="url(#dome-gradient)" filter="url(#dome-glow)"/>
+  
+  <!-- Light Beam -->
+  <path d="M40 24L50 38H30L40 24Z" fill="url(#beam-gradient)" opacity="0.6"/>
+  
+  <!-- Small Lights -->
+  <circle cx="28" cy="16" r="1.5" fill="#80FFFF" filter="url(#light-glow)"/>
+  <circle cx="52" cy="16" r="1.5" fill="#80FFFF" filter="url(#light-glow)"/>
+  <circle cx="40" cy="18" r="1.5" fill="#80FFFF" filter="url(#light-glow)"/>
+  
+  <!-- Definitions -->
+  <defs>
+    <!-- Body Gradient -->
+    <linearGradient id="body-gradient" x1="16" y1="16" x2="64" y2="16" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0E5B83"/>
+      <stop offset="0.5" stop-color="#13ABC2"/>
+      <stop offset="1" stop-color="#0E5B83"/>
+    </linearGradient>
+    
+    <!-- Dome Gradient -->
+    <linearGradient id="dome-gradient" x1="28" y1="8" x2="52" y2="16" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#00D2FF" stop-opacity="0.8"/>
+      <stop offset="1" stop-color="#0088CC" stop-opacity="0.6"/>
+    </linearGradient>
+    
+    <!-- Beam Gradient -->
+    <linearGradient id="beam-gradient" x1="40" y1="24" x2="40" y2="38" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#00D2FF" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#00D2FF" stop-opacity="0"/>
+    </linearGradient>
+    
+    <!-- Glow Effects -->
+    <filter id="glow-effect" x="-4" y="-4" width="88" height="40" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    
+    <filter id="dome-glow" x="18" y="-4" width="44" height="32" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    
+    <filter id="light-glow" x="-4" y="-4" width="16" height="16" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+</svg>

@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
+import { apiRequest, queryClient } from '@/lib/queryClient';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
@@ -251,9 +251,14 @@ export default function PartnerDashboardPage() {
   useEffect(() => {
     const validatePartnerAuth = async () => {
       try {
-        // Check token consistency
+        // Check token consistency and fix any issues
         const authToken = localStorage.getItem('auth_token');
         const partnerToken = localStorage.getItem('partnerToken');
+        
+        console.log('Partner dashboard token check:', {
+          authToken: authToken ? `${authToken.substring(0, 10)}...` : 'not set',
+          partnerToken: partnerToken ? `${partnerToken.substring(0, 10)}...` : 'not set'
+        });
         
         if (!authToken && !partnerToken) {
           console.log('No authentication tokens found, redirecting to login');
@@ -262,7 +267,7 @@ export default function PartnerDashboardPage() {
             description: "Please log in to access the partner dashboard",
             variant: "destructive"
           });
-          navigate('/partners/login');
+          navigate('/partner/login');
           return;
         }
         
@@ -272,8 +277,15 @@ export default function PartnerDashboardPage() {
           localStorage.setItem('auth_token', partnerToken);
         }
         
+        // If we have an authToken but no partnerToken, set it
+        if (authToken && !partnerToken) {
+          console.log('Using auth_token as partnerToken');
+          localStorage.setItem('partnerToken', authToken);
+        }
+        
         // Validate authentication
         if (!user) {
+          console.log('No user in auth context, calling checkAuth()');
           await checkAuth();
         }
         
@@ -300,7 +312,7 @@ export default function PartnerDashboardPage() {
             description: "You don't have an active partner account",
             variant: "destructive"
           });
-          navigate('/partners/login');
+          navigate('/partner/login');
         }
       } catch (error) {
         console.error('Partner authentication error:', error);
@@ -309,7 +321,7 @@ export default function PartnerDashboardPage() {
           description: "Please log in again to continue",
           variant: "destructive" 
         });
-        navigate('/partners/login');
+        navigate('/partner/login');
       }
     };
     
@@ -1215,11 +1227,13 @@ export default function PartnerDashboardPage() {
                   toast({
                     title: "Withdrawal Request Submitted",
                     description: `Your withdrawal request for ${formatCurrency(amount)} via ${method} has been submitted to our team for processing.`,
-                    variant: "success",
                   });
                   
-                  // Refresh stats to update the balance
-                  refetchStats();
+                  // Refresh stats to update the balance (using refetch from the stats query)
+                  if (statsData) {
+                    // Force refresh the stats data
+                    queryClient.invalidateQueries(['/api/partner/stats', timeRange]);
+                  }
                   
                   return Promise.resolve();
                 } catch (error) {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -75,14 +75,48 @@ const AITokenPricingPage: React.FC = () => {
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
   const [isPurchasing, setIsPurchasing] = useState(false);
 
+  // Check if there's a saved package selection after login
+  useEffect(() => {
+    // Only run this if the user is logged in
+    if (user) {
+      const savedPackage = localStorage.getItem('selectedTokenPackage');
+      if (savedPackage) {
+        // Clear the saved selection
+        localStorage.removeItem('selectedTokenPackage');
+        
+        // Show notification instead of redirecting to checkout
+        console.log(`AITokenPricingPage: Found saved package ${savedPackage}, but checkout is disabled`);
+        toast({
+          title: "Previous Token Package",
+          description: `You previously selected the ${savedPackage} token package. Checkout features have been removed.`,
+          duration: 5000,
+        });
+      }
+    }
+  }, [user, toast]);
+
   const handlePurchase = async (packageId: string) => {
+    console.log(`AITokenPricingPage: Purchase initiated for package ${packageId}`);
+    
     if (!user) {
+      // Store the package ID in localStorage so we can redirect back after login
+      console.log(`AITokenPricingPage: User not logged in, redirecting to auth`);
+      localStorage.setItem('selectedTokenPackage', packageId);
       toast({
         title: "Login Required",
-        description: "Please login to purchase tokens",
+        description: "Please login to continue",
         variant: "destructive"
       });
-      setLocation('/auth');
+      
+      // Use direct navigation for consistent behavior
+      window.location.href = "/auth";
+      
+      // Fallback in case direct navigation doesn't work immediately
+      setTimeout(() => {
+        console.log("AITokenPricingPage: Using router navigation to auth as fallback");
+        setLocation('/auth');
+      }, 100);
+      
       return;
     }
 
@@ -90,18 +124,32 @@ const AITokenPricingPage: React.FC = () => {
     setIsPurchasing(true);
 
     try {
-      // Simulate payment process 
-      // In a real implementation, you would redirect to a checkout page or modal
-      // For demo purposes, we'll directly handle the purchase here
+      // Find the selected package details
+      const selectedPkg = packages.find(pkg => pkg.id === packageId);
+      const packageName = selectedPkg ? selectedPkg.name : packageId;
       
-      // This is where you would normally redirect to a payment gateway
-      // For now, let's just navigate to the checkout page
-      setLocation(`/checkout/${packageId}`);
-    } catch (error) {
-      console.error('Error starting purchase process:', error);
+      // Redirect to the token checkout page
+      console.log(`AITokenPricingPage: User logged in, redirecting to token checkout for package ID: ${packageId}`);
+      
       toast({
-        title: "Purchase Failed",
-        description: "There was an error processing your purchase. Please try again.",
+        title: "Checkout Ready",
+        description: `Taking you to checkout for the ${packageName} package (${packageId} tokens)...`,
+        duration: 3000,
+      });
+      
+      // Redirect to token checkout page with the selected package
+      setLocation(`/token-checkout?package=${packageId}`);
+      
+      // Reset the purchasing state
+      setTimeout(() => {
+        setIsPurchasing(false);
+      }, 1000);
+      
+    } catch (error) {
+      console.error('Error in purchase process:', error);
+      toast({
+        title: "Process Failed",
+        description: "There was an error. Please try again or contact support.",
         variant: "destructive"
       });
       setIsPurchasing(false);

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="100" cy="100" r="100" fill="url(#customer-gradient)"/>
+  
+  <!-- Customer Service Avatar Elements -->
+  <path d="M100 60C87.85 60 78 69.85 78 82C78 94.15 87.85 104 100 104C112.15 104 122 94.15 122 82C122 69.85 112.15 60 100 60Z" fill="white"/>
+  <path d="M100 112C81.5 112 66 127.5 66 146V164H134V146C134 127.5 118.5 112 100 112Z" fill="white"/>
+  
+  <!-- Customer Service Outfit -->
+  <path d="M88 112V164H112V112H100L88 112Z" fill="#4CAF50"/>
+  <path d="M100 112L112 118L100 124L88 118L100 112Z" fill="#388E3C"/>
+  
+  <!-- Headset -->
+  <path d="M75 75C75 75 77 62 100 62C123 62 125 75 125 75" stroke="#388E3C" stroke-width="4" stroke-linecap="round"/>
+  <rect x="73" y="75" width="5" height="12" rx="2.5" fill="#388E3C"/>
+  <rect x="122" y="75" width="5" height="12" rx="2.5" fill="#388E3C"/>
+  <rect x="73" y="82" width="12" height="4" rx="2" fill="#388E3C"/>
+  <path d="M126 91C129.866 91 133 87.866 133 84C133 80.134 129.866 77 126 77" stroke="#388E3C" stroke-width="4"/>
+  
+  <!-- Chat Bubble -->
+  <circle cx="134" cy="140" r="12" fill="#4CAF50"/>
+  <path d="M129 136H139C140.105 136 141 136.895 141 138V140C141 141.105 140.105 142 139 142H134L130 146V142H129C127.895 142 127 141.105 127 140V138C127 136.895 127.895 136 129 136Z" fill="white"/>
+  
+  <!-- Friendly Smile -->
+  <path d="M94 90C94 90 96 94 100 94C104 94 106 90 106 90" stroke="#212121" stroke-width="1.5" stroke-linecap="round"/>
+  
+  <!-- Gradients -->
+  <defs>
+    <linearGradient id="customer-gradient" x1="0" y1="0" x2="200" y2="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4CAF50"/>
+      <stop offset="1" stop-color="#2E7D32"/>
+    </linearGradient>
+  </defs>
+</svg>

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { Coins } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
+import { useToast } from '@/hooks/use-toast';
 
 // Keyframes for the pulsating glow effect
 const pulseKeyframes = `
@@ -45,6 +47,8 @@ const rotateKeyframes = `
 
 const BuyTokensButton: React.FC = () => {
   const [, setLocation] = useLocation();
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [isHovered, setIsHovered] = useState(false);
   const [isPressed, setIsPressed] = useState(false);
   const [wiggle, setWiggle] = useState(false);
@@ -59,6 +63,35 @@ const BuyTokensButton: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Handle token purchase - direct to token checkout
+  const handleBuyTokens = () => {
+    console.log("BuyTokensButton: Buy tokens clicked");
+    
+    // If not logged in, redirect to auth
+    if (!user) {
+      console.log("BuyTokensButton: User not logged in, redirecting to auth");
+      toast({
+        title: "Login Required",
+        description: "Please login to continue",
+        variant: "destructive"
+      });
+      setLocation('/auth');
+      return;
+    }
+    
+    // Redirect directly to token checkout with default package
+    console.log("BuyTokensButton: User logged in, redirecting to token checkout");
+    
+    toast({
+      title: "Checkout Ready", 
+      description: "Taking you to the checkout page...",
+      duration: 3000,
+    });
+    
+    // Redirect to token checkout with standard package
+    setLocation('/token-checkout?package=500');
+  };
+
   return (
     <>
       <style>
@@ -67,7 +100,7 @@ const BuyTokensButton: React.FC = () => {
         {rotateKeyframes}
       </style>
       <button
-        onClick={() => setLocation('/ai-token-pricing')}
+        onClick={handleBuyTokens}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => {
           setIsHovered(false);

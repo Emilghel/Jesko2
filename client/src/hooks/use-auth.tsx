@@ -1,14 +1,12 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import axios from "axios";
+import { apiRequest } from "../lib/queryClient";
 
 // Configure axios defaults
 // Instead of using relative URLs, use absolute URLs to ensure that requests work in all environments
 const getBaseURL = () => {
-  // In production deployments, force the explicit URL to avoid routing issues
-  if (window.location.hostname.includes('replit.app')) {
-    return 'https://node-ninja-emilghelmeci.replit.app';
-  }
-  // In dev, use the current origin
+  // Always use the current origin to avoid routing issues
+  // This ensures compatibility with any Replit URL/domain
   return window.location.origin;
 };
 
@@ -139,7 +137,7 @@ interface AuthContextType {
   register: (userData: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
-  partnerLogin: (email: string, password: string) => Promise<void>;
+  partnerLogin: (email: string, password: string) => Promise<any>; // Allow any return type
   handleGoogleAuth: () => void; // Add Google authentication handler
   isPartner?: () => boolean; // Added optional isPartner helper
 }
@@ -275,56 +273,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       console.log("==== AUTH DEBUG INFO ====");
       console.log("Login attempt with email:", email);
-      console.log("Endpoint URL:", axios.defaults.baseURL + endpoint);
-      console.log("Base URL being used:", axios.defaults.baseURL);
       console.log("Complete document location:", window.location.href);
       console.log("Browser info:", navigator.userAgent);
       
-      const config = { 
-        headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache'
-        }
-      };
-      
       // Log the request details for debugging
-      console.log("Request config:", config);
       console.log("Request payload:", { email, password: '********' });
       
       // Create a timestamp to measure request duration
       const requestStart = new Date().getTime();
       console.log("Making login request at:", new Date().toISOString());
       
-      // Directly construct the full URL for better debugging
-      const fullUrl = `${axios.defaults.baseURL}${endpoint}`;
-      console.log("Constructed full URL:", fullUrl);
+      // Use apiRequest instead of axios directly to ensure CSRF token is included
+      const fetchResponse = await apiRequest('POST', endpoint, { email, password });
       
-      try {
-        // Try a fetch request first as an alternative method
-        console.log("Trying fetch API first as a test...");
-        const fetchResponse = await fetch(fullUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Cache-Control': 'no-cache'
-          },
-          body: JSON.stringify({ email, password })
-        });
-        
-        console.log("Fetch request completed with status:", fetchResponse.status);
-        if (!fetchResponse.ok) {
-          console.error("Fetch API failed with status:", fetchResponse.status);
-          const errorText = await fetchResponse.text();
-          console.error("Fetch error response:", errorText);
-        } else {
-          console.log("Fetch API worked! We'll still use axios for consistency");
-        }
-      } catch (fetchErr) {
-        console.error("Fetch attempt failed with error:", fetchErr);
+      if (!fetchResponse.ok) {
+        console.error("Login request failed with status:", fetchResponse.status);
+        const errorText = await fetchResponse.text();
+        console.error("Error response:", errorText);
+        throw new Error(errorText || `Login failed with status ${fetchResponse.status}`);
       }
       
-      // Continue with axios as the primary method
-      const response = await axios.post(endpoint, { email, password }, config);
+      // Parse the response data
+      const responseData = await fetchResponse.json();
+      const response = { data: responseData, status: fetchResponse.status, statusText: fetchResponse.statusText, headers: fetchResponse.headers };
       
       const requestDuration = new Date().getTime() - requestStart;
       console.log(`Login request completed in ${requestDuration}ms`);
@@ -404,20 +375,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const endpoint = "/api/auth/register";
       console.log("Registering with:", userData, "to endpoint:", endpoint);
       
-      const config = { 
-        headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache'
-        }
-      };
+      // Use apiRequest instead of axios directly to ensure CSRF token is included
+      const fetchResponse = await apiRequest('POST', endpoint, userData);
       
-      // Log the request details for debugging
-      console.log("Registration request config:", config);
+      if (!fetchResponse.ok) {
+        console.error("Registration request failed with status:", fetchResponse.status);
+        const errorText = await fetchResponse.text();
+        console.error("Error response:", errorText);
+        throw new Error(errorText || `Registration failed with status ${fetchResponse.status}`);
+      }
       
-      const response = await axios.post(endpoint, userData, config);
-      console.log("Registration successful, response data:", response.data);
+      // Parse the response data
+      const responseData = await fetchResponse.json();
+      console.log("Registration successful, response data:", responseData);
       
-      const { token, expiresAt, ...userDataResponse } = response.data;
+      const { token, expiresAt, ...userDataResponse } = responseData;
       
       // Store the token and expiry in localStorage
       setAuthToken(token, new Date(expiresAt));
@@ -475,11 +447,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const token = localStorage.getItem(TOKEN_KEY);
       
       if (token) {
-        // Call the server to invalidate the token
-        await axios.post("/api/auth/logout", {}, { 
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+        // Call the server to invalidate the token using apiRequest for proper CSRF handling
+        await apiRequest('POST', "/api/auth/logout", {}, {
+          'Authorization': `Bearer ${token}`
         });
       }
       
@@ -520,11 +490,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (email === 'zach@partner.com' && password === 'zachwarmleadnetwork345') {
         console.log("Special partner login detected for Zach");
         
+        // Generate a unique timestamp-based token for debugging
+        const specialToken = `zach_special_token_${Date.now()}`;
+        
+        // First, clear any existing tokens to avoid conflicts
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('partnerToken');
+        
         // Store the special token directly using the standard auth token key
-        setAuthToken('zach_special_token');
+        localStorage.setItem('auth_token', specialToken);
         
         // Also store the partner-specific token for partner-specific operations
-        localStorage.setItem('partnerToken', 'zach_special_token');
+        localStorage.setItem('partnerToken', specialToken);
+        
+        // Verify tokens are properly set
+        console.log("Verifying tokens are set properly:");
+        console.log("- auth_token:", localStorage.getItem('auth_token') ? "✓ Set" : "❌ Not set");
+        console.log("- partnerToken:", localStorage.getItem('partnerToken') ? "✓ Set" : "❌ Not set");
         
         // Create mock user data for Zach's partner account
         const zachUser = {
@@ -534,7 +516,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           displayName: 'Zach (Partner)',
           is_admin: false, // Partner users should not have admin privileges
           role: 'partner', // Explicitly set the role to partner
-          token: 'zach_special_token' // Add token to the user object
+          token: specialToken, // Add token to the user object
+          is_partner: true // Explicitly flag as partner
         };
         
         // Store user data in localStorage
@@ -557,32 +540,99 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Set user state
         setUser(zachUser);
         
-        console.log("Special partner login successful, returning success");
+        // Set axios headers if available
+        if (window.axios && window.axios.defaults) {
+          window.axios.defaults.headers.common['Authorization'] = `Bearer ${specialToken}`;
+          console.log("Updated axios headers with special token");
+        }
+        
+        console.log("Special partner login successful, redirecting to partner dashboard");
+        
+        // Automatically redirect to partner dashboard with absolute URL
+        window.location.href = window.location.origin + '/partner/dashboard';
         return;
       }
       
       // Regular partner login
       console.log("Attempting regular partner login to endpoint: /api/partner/login");
-      const response = await axios.post('/api/partner/login', { email, password });
       
-      console.log("Partner login successful, response:", response.data);
+      // Add custom headers to help with CSRF protection and debugging
+      const customHeaders = {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-Partner-Login-Time': new Date().toISOString()
+      };
+      
+      // Use apiRequest instead of axios directly to ensure CSRF token is included
+      const fetchResponse = await apiRequest('POST', '/api/partner/login', { email, password }, customHeaders);
+      
+      if (!fetchResponse.ok) {
+        console.error("Partner login request failed with status:", fetchResponse.status);
+        let errorMessage = `Partner login failed with status ${fetchResponse.status}`;
+        
+        try {
+          // Try to parse the error as JSON
+          const errorData = await fetchResponse.json();
+          console.error("Error response JSON:", errorData);
+          errorMessage = errorData.error || errorMessage;
+        } catch (e) {
+          // If not JSON, try to get text
+          try {
+            const errorText = await fetchResponse.text();
+            console.error("Error response text:", errorText);
+            errorMessage = errorText || errorMessage;
+          } catch (textError) {
+            console.error("Could not read error response text:", textError);
+          }
+        }
+        
+        throw new Error(errorMessage);
+      }
+      
+      // Parse the response data
+      const responseData = await fetchResponse.json();
+      console.log("Partner login successful, response:", responseData);
       
       // Extract token and partner data
-      const { token, user: userData, partner: partnerData } = response.data;
+      const { token, user: userData, partner: partnerData } = responseData;
       
-      console.log("Partner login successful with token (first 10 chars):", token ? token.substring(0, 10) + '...' : 'null');
+      if (!token) {
+        console.error("No token returned from server");
+        throw new Error("Server did not return an authentication token");
+      }
       
-      // Store token in localStorage using the standard auth token key
-      setAuthToken(token);
+      console.log("Partner login successful with token (first 10 chars):", token.substring(0, 10) + '...');
       
-      // Also store the partner-specific token for partner-specific operations
+      // First, clear any existing tokens to avoid conflicts
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('partnerToken');
+      
+      // Store token in both locations for maximum compatibility
+      localStorage.setItem('auth_token', token);
       localStorage.setItem('partnerToken', token);
       
-      // Double-check that auth_token is properly set
-      const authToken = localStorage.getItem('auth_token');
-      if (!authToken && token) {
-        console.log("auth_token not set by setAuthToken, setting directly");
-        localStorage.setItem('auth_token', token);
+      // Also use the helper function for additional processing (like setting Axios headers)
+      setAuthToken(token);
+      
+      // Verify tokens are properly set
+      const storedAuthToken = localStorage.getItem('auth_token');
+      const storedPartnerToken = localStorage.getItem('partnerToken');
+      
+      console.log("Verifying tokens are set properly:");
+      console.log("- auth_token:", storedAuthToken ? "✓ Set" : "❌ Not set");
+      console.log("- partnerToken:", storedPartnerToken ? "✓ Set" : "❌ Not set");
+      
+      if (!storedAuthToken || !storedPartnerToken) {
+        console.warn("Token storage issue detected, attempting to fix...");
+        
+        // Try one more time with a different approach
+        try {
+          window.localStorage.setItem('auth_token', token);
+          window.localStorage.setItem('partnerToken', token);
+          console.log("Fixed token storage using window.localStorage");
+        } catch (storageError) {
+          console.error("localStorage access error:", storageError);
+        }
       }
       
       // Store partner info for access in protected routes
@@ -598,6 +648,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         ...userData,
         is_admin: false, // Partners should never have admin privileges
         role: 'partner', // Explicitly set the role to partner
+        is_partner: true, // Explicitly flag as partner
         token
       };
       
@@ -607,12 +658,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Set user state
       setUser(userWithToken);
       
+      // Update axios headers directly if available
+      if (window.axios && window.axios.defaults) {
+        window.axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        console.log("Updated axios headers with token");
+      }
+      
       console.log("Partner login completed successfully");
-      console.log("AUTH_TOKEN set to:", localStorage.getItem(TOKEN_KEY));
-      console.log("User data stored:", localStorage.getItem('auth_user'));
+      console.log("AUTH_TOKEN set to:", localStorage.getItem(TOKEN_KEY)?.substring(0, 10) + "...");
+      
+      // Automatically redirect to partner dashboard after successful login
+      console.log("Redirecting to partner dashboard...");
+      // Use manual redirect to the exact dashboard URL
+      window.location.href = window.location.origin + '/partner/dashboard';
+      
+      // Return success data that can be used by the login component
+      return {
+        success: true,
+        user: userWithToken,
+        partner: partnerData
+      };
     } catch (err: any) {
       console.error("Partner login error:", err);
-      console.error("Partner login error details:", err.response?.data);
+      
+      if (err.response) {
+        console.error("Partner login error response:", err.response);
+        console.error("Partner login error details:", err.response.data);
+      }
       
       setError(new Error(err.message || "Partner login failed"));
       throw err;
@@ -657,7 +729,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         register,
         logout,
         checkAuth,
-        partnerLogin,
+        partnerLogin: partnerLogin as (email: string, password: string) => Promise<any>,
         handleGoogleAuth,
         isPartner
       }}

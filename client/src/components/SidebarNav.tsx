@@ -115,6 +115,13 @@ export default function SidebarNav() {
     },
     */
     { 
+      path: "/partner/direct-access", 
+      label: "Partner Dashboard", 
+      icon: <Users className="h-5 w-5" />,
+      showAlways: true,
+      isGreen: true
+    },
+    { 
       path: "/partner/dashboard", 
       label: "Partner Dashboard", 
       icon: <Users className="h-5 w-5" />,

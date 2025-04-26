@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="100" cy="100" r="100" fill="url(#coach-gradient)"/>
+  
+  <!-- Coach & Motivator Avatar Elements -->
+  <path d="M100 60C87.85 60 78 69.85 78 82C78 94.15 87.85 104 100 104C112.15 104 122 94.15 122 82C122 69.85 112.15 60 100 60Z" fill="white"/>
+  <path d="M100 112C81.5 112 66 127.5 66 146V164H134V146C134 127.5 118.5 112 100 112Z" fill="white"/>
+  
+  <!-- Coach & Motivator Outfit -->
+  <path d="M88 112V164H112V112H100L88 112Z" fill="#F44336"/>
+  <path d="M100 112L112 118L100 124L88 118L100 112Z" fill="#D32F2F"/>
+  
+  <!-- Whistle -->
+  <path d="M92 95H108" stroke="#FFC107" stroke-width="2" stroke-linecap="round"/>
+  <path d="M100 95V100" stroke="#FFC107" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="100" cy="92" r="3" fill="#FFC107"/>
+  
+  <!-- Confident Smile -->
+  <path d="M92 88C92 88 96 92 100 92C104 92 108 88 108 88" stroke="#212121" stroke-width="1.5" stroke-linecap="round"/>
+  
+  <!-- Stopwatch Icon -->
+  <circle cx="134" cy="140" r="12" fill="#F44336"/>
+  <circle cx="134" cy="140" r="8" stroke="white" stroke-width="1.5"/>
+  <path d="M134 134V140L138 142" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M134 128V132" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M142 140H146" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M122 140H126" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+  
+  <!-- Gradients -->
+  <defs>
+    <linearGradient id="coach-gradient" x1="0" y1="0" x2="200" y2="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F44336"/>
+      <stop offset="1" stop-color="#D32F2F"/>
+    </linearGradient>
+  </defs>
+</svg>

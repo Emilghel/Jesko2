@@ -27,8 +27,9 @@ import OwnYourAI from "@/pages/OwnYourAI";
 import PersonalityPromptsPage from "@/pages/admin/PersonalityPromptsPage";
 import PricingPage from "@/pages/PricingPage";
 import CheckoutPage from "@/pages/CheckoutPage";
-import CheckoutSuccessPage from "@/pages/CheckoutSuccessPage";
+import TokenCheckoutPage from "@/pages/TokenCheckoutPage";
 import PaymentVerificationPage from "@/pages/PaymentVerificationPage";
+import PaymentSuccessPage from "@/pages/payment-success";
 import AudioVisualizationDemo from "@/pages/AudioVisualizationDemo";
 import AIVoiceoverPage from "@/pages/AIVoiceoverPage";
 import AITokenPricingPage from "@/pages/AITokenPricingPage";
@@ -48,6 +49,7 @@ import BecomePartnerPage from "@/pages/BecomePartnerPage";
 import PartnerDashboardPage from "@/pages/PartnerDashboardPage";
 import PartnerLoginPage from "@/pages/PartnerLoginPage";
 import PartnerLoginTest from "@/pages/PartnerLoginTest";
+import DirectPartnerDashboardAccess from "@/pages/DirectPartnerDashboardAccess";
 import ReferralTest from "@/pages/ReferralTest";
 import ReferralTestPage from "@/pages/ReferralTestPage";
 import FallbackCharacterCreationPage from "@/pages/FallbackCharacterCreationPage";
@@ -68,17 +70,26 @@ import CoinBalance from "@/components/CoinBalance";
 import BuyTokensButton from "@/components/BuyTokensButton";
 import MainLayout from "@/components/MainLayout";
 import AdminDirectButton from "@/components/AdminDirectButton";
+import DirectTokensLink from "@/components/DirectTokensLink";
 
 function Navigation() {
   const { user, logout, isPartner } = useAuth();
   const [location] = useLocation();
   const [isPartnerUser, setIsPartnerUser] = useState(false);
   
+  // Debug navigation to help troubleshoot routing issues
+  useEffect(() => {
+    console.log(`🚀 Navigation changed to: ${location}`);
+    console.log(`URL search params: ${window.location.search}`);
+    
+    // No need to handle checkout routes as they have been removed
+  }, [location]);
+  
   // Determine partner status using multiple checks for reliability
   useEffect(() => {
     // Check various indicators of partner status
     const partnerRole = user?.role === 'partner';
-    const partnerFlag = user?.isPartner === true;
+    const partnerFlag = user?.is_partner === true;
     const partnerFunction = isPartner ? isPartner() : false;
     const partnerToken = localStorage.getItem('partnerToken') !== null;
     
@@ -156,12 +167,12 @@ function Navigation() {
 
           {/* Partner Dashboard tab - with comprehensive checks */}
           {(user && isPartnerUser) || localStorage.getItem('partnerToken') ? (
-            <Link href="/partner/dashboard">
+            <Link href="/partner/direct-access">
               <span className="text-green-300 hover:text-green-400 transition-colors px-3 py-1 text-sm cursor-pointer bg-green-900/20 rounded">Partner Dashboard</span>
             </Link>
           ) : (
             // Also provide an always-visible button to make it accessible 
-            <Link href="/partner/login">
+            <Link href="/partner/direct-access">
               <span className="text-gray-300 hover:text-green-400 transition-colors px-3 py-1 text-sm cursor-pointer">Partner Access</span>
             </Link>
           )}
@@ -192,11 +203,18 @@ function Navigation() {
           {/* User is logged in */}
           {user ? (
             <div className="flex items-center gap-3 ml-4">
-              <div className="flex items-center gap-3 bg-gray-800/50 rounded-full px-3 py-1.5">
-                <CoinBalance showLabel={true} iconSize={16} />
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 bg-gray-800/50 rounded-full px-3 py-1.5">
+                  <CoinBalance showLabel={true} iconSize={16} />
+                </div>
+                <Link href="/ai-tokens">
+                  <button className="px-3 py-1 text-xs bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded hover:from-blue-700 hover:to-indigo-700 transition-colors">
+                    Buy Credits
+                  </button>
+                </Link>
               </div>
               {isPartnerUser ? (
-                <Link href="/partner/dashboard">
+                <Link href="/partner/direct-access">
                   <div className="text-sm text-gray-300 cursor-pointer hover:text-white transition-colors">
                     {user.displayName || user.username}
                     <span className="ml-2 px-1.5 py-0.5 text-xs bg-green-900/30 text-green-400 rounded-full">Partner</span>
@@ -335,9 +353,18 @@ function Router() {
         </Route>
         <Route path="/own-your-ai" component={OwnYourAI} />
         <Route path="/pricing" component={PricingPage} />
-        <Route path="/checkout/:planId" component={CheckoutPage} />
-        <Route path="/checkout" component={CheckoutPage} />
-        <Route path="/checkout-success" component={CheckoutSuccessPage} />
+        {/* Checkout routes */}
+        <Route path="/checkout">
+          <ProtectedRoute>
+            <CheckoutPage />
+          </ProtectedRoute>
+        </Route>
+        <Route path="/token-checkout">
+          <ProtectedRoute>
+            <TokenCheckoutPage />
+          </ProtectedRoute>
+        </Route>
+        <Route path="/payment-success" component={PaymentSuccessPage} />
         <Route path="/payment/verify/:paymentId">
           <ProtectedRoute>
             <PaymentVerificationPage />
@@ -373,7 +400,10 @@ function Router() {
         <Route path="/caption-style" component={SimpleAIClipStudioPage} />
         <Route path="/caption-style-old" component={CaptionStylePage} />
         <Route path="/ai-audio-transcription" component={AIAudioTranscriptionPage} />
+        <Route path="/ai-tokens" component={AITokenPricingPage} />
         <Route path="/ai-token-pricing" component={AITokenPricingPage} />
+        
+        {/* Token and subscription checkout routes are now implemented */}
         
         {/* Saved Agents page with simplified deletion */}
         <Route path="/saved-agents">
@@ -421,11 +451,11 @@ function Router() {
         <Route path="/partner/login" component={PartnerLoginPage} />
         {/* Also keep the old path for backward compatibility */}
         <Route path="/partners/login" component={PartnerLoginPage} />
-        <Route path="/partner/dashboard">
-          <PartnerProtectedRoute>
-            <PartnerDashboardPage />
-          </PartnerProtectedRoute>
-        </Route>
+        {/* Direct Partner Dashboard without protection - for easier access */}
+        <Route path="/partner/dashboard" component={PartnerDashboardPage} />
+        
+        {/* Direct access page that sets up tokens automatically */}
+        <Route path="/partner/direct-access" component={DirectPartnerDashboardAccess} />
         <Route path="/partner/login-test" component={PartnerLoginTest} />
         <Route path="/referral-test" component={ReferralTest} />
         <Route path="/referral-test-page" component={ReferralTestPage} />
@@ -452,6 +482,7 @@ function App() {
               <MemberJoinNotification />
               <BuyTokensButton />
               <AdminDirectButton />
+              <DirectTokensLink />
               <Toaster />
             </LoadingProvider>
           </PlanProvider>

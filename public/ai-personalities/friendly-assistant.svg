@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="100" cy="100" r="100" fill="url(#friendly-gradient)"/>
+  
+  <!-- Friendly Assistant Avatar Elements -->
+  <path d="M100 60C87.85 60 78 69.85 78 82C78 94.15 87.85 104 100 104C112.15 104 122 94.15 122 82C122 69.85 112.15 60 100 60Z" fill="white"/>
+  <path d="M100 112C81.5 112 66 127.5 66 146V164H134V146C134 127.5 118.5 112 100 112Z" fill="white"/>
+  
+  <!-- Friendly Outfit -->
+  <path d="M88 112V164H112V112H100L88 112Z" fill="#FF9800"/>
+  <path d="M100 112L112 118L100 124L88 118L100 112Z" fill="#F57C00"/>
+  
+  <!-- Happy Smile -->
+  <path d="M92 88C92 88 96 94 100 94C104 94 108 88 108 88" stroke="#212121" stroke-width="1.5" stroke-linecap="round"/>
+  
+  <!-- Eyes -->
+  <circle cx="90" cy="80" r="3" fill="#212121"/>
+  <circle cx="110" cy="80" r="3" fill="#212121"/>
+  
+  <!-- Heart Icon -->
+  <circle cx="134" cy="140" r="12" fill="#FF9800"/>
+  <path d="M134 147C133.7 147 133.4 146.9 133.2 146.7L128.1 142C127.3 141.3 126.8 140.3 126.8 139.2C126.8 138.1 127.3 137.1 128.1 136.4C129.7 134.9 132.3 134.9 133.9 136.4L134 136.5L134.1 136.4C135.7 134.9 138.3 134.9 139.9 136.4C140.7 137.1 141.2 138.1 141.2 139.2C141.2 140.3 140.7 141.3 139.9 142L134.8 146.7C134.6 146.9 134.3 147 134 147Z" fill="white"/>
+  
+  <!-- Gradients -->
+  <defs>
+    <linearGradient id="friendly-gradient" x1="0" y1="0" x2="200" y2="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FF9800"/>
+      <stop offset="1" stop-color="#FF5722"/>
+    </linearGradient>
+  </defs>
+</svg>

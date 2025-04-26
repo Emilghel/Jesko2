@@ -1,34 +1,44 @@
-FROM node:20
-
-# Install Python and pip
-RUN apt-get update && apt-get install -y \
-    python3 \
-    python3-pip \
-    ffmpeg \
-    && rm -rf /var/lib/apt/lists/*
+FROM node:20-alpine AS builder
 
 # Create app directory
 WORKDIR /app
 
-# Copy package files and install Node dependencies
+# Install dependencies
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 
-# Copy Python requirements and install Python dependencies
-COPY pyproject.toml ./
-RUN pip3 install poetry && \
-    poetry config virtualenvs.create false && \
-    poetry install --no-dev
-
-# Copy application code
+# Build the app
 COPY . .
+RUN npm run build
 
-# Set production environment
+# Production stage
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy built assets and production dependencies
+COPY --from=builder /app/client/dist ./client/dist
+COPY --from=builder /app/server-render.js ./
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/static ./static
+COPY --from=builder /app/start-render.sh ./
+COPY --from=builder /app/index.html ./
+
+# Install only production dependencies
+RUN npm ci --only=production
+
+# Create directories for uploads and temp files
+RUN mkdir -p uploads temp
+
+# Set environment variables
 ENV NODE_ENV=production
-ENV PYTHON_ENV=production
-ENV PORT=10000
+ENV PORT=5000
 
-EXPOSE 10000
+# Ensure script is executable
+RUN chmod +x ./start-render.sh
+
+# Expose port
+EXPOSE 5000
 
 # Start the server
-CMD ["npm", "run", "dev"]
+CMD ["./start-render.sh"]

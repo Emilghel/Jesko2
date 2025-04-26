@@ -27,16 +27,7 @@ const registerSchema = z.object({
     .refine(val => val.includes('@') && val.includes('.'), {
       message: "Please enter a real email address with @ and domain"
     }),
-  phoneNumber: z.string()
-    .min(10, { message: "Phone number must be at least 10 digits" })
-    .regex(/^\+?[0-9\s\-().]+$/, { message: "Please enter a valid phone number" })
-    .refine(val => {
-      // Remove any non-digit characters for validation
-      const digits = val.replace(/\D/g, '');
-      return digits.length >= 10; // Most countries have at least 10 digits
-    }, {
-      message: "Please enter a real phone number with area code"
-    }),
+  // Phone number field has been removed since it's not used in the database
   password: z.string()
     .min(6, { message: "Password must be at least 6 characters" })
     .refine(val => /[A-Z]/.test(val), {
@@ -76,11 +67,38 @@ export default function AuthPage() {
     "https://video.wixstatic.com/video/ee3656_4f3f491de6d442aaba32130ae7ca4807/1080p/mp4/file.mp4"
   ];
   
-  // Redirect to character creation if already logged in
+  // Check URL parameters for tab selection
+  useEffect(() => {
+    const queryParams = new URLSearchParams(window.location.search);
+    const tabParam = queryParams.get('tab');
+    if (tabParam === 'register' || tabParam === 'login' || tabParam === 'partner') {
+      setActiveTab(tabParam);
+    }
+  }, []);
+  
+  // Handle redirection after login
   useEffect(() => {
     if (user) {
-      console.log("User is already logged in, redirecting to character creation");
-      navigate("/character-creation");
+      console.log("User is logged in, checking for redirection");
+      
+      // Check if there's a requested redirect after login stored in localStorage
+      const redirectAfterLogin = localStorage.getItem('redirectAfterLogin');
+      const selectedPricingPlan = localStorage.getItem('selectedPricingPlan');
+      
+      if (redirectAfterLogin) {
+        console.log(`Redirecting to stored path: ${redirectAfterLogin}`);
+        localStorage.removeItem('redirectAfterLogin');
+        
+        if (redirectAfterLogin === '/checkout' && selectedPricingPlan) {
+          navigate(`/checkout?package=${selectedPricingPlan}`);
+          localStorage.removeItem('selectedPricingPlan');
+        } else {
+          navigate(redirectAfterLogin);
+        }
+      } else {
+        console.log("No redirect found, going to character creation");
+        navigate("/character-creation");
+      }
     }
   }, [user, navigate]);
   
@@ -162,7 +180,6 @@ export default function AuthPage() {
     defaultValues: {
       username: "",
       email: "",
-      phoneNumber: "",
       password: "",
       confirmPassword: "",
       displayName: "",
@@ -227,6 +244,7 @@ export default function AuthPage() {
     setIsLoading(true);
     try {
       // Remove confirmPassword before sending to server
+      // phoneNumber field has been completely removed from the form
       const { confirmPassword, ...registrationData } = data;
       
       await register(registrationData);
@@ -395,24 +413,7 @@ export default function AuthPage() {
                         <p className="text-sm text-red-500">{registerErrors.email.message}</p>
                       )}
                     </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="phone-number" className="flex items-center">
-                          Phone Number <span className="text-red-500 ml-0.5">*</span>
-                        </Label>
-                        <span className="text-xs text-gray-400">Required for verification</span>
-                      </div>
-                      <Input
-                        id="phone-number"
-                        type="tel"
-                        placeholder="+1 (555) 123-4567"
-                        {...registerRegisterForm("phoneNumber")}
-                      />
-                      {registerErrors.phoneNumber && (
-                        <p className="text-sm text-red-500">{registerErrors.phoneNumber.message}</p>
-                      )}
-                      <p className="text-xs text-slate-400">For security purposes, we limit accounts to 2 per IP address</p>
-                    </div>
+                    {/* Phone number field has been removed as it's no longer needed */}
                     <div className="space-y-2">
                       <Label htmlFor="display-name">Display Name (optional)</Label>
                       <Input

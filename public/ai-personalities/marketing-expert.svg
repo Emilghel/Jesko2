@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="100" cy="100" r="100" fill="url(#marketing-gradient)"/>
+  
+  <!-- Marketing Expert Avatar Elements -->
+  <path d="M100 60C87.85 60 78 69.85 78 82C78 94.15 87.85 104 100 104C112.15 104 122 94.15 122 82C122 69.85 112.15 60 100 60Z" fill="white"/>
+  <path d="M100 112C81.5 112 66 127.5 66 146V164H134V146C134 127.5 118.5 112 100 112Z" fill="white"/>
+  
+  <!-- Marketing Expert Outfit -->
+  <path d="M88 112V164H112V112H100L88 112Z" fill="#8E24AA"/>
+  <path d="M100 112L112 118L100 124L88 118L100 112Z" fill="#6A1B9A"/>
+  
+  <!-- Glasses -->
+  <rect x="80" y="78" width="16" height="8" rx="4" fill="#212121"/>
+  <rect x="104" y="78" width="16" height="8" rx="4" fill="#212121"/>
+  <rect x="96" y="82" width="8" height="1" fill="#212121"/>
+  
+  <!-- Marketing Elements (Megaphone) -->
+  <circle cx="134" cy="140" r="12" fill="#8E24AA"/>
+  <path d="M128 135V146L131 145.5V135.5L128 135Z" fill="white"/>
+  <path d="M131 135.5C131 135.5 137 132 143 135M131 145.5C131 145.5 137 149 143 146" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M143 135C143 135 144 138 144 141C144 144 143 146 143 146" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+  
+  <!-- Trendy Haircut -->
+  <path d="M80 70C80 70 74 62 78 58C82 54 95 58 100 58C105 58 118 54 122 58C126 62 120 70 120 70" fill="#212121"/>
+  
+  <!-- Gradients -->
+  <defs>
+    <linearGradient id="marketing-gradient" x1="0" y1="0" x2="200" y2="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8E24AA"/>
+      <stop offset="1" stop-color="#6A1B9A"/>
+    </linearGradient>
+  </defs>
+</svg>

@@ -1,0 +1,114 @@
+Quickstart
+Runway offers the most cutting-edge generative video models. You can start using our models in your application with only a few quick steps.
+
+Set up an organization
+First, sign up for an account in the developer portal. After signing up, you’ll be presented with an option to create a new organization. An organization corresponds to your integration, and contains resources like API keys and configuration.
+
+Create a key
+Once you’ve created an organization, click to the API Keys tab. You’ll create a new key, giving it a name. Call it something descriptive, like “Matt Testing” so you can revoke the key later if needed.
+
+The key will be presented to you only once: immediately copy it someplace safe, like a password manager. We’ll never return the key in plaintext again; if you lose the key, you’ll need to disable it and create a new one.
+
+Add credits
+Before you can start using the API, you’ll need to add credits to your organization. Credits are used to pay for the compute resources used by your models. Visit the billing tab in the developer portal to add credits to your organization. A minimum payment of $10 (at $0.01 per credit) is required to get started.
+
+Start your integration
+Now that you have an organization and a key, you can start using Runway’s API.
+
+Using your API key
+When you make requests to the API, you’ll need to include your API key in the headers. Our SDKs will automatically add your key if it’s specified in the RUNWAYML_API_SECRET environment variable. You can export this in your shell for test purposes like so:
+
+macOS and Linux
+Windows
+sh export RUNWAYML_API_SECRET="key_123456789012345678901234567890"
+
+In a production environment, do not hard-code your key like this. Instead, securely load your key into environment variables using a secret manager or similar tool.
+
+Talking to the API
+Node
+Python
+Just testing
+First, you’ll want to install the Runway SDK. You can do this with npm:
+
+Terminal window
+npm install --save @runwayml/sdk
+
+In your code, you can now import the SDK and start making requests:
+
+import RunwayML from '@runwayml/sdk';
+
+const client = new RunwayML();
+
+async function main() {
+  // Create a new image-to-video task using the "gen4_turbo" model
+  const imageToVideo = await client.imageToVideo.create({
+    model: 'gen4_turbo',
+    // Point this at your own image file
+    promptImage: 'https://example.com/',
+    promptText: 'string',
+  });
+
+  const taskId = imageToVideo.id;
+
+  // Poll the task until it's complete
+  let task: Awaited<ReturnType<typeof client.tasks.retrieve>>;
+  do {
+    // Wait for ten seconds before polling
+    await new Promise(resolve => setTimeout(resolve, 10000));
+
+    task = await client.tasks.retrieve(taskId);
+  } while (!['SUCCEEDED', 'FAILED'].includes(task.status));
+
+  console.log('Task complete:', task);
+}
+
+main();
+
+Uploading base64 encoded images as data URIs
+You can also upload base64 encoded images (as a data URI) instead of pointing to an external URL. This can be useful if you’re working with a local image file and want to avoid an extra network round trip to upload the image.
+
+To do this, simply pass the base64 encoded image string as a data URI in the promptImage field instead of a URL. For more information about file types and size limits, see the Inputs page.
+
+Node
+Python
+import fs from 'fs';
+import path from 'path';
+import RunwayML from '@runwayml/sdk';
+
+const client = new RunwayML();
+
+// Sample image path - replace with your image path
+const imagePath = 'example.png';
+
+// Read the image file
+const imageBuffer = fs.readFileSync(imagePath);
+
+// Convert to base64
+const base64String = imageBuffer.toString('base64');
+
+async function main() {
+  // Create a new image-to-video task using the "gen4_turbo" model
+  const imageToVideo = await client.imageToVideo.create({
+    model: 'gen4_turbo',
+    // Point this at your own image file
+    promptImage: `data:image/${path.extname(imagePath).slice(1)};base64,${base64String}`,
+    promptText: 'Generate a video',
+  });
+
+  const taskId = imageToVideo.id;
+
+  // Poll the task until it's complete
+  let task: Awaited<ReturnType<typeof client.tasks.retrieve>>;
+  do {
+    // Wait for ten seconds before polling
+    await new Promise(resolve => setTimeout(resolve, 10000));
+
+    task = await client.tasks.retrieve(taskId);
+  } while (!['SUCCEEDED', 'FAILED'].includes(task.status));
+
+  console.log('Task complete:', task);
+}
+
+main();
+
+Go-live checklist

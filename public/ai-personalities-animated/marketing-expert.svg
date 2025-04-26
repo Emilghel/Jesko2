@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background with gradient -->
+  <circle cx="80" cy="80" r="75" fill="url(#marketingBg)" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;0.9;0.8" dur="5s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Megaphone with sound waves -->
+  <g>
+    <!-- Megaphone body -->
+    <g opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="1s" begin="0.5s" fill="freeze"/>
+      
+      <path d="M40 80L40 100L55 105L55 75L40 80Z" fill="#FF9F1C">
+        <animate attributeName="transform" type="rotate" 
+                 values="-3 40 90;3 40 90;-3 40 90" 
+                 dur="4s" repeatCount="indefinite"/>
+      </path>
+      
+      <ellipse cx="40" cy="90" rx="5" ry="10" fill="#FFBF69">
+        <animate attributeName="transform" type="rotate" 
+                 values="-3 40 90;3 40 90;-3 40 90" 
+                 dur="4s" repeatCount="indefinite"/>
+      </ellipse>
+      
+      <path d="M55 75L85 60L85 120L55 105L55 75Z" fill="url(#megaphoneGradient)">
+        <animate attributeName="transform" type="rotate" 
+                 values="-1 55 90;1 55 90;-1 55 90" 
+                 dur="5s" repeatCount="indefinite"/>
+      </path>
+    </g>
+    
+    <!-- Sound waves -->
+    <g>
+      <path d="M90 65C100 65 110 75 115 90C110 105 100 115 90 115" 
+            stroke="#FF9F1C" stroke-width="3" fill="none" opacity="0">
+        <animate attributeName="opacity" values="0;0.7;0" dur="3s" begin="1.5s" repeatCount="indefinite"/>
+      </path>
+      
+      <path d="M95 70C105 70 112 78 115 90C112 102 105 110 95 110" 
+            stroke="#FF9F1C" stroke-width="2" fill="none" opacity="0">
+        <animate attributeName="opacity" values="0;0.8;0" dur="3s" begin="2s" repeatCount="indefinite"/>
+      </path>
+      
+      <path d="M100 75C107 75 112 82 115 90C112 98 107 105 100 105" 
+            stroke="#FF9F1C" stroke-width="1.5" fill="none" opacity="0">
+        <animate attributeName="opacity" values="0;0.9;0" dur="3s" begin="2.5s" repeatCount="indefinite"/>
+      </path>
+    </g>
+  </g>
+  
+  <!-- Marketing icons -->
+  <g>
+    <!-- Social Media icon -->
+    <g opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="1s" begin="3s" fill="freeze"/>
+      <animate attributeName="transform" type="translate" 
+               values="0,0; 3,-3; 0,0; -3,3; 0,0" 
+               dur="8s" repeatCount="indefinite"/>
+      
+      <circle cx="120" cy="50" r="12" fill="#F15BB5" opacity="0.9"/>
+      <path d="M115 50C115 47 117 45 120 45C123 45 125 47 125 50C125 53 123 55 120 55" 
+            stroke="white" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+      <line x1="120" y1="50" x2="120" y2="55" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="117" y1="47" x2="123" y2="47" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+    </g>
+    
+    <!-- Graph icon -->
+    <g opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="1s" begin="3.5s" fill="freeze"/>
+      <animate attributeName="transform" type="translate" 
+               values="0,0; -3,-3; 0,0; 3,3; 0,0" 
+               dur="9s" repeatCount="indefinite"/>
+      
+      <circle cx="40" cy="50" r="12" fill="#7209B7" opacity="0.9"/>
+      <polyline points="35,55 38,50 41,52 45,45" 
+                stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <line x1="35" y1="45" x2="35" y2="55" stroke="white" stroke-width="1" stroke-linecap="round"/>
+      <line x1="35" y1="55" x2="45" y2="55" stroke="white" stroke-width="1" stroke-linecap="round"/>
+    </g>
+    
+    <!-- Target icon -->
+    <g opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="1s" begin="4s" fill="freeze"/>
+      <animate attributeName="transform" type="translate" 
+               values="0,0; 3,3; 0,0; -3,-3; 0,0" 
+               dur="7s" repeatCount="indefinite"/>
+      
+      <circle cx="120" cy="130" r="12" fill="#3A0CA3" opacity="0.9"/>
+      <circle cx="120" cy="130" r="8" fill="none" stroke="white" stroke-width="1.5"/>
+      <circle cx="120" cy="130" r="4" fill="none" stroke="white" stroke-width="1.5"/>
+      <circle cx="120" cy="130" r="1.5" fill="white"/>
+      <line x1="120" y1="118" x2="120" y2="122" stroke="white" stroke-width="1"/>
+      <line x1="120" y1="138" x2="120" y2="142" stroke="white" stroke-width="1"/>
+      <line x1="108" y1="130" x2="112" y2="130" stroke="white" stroke-width="1"/>
+      <line x1="128" y1="130" x2="132" y2="130" stroke="white" stroke-width="1"/>
+    </g>
+    
+    <!-- Light bulb (idea) icon -->
+    <g opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="1s" begin="4.5s" fill="freeze"/>
+      <animate attributeName="transform" type="translate" 
+               values="0,0; -3,3; 0,0; 3,-3; 0,0" 
+               dur="10s" repeatCount="indefinite"/>
+      
+      <circle cx="40" cy="130" r="12" fill="#F72585" opacity="0.9"/>
+      <path d="M40 123C37 123 35 125 35 128C35 130 36 131 37 132C38 133 38 134 38 135C38 135 42 135 42 135C42 134 42 133 43 132C44 131 45 130 45 128C45 125 43 123 40 123Z" 
+            fill="#FFBF69" stroke="white" stroke-width="1">
+        <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" repeatCount="indefinite"/>
+      </path>
+      <line x1="38" y1="136" x2="42" y2="136" stroke="white" stroke-width="1" stroke-linecap="round"/>
+      <line x1="39" y1="138" x2="41" y2="138" stroke="white" stroke-width="1" stroke-linecap="round"/>
+    </g>
+  </g>
+  
+  <!-- Marketing strategy web -->
+  <g opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="1s" begin="5s" fill="freeze"/>
+    
+    <!-- Connect center to social media -->
+    <line x1="80" y1="80" x2="120" y2="50" stroke="#F15BB5" stroke-width="1" stroke-dasharray="3 2">
+      <animate attributeName="stroke-dashoffset" values="0;10" dur="2s" repeatCount="indefinite"/>
+    </line>
+    
+    <!-- Connect center to graph -->
+    <line x1="80" y1="80" x2="40" y2="50" stroke="#7209B7" stroke-width="1" stroke-dasharray="3 2">
+      <animate attributeName="stroke-dashoffset" values="0;10" dur="2s" repeatCount="indefinite"/>
+    </line>
+    
+    <!-- Connect center to target -->
+    <line x1="80" y1="80" x2="120" y2="130" stroke="#3A0CA3" stroke-width="1" stroke-dasharray="3 2">
+      <animate attributeName="stroke-dashoffset" values="0;10" dur="2s" repeatCount="indefinite"/>
+    </line>
+    
+    <!-- Connect center to light bulb -->
+    <line x1="80" y1="80" x2="40" y2="130" stroke="#F72585" stroke-width="1" stroke-dasharray="3 2">
+      <animate attributeName="stroke-dashoffset" values="0;10" dur="2s" repeatCount="indefinite"/>
+    </line>
+  </g>
+  
+  <!-- Center marketing hub -->
+  <g opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="1s" begin="5.5s" fill="freeze"/>
+    
+    <circle cx="80" cy="80" r="15" fill="url(#marketingCenterGradient)">
+      <animate attributeName="r" values="15;16;15" dur="4s" repeatCount="indefinite"/>
+    </circle>
+    
+    <!-- Marketing pulse waves -->
+    <circle cx="80" cy="80" r="25" stroke="url(#pulseGradient)" stroke-width="2" fill="none" opacity="0.7">
+      <animate attributeName="r" values="20;25;20" dur="4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.2;0.7;0.2" dur="4s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Floating data points -->
+  <g opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="1s" begin="6s" fill="freeze"/>
+    
+    <circle cx="95" cy="65" r="1.5" fill="#FF9F1C">
+      <animate attributeName="r" values="1.5;2;1.5" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    
+    <circle cx="100" cy="85" r="1.5" fill="#F15BB5">
+      <animate attributeName="r" values="1.5;2;1.5" dur="3s" begin="0.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="3s" begin="0.5s" repeatCount="indefinite"/>
+    </circle>
+    
+    <circle cx="95" cy="95" r="1.5" fill="#7209B7">
+      <animate attributeName="r" values="1.5;2;1.5" dur="3s" begin="1s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="3s" begin="1s" repeatCount="indefinite"/>
+    </circle>
+    
+    <circle cx="65" cy="95" r="1.5" fill="#3A0CA3">
+      <animate attributeName="r" values="1.5;2;1.5" dur="3s" begin="1.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="3s" begin="1.5s" repeatCount="indefinite"/>
+    </circle>
+    
+    <circle cx="60" cy="85" r="1.5" fill="#F72585">
+      <animate attributeName="r" values="1.5;2;1.5" dur="3s" begin="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="3s" begin="2s" repeatCount="indefinite"/>
+    </circle>
+    
+    <circle cx="65" cy="65" r="1.5" fill="#FF9F1C">
+      <animate attributeName="r" values="1.5;2;1.5" dur="3s" begin="2.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="3s" begin="2.5s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Orbit ring -->
+  <g opacity="0">
+    <animate attributeName="opacity" values="0;0.8" dur="1s" begin="6.5s" fill="freeze"/>
+    
+    <circle cx="80" cy="80" r="35" stroke="url(#orbitGradient)" stroke-width="1.5" fill="none">
+      <animateTransform attributeName="transform" type="rotate" 
+                       from="0 80 80" to="360 80 80" 
+                       dur="30s" repeatCount="indefinite"/>
+    </circle>
+    
+    <!-- Orbiting elements -->
+    <circle cx="80" cy="45" r="3" fill="#F15BB5">
+      <animateTransform attributeName="transform" type="rotate" 
+                       from="0 80 80" to="360 80 80" 
+                       dur="15s" repeatCount="indefinite"/>
+    </circle>
+    
+    <circle cx="115" cy="80" r="3" fill="#7209B7">
+      <animateTransform attributeName="transform" type="rotate" 
+                       from="90 80 80" to="450 80 80" 
+                       dur="15s" repeatCount="indefinite"/>
+    </circle>
+    
+    <circle cx="80" cy="115" r="3" fill="#3A0CA3">
+      <animateTransform attributeName="transform" type="rotate" 
+                       from="180 80 80" to="540 80 80" 
+                       dur="15s" repeatCount="indefinite"/>
+    </circle>
+    
+    <circle cx="45" cy="80" r="3" fill="#F72585">
+      <animateTransform attributeName="transform" type="rotate" 
+                       from="270 80 80" to="630 80 80" 
+                       dur="15s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Gradients and definitions -->
+  <defs>
+    <linearGradient id="marketingBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4B007E"/>
+      <stop offset="100%" stop-color="#570095"/>
+    </linearGradient>
+    
+    <linearGradient id="megaphoneGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F72585"/>
+      <stop offset="100%" stop-color="#B5179E"/>
+    </linearGradient>
+    
+    <radialGradient id="marketingCenterGradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#F72585"/>
+      <stop offset="100%" stop-color="#7209B7"/>
+    </radialGradient>
+    
+    <linearGradient id="pulseGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F72585">
+        <animate attributeName="stop-color" values="#F72585;#FF9F1C;#F72585" dur="4s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="100%" stop-color="#FF9F1C">
+        <animate attributeName="stop-color" values="#FF9F1C;#F72585;#FF9F1C" dur="4s" repeatCount="indefinite"/>
+      </stop>
+    </linearGradient>
+    
+    <linearGradient id="orbitGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF9F1C"/>
+      <stop offset="25%" stop-color="#F15BB5"/>
+      <stop offset="50%" stop-color="#7209B7"/>
+      <stop offset="75%" stop-color="#3A0CA3"/>
+      <stop offset="100%" stop-color="#F72585"/>
+    </linearGradient>
+  </defs>
+</svg>

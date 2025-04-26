@@ -1,0 +1,42 @@
+Create a new page called /ai-image on my platform. This page will be a word-to-image generator using the most powerful image generation tool available through ChatGPT (e.g., DALL·E 3 or newer). The page should support two generation modes:
+	1.	Text-to-Image Generation
+Users can enter a prompt (e.g., “A golden castle under a glowing galaxy sky”) and click “Generate Image” to get a new AI-generated image.
+	2.	Image + Text-to-Image Refinement
+Users can upload their own image (JPG, PNG, etc.) and also enter additional descriptive text. The system should then generate a brand-new image that transforms the uploaded image based on the provided prompt (e.g., uploading a dog and writing “wearing sunglasses and a cape” should result in a dog with sunglasses and a cape).
+
+Coin Logic
+	•	Each image generated costs 5 gold coins.
+	•	The system must check the user’s coin balance before allowing generation.
+	•	If the user does not have enough coins, display a clear message and disable the “Generate” button.
+	•	Deduct 5 coins only when the image is successfully generated.
+
+Design Requirements
+	•	Use a sleek, modern UI layout
+	•	Add glowing effects to buttons and results
+	•	Include subtle star or sparkle animations in the background
+	•	The “Generate Image” button should glow/pulse on hover
+	•	Generated image should appear with a glowing border and fade-in animation
+	•	Display user’s coin balance in the top navigation bar with a rotating, glowing gold coin icon
+
+Frontend Features
+	•	Toggle between “Text Only” and “Image + Text” generation modes
+	•	Image preview for uploaded files
+	•	Real-time display of word count and coin balance
+	•	Display of generated image in a styled card
+	•	Add a “Download Image” button below each result so the user can save it
+	•	Optional: Add a share button or “Save to History” if accounts are persistent
+
+Backend API Requirements
+	•	Handle both prompt-only and image+prompt generation
+	•	Use the most advanced image generation API available through ChatGPT
+	•	Use multer or similar to securely handle image uploads
+	•	Ensure all coin deductions are done securely server-side
+	•	Routes needed:
+	•	GET /api/user/coins – return current balance
+	•	POST /api/image/generate – accepts text and optional image file, checks coin balance, deducts 5 coins, generates image, and returns it
+	•	Optional: GET /api/user/images – return image generation history
+
+Security
+	•	All coin usage and image generation logic must happen on the backend
+	•	Never allow coin manipulation from the frontend
+	•	Users must be authenticated via session or JWT before generating images

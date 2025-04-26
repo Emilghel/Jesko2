@@ -1,0 +1,34 @@
+Current Problem:
+When clicking the Preview button, it incorrectly triggers the “Your AI agent has been set successfully” message and does not play the selected voice.
+
+This means the Preview button is currently wired into the agent creation or save handler, instead of calling the ElevenLabs voice preview logic directly.
+
+Fix Instructions:
+	1.	Separate the Button Logic Completely
+– The Preview button must call a dedicated function specifically for voice preview only
+– It must not call or reference:
+– Any saveAgent(), createAgent(), submitAgent(), or similar function
+– Any state update that triggers success messages
+– Any backend endpoint for saving agent data
+	2.	Correct API Integration – ElevenLabs
+– When the Preview button is clicked, send a POST request to ElevenLabs’ TTS endpoint:
+https://api.elevenlabs.io/v1/text-to-speech/{voice_id}
+– Use a fixed sample text (e.g. “This is a sample of my voice. Let me know how I sound.”)
+– Headers must include your ElevenLabs API key and content-type set to application/json
+– Response must return an audio/mpeg stream or file
+	3.	Playback Logic
+– After receiving the audio response, create or reuse an <audio> element
+– Set the audio source to the returned audio stream
+– Call .play() on the audio element
+– Catch and handle any playback errors (e.g. blocked by browser autoplay policies)
+	4.	Suppress Unrelated UI Feedback
+– Do not show any toast, modal, or success message related to saving
+– Do not update any dashboard state that would indicate the user has created an agent
+– Only show optional voice-specific feedback, like a loading spinner or “Playing voice preview…”
+	5.	Testing & Confirmation
+– Test the Preview button independently
+– Confirm that clicking it only plays the voice and never shows the success message
+– Confirm no agent is created or saved in the backend after clicking preview
+
+Expected Result:
+Clicking the Preview button must only play a sample of the selected voice using ElevenLabs and not affect the agent creation flow in any way. The success message should only appear when a user manually clicks Save in the Basic Settings tab.

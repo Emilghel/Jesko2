@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import teamImage1 from "@assets/12.jpg";
-import teamImage2 from "@assets/13.jpg";
-import teamImage3 from "@assets/15.jpg";
+// Use static paths for deployment
+const teamImage1 = "/static/12.jpg";
+const teamImage2 = "/static/13.jpg";
+const teamImage3 = "/static/15.jpg";
 
 interface TeamMember {
   id: number;

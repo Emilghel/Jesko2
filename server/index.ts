@@ -14,6 +14,7 @@ import automatedCallRouter from "./automated-call-routes";
 import session from "express-session";
 import { createReferralTrackingMiddleware, createConversionAttributionMiddleware } from "./middleware/referral-tracking";
 import { storage } from "./storage";
+import stripeRouter from "./stripe-routes";
 // Security-related imports
 import helmet from "helmet";
 import csrf from "csurf";
@@ -21,7 +22,29 @@ import rateLimit from "express-rate-limit";
 import xss from "xss-clean";
 import hpp from "hpp";
 
+// Initialize port-fix to ensure compatibility with Replit
+let portSettings = { port: process.env.PORT || 3000, trustProxy: false };
+try {
+  // Use require for compatibility with both ESM and CommonJS
+  const portFix = require('./port-fix');
+  portSettings = portFix.setupPortProxy();
+  console.log(`Port configured for ${portSettings.port} with trustProxy=${portSettings.trustProxy}`);
+  if (process.env.CUSTOM_DOMAIN) {
+    portFix.setupDomainRedirect();
+  }
+  log('Port-fix initialized for Replit compatibility');
+} catch (err) {
+  log('Port-fix module not available, skipping (only needed for Replit)');
+}
+
 const app = express();
+
+// Set trust proxy based on environment
+if (portSettings.trustProxy) {
+  app.set('trust proxy', true);
+  console.log('Express "trust proxy" setting enabled for Replit environment');
+}
+
 app.use(express.json({ limit: '10mb' })); // Limit JSON body size
 app.use(express.urlencoded({ extended: false, limit: '10mb' })); // Limit URL-encoded body size
 app.use(cookieParser()); // Add cookie parser to handle JWT tokens in cookies
@@ -105,33 +128,33 @@ app.use('/admin-dashboard-v2.html', (req, res, next) => {
   // Get client IP
   const clientIP = req.ip || req.socket.remoteAddress || '';
   console.log(`Admin dashboard access attempt from IP: ${clientIP}`);
-  
+
   // List of allowed IPs - add your production IP address here
   const allowedIPs = ['127.0.0.1', '::1', 'localhost', '172.31.128.58', '172.31.128.39', '178.138.32.194', '10.83.3.78', '10.83.9.32'];
-  
+
   // Check if request includes Basic Auth
   const authHeader = req.headers.authorization;
-  
+
   // If no auth header and IP not allowed, require authentication
   if (!authHeader && !allowedIPs.includes(clientIP)) {
     console.log(`Blocking admin access from unauthorized IP: ${clientIP}`);
     res.setHeader('WWW-Authenticate', 'Basic realm="Admin Access"');
     return res.status(401).send('Authentication required');
   }
-  
+
   // If we have an auth header, validate credentials
   if (authHeader) {
     try {
       // Extract and decode credentials
       const auth = Buffer.from(authHeader.split(' ')[1], 'base64').toString();
       const [username, password] = auth.split(':');
-      
+
       // Check credentials (use environment variables in production)
       if (username === 'admin' && password === 'admin2025secure') {
         console.log(`Admin authenticated successfully from IP: ${clientIP}`);
         return next();
       }
-      
+
       // Special case for Replit testing/development
       if (username === 'replit' && password === 'testing') {
         console.log(`Replit testing access granted from IP: ${clientIP}`);
@@ -140,19 +163,19 @@ app.use('/admin-dashboard-v2.html', (req, res, next) => {
     } catch (error) {
       console.error('Error validating admin credentials:', error);
     }
-    
+
     // Invalid credentials
     console.log(`Invalid admin credentials from IP: ${clientIP}`);
     res.setHeader('WWW-Authenticate', 'Basic realm="Admin Access"');
     return res.status(401).send('Invalid credentials');
   }
-  
+
   // Allow access if IP is whitelisted (without credentials)
   if (allowedIPs.includes(clientIP)) {
     console.log(`Admin access granted to whitelisted IP: ${clientIP}`);
     return next();
   }
-  
+
   // Default deny
   res.status(403).send('Access forbidden');
 });
@@ -166,33 +189,33 @@ app.use('/temp', express.static(path.join(process.cwd(), "temp")));
 app.use((req, res, next) => {
   // Get the origin from the request or default to localhost
   const requestOrigin = req.headers.origin || 'http://localhost:5000';
-  
+
   // Log the request origin for debugging
   console.log(`Request origin: ${requestOrigin}`);
   console.log(`Request path: ${req.path}`);
   console.log(`Request method: ${req.method}`);
   console.log(`Request headers:`, req.headers);
-  
+
   // Check if we're in the production deployment
   const isProduction = process.env.REPL_SLUG === 'node-ninja-emilghelmeci';
   console.log(`Environment: ${isProduction ? 'Production' : 'Development'}`);
-  
+
   // Always allow any origin in all environments to fix CORS issues
   res.header('Access-Control-Allow-Origin', '*');
-  
+
   // Standard CORS headers with enhanced permissions
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie, Set-Cookie, X-Requested-With, Accept, Origin');
   res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Expose-Headers', 'Set-Cookie, Authorization');
   res.header('Vary', 'Origin'); // Important for proxies to respect varying responses
-  
+
   // Handle preflight requests with more detailed logging
   if (req.method === 'OPTIONS') {
     console.log(`Processing preflight request for path: ${req.path}`);
     return res.sendStatus(200);
   }
-  
+
   next();
 });
 
@@ -233,30 +256,31 @@ app.use((req, res, next) => {
   // Setup CSRF protection for routes that change state
   // This needs to be after session middleware
   const csrfProtection = csrf({ cookie: true });
-  
+
   // Define paths that should be exempt from CSRF protection (such as webhooks, API tokens)
   const csrfExemptPaths = [
     '/api/webhook',
     '/api/transcription/webhook',
     '/api/external/',
     '/api/public/',
-    '/api/open-auth'
+    '/api/open-auth',
+    '/api/stripe/webhook'
   ];
-  
+
   // Custom middleware to apply CSRF protection selectively
   app.use((req, res, next) => {
     // Skip CSRF for exempt paths or for non-state-changing methods
     const isExemptPath = csrfExemptPaths.some(path => req.path.startsWith(path));
     const isReadOnlyMethod = ['GET', 'HEAD', 'OPTIONS'].includes(req.method);
-    
+
     if (isExemptPath || isReadOnlyMethod) {
       return next();
     }
-    
+
     // Apply CSRF protection
     return csrfProtection(req, res, next);
   });
-  
+
   // Add CSRF token route for the frontend
   app.get('/api/csrf-token', csrfProtection, (req: Express.Request, res) => {
     res.json({ csrfToken: req.csrfToken() });
@@ -264,26 +288,29 @@ app.use((req, res, next) => {
 
   // Register character redirects before API routes
   app.use(characterRouter);
-  
+
   // Register our direct transcription routes
   app.use(transcriptionRoutes);
-  
+
   // NOTE: Disabled Cloudinary video editing routes until proper credentials are provided
   // app.use('/api/video-edit', videoEditRoutes);
-  
+
   // Setup the transcription service proxy
   setupTranscriptionProxy(app);
-  
+
   // Register automated call routes
   app.use('/api/automated-calls', automatedCallRouter);
-  
+
+  // Register Stripe payment routes
+  app.use('/api/stripe', stripeRouter);
+
   // Setup direct admin access for emergency admin access
   import('./direct-admin-access.js').then(module => {
     module.setupDirectAdminAccess(app);
   }).catch(error => {
     console.error('Error setting up direct admin access:', error);
   });
-  
+
   // Setup admin dashboard API for comprehensive admin functionality
   import('./admin-dashboard-api').then(module => {
     app.use('/api/admin', module.default);
@@ -291,7 +318,7 @@ app.use((req, res, next) => {
   }).catch(error => {
     console.error('Error setting up admin dashboard API:', error);
   });
-  
+
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
@@ -311,17 +338,21 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
+  // Force port 5000 for Replit compatibility
   const port = 5000;
+  // Set PORT environment variable to ensure all components use port 5000
+  process.env.PORT = '5000';
+  
+  // Set trust proxy before listening
+  app.set('trust proxy', true);
+  
   server.listen({
     port,
     host: "0.0.0.0",
     reusePort: true,
   }, () => {
-    log(`serving on port ${port}`);
-    
+    log(`serving on port ${port} with trust proxy enabled`);
+
     // Start the automated call scheduler
     log(`Starting automated call scheduler`);
     // Initial run
@@ -332,7 +363,7 @@ app.use((req, res, next) => {
         console.error('Error running initial automation scheduler:', error);
       }
     }, 10000); // Wait 10 seconds after server start
-    
+
     // Set up regular interval (every 5 minutes)
     setInterval(async () => {
       try {

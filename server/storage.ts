@@ -93,6 +93,18 @@ export interface ApiMetricsSummary {
 
 // Storage interface with all required methods
 export interface IStorage {
+  // Stripe-related functions
+  updateUserStripeCustomerId(userId: number, stripeCustomerId: string): Promise<boolean>;
+  getPaymentByExternalId(paymentIntentId: string): Promise<any | null>;
+  recordStripePayment(data: {
+    userId: number;
+    amount: number;
+    description: string;
+    paymentMethod: string;
+    paymentIntentId: string;
+    tokensGranted: number;
+    partnerId?: number | null;
+  }): Promise<boolean>;
   // Configuration methods
   getConfig(): Promise<Configuration>;
   
@@ -135,6 +147,15 @@ export interface IStorage {
   updatePartnerCommissionStatus(partnerId: number, amount: number): Promise<void>;
   createAdminNotification(notification: any): Promise<any>;
   getPartnerByReferralCode(referralCode: string): Promise<Partner | undefined>;
+  
+  // User Agents methods
+  getUserAgents(userId: number): Promise<UserAgent[]>;
+  getUserAgent(userId: number): Promise<UserAgent | undefined>;
+  getUserAgentById(agentId: number): Promise<UserAgent | undefined>;
+  createUserAgent(userAgent: InsertUserAgent): Promise<UserAgent>;
+  
+  // Phone Number methods
+  getPurchasedPhoneNumbers(userId: number): Promise<PurchasedPhoneNumber[]>;
   
   // Referral tracking methods
   addReferralClick(click: InsertReferralClick): Promise<ReferralClick>;
@@ -179,6 +200,120 @@ export interface IStorage {
 // Implementation of the storage interface using PostgreSQL
 export class DatabaseStorage implements IStorage {
   private configCache: Configuration | null = null;
+  
+  // Stripe-related methods
+  async updateUserStripeCustomerId(userId: number, stripeCustomerId: string): Promise<boolean> {
+    try {
+      await db.update(users)
+        .set({ stripe_customer_id: stripeCustomerId })
+        .where(eq(users.id, userId));
+      return true;
+    } catch (error) {
+      console.error('Error updating user Stripe customer ID:', error);
+      return false;
+    }
+  }
+  
+  async getPaymentByExternalId(paymentIntentId: string): Promise<any | null> {
+    try {
+      // Use raw query since we don't have a schema for payments table yet
+      const { pool } = await import('./db');
+      const result = await pool.query(
+        'SELECT * FROM payments WHERE payment_intent_id = $1 LIMIT 1',
+        [paymentIntentId]
+      );
+      
+      if (result.rows && result.rows.length > 0) {
+        return result.rows[0];
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error getting payment by external ID:', error);
+      return null;
+    }
+  }
+  
+  async recordStripePayment(data: {
+    userId: number;
+    amount: number;
+    description: string;
+    paymentMethod: string;
+    paymentIntentId: string;
+    tokensGranted: number;
+    partnerId?: number | null;
+  }): Promise<boolean> {
+    try {
+      const { userId, amount, description, paymentMethod, paymentIntentId, tokensGranted, partnerId } = data;
+      const { pool } = await import('./db');
+      
+      // Start a transaction
+      const client = await pool.connect();
+      try {
+        await client.query('BEGIN');
+        
+        // Insert the payment record
+        await client.query(
+          `INSERT INTO payments (
+            user_id, amount, payment_method, payment_intent_id, 
+            description, tokens_granted, created_at
+          ) VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
+          [userId, amount, paymentMethod, paymentIntentId, description, tokensGranted]
+        );
+        
+        // Add the tokens to the user's account
+        await client.query(
+          'UPDATE users SET coins = coins + $1 WHERE id = $2',
+          [tokensGranted, userId]
+        );
+        
+        // Record the coin transaction
+        await client.query(
+          `INSERT INTO coin_transactions (
+            user_id, amount, transaction_type, description, created_at
+          ) VALUES ($1, $2, $3, $4, NOW())`,
+          [userId, tokensGranted, 'purchase', description]
+        );
+        
+        // If there's a partner, record commission
+        if (partnerId) {
+          const partnerResult = await client.query(
+            'SELECT commission_rate FROM partners WHERE id = $1',
+            [partnerId]
+          );
+          
+          if (partnerResult.rows.length > 0) {
+            const commissionRate = partnerResult.rows[0].commission_rate;
+            const commissionAmount = amount * (commissionRate / 100);
+            
+            await client.query(
+              `INSERT INTO partner_commissions (
+                partner_id, amount, status, description, created_at
+              ) VALUES ($1, $2, $3, $4, NOW())`,
+              [partnerId, commissionAmount, 'pending', `Commission for ${description}`]
+            );
+            
+            await client.query(
+              'UPDATE partners SET earnings_balance = earnings_balance + $1 WHERE id = $2',
+              [commissionAmount, partnerId]
+            );
+          }
+        }
+        
+        await client.query('COMMIT');
+        return true;
+      } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('Error recording Stripe payment:', error);
+        return false;
+      } finally {
+        client.release();
+      }
+    } catch (error) {
+      console.error('Error in recordStripePayment:', error);
+      return false;
+    }
+  }
   
   constructor() {
     // Initialize default configuration in memory for faster access
@@ -1277,6 +1412,77 @@ export class DatabaseStorage implements IStorage {
       });
     } catch (error) {
       console.error(`Error incrementing API metric for ${service}:`, error);
+    }
+  }
+  
+  // User Agents methods
+  async getUserAgents(userId: number): Promise<UserAgent[]> {
+    try {
+      return await db.select()
+        .from(userAgents)
+        .where(eq(userAgents.user_id, userId))
+        .orderBy(desc(userAgents.created_at));
+    } catch (error) {
+      console.error(`Error getting user agents for userId ${userId}:`, error);
+      return [];
+    }
+  }
+  
+  async getUserAgent(userId: number): Promise<UserAgent | undefined> {
+    try {
+      // Get the default (or only) agent for a user
+      const [agent] = await db.select()
+        .from(userAgents)
+        .where(eq(userAgents.user_id, userId))
+        .limit(1);
+      return agent;
+    } catch (error) {
+      console.error(`Error getting user agent for userId ${userId}:`, error);
+      return undefined;
+    }
+  }
+  
+  async getUserAgentById(agentId: number): Promise<UserAgent | undefined> {
+    try {
+      const [agent] = await db.select()
+        .from(userAgents)
+        .where(eq(userAgents.id, agentId));
+      return agent;
+    } catch (error) {
+      console.error(`Error getting user agent by ID ${agentId}:`, error);
+      return undefined;
+    }
+  }
+  
+  async createUserAgent(userAgent: InsertUserAgent): Promise<UserAgent> {
+    try {
+      const [newAgent] = await db.insert(userAgents)
+        .values({
+          ...userAgent,
+          created_at: userAgent.created_at || new Date()
+        })
+        .returning();
+      return newAgent;
+    } catch (error) {
+      console.error('Error creating user agent:', error);
+      throw error;
+    }
+  }
+  
+  // Phone Number methods
+  async getPurchasedPhoneNumbers(userId: number): Promise<PurchasedPhoneNumber[]> {
+    try {
+      // Use raw SQL query to avoid syntax issues with Drizzle orderBy
+      const { pool } = await import('./db');
+      const result = await pool.query(
+        'SELECT * FROM purchased_phone_numbers WHERE user_id = $1 ORDER BY purchased_at DESC',
+        [userId]
+      );
+      
+      return result.rows;
+    } catch (error) {
+      console.error(`Error getting purchased phone numbers for userId ${userId}:`, error);
+      return [];
     }
   }
 }

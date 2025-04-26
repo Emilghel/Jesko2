@@ -1,0 +1,21 @@
+API Versioning
+The Runway API uses an X-Runway-Version HTTP request header to specify which version of the API to use. This is in the form of a date, like 2024-11-06. When you build an integration, setting a version header changes the default behavior of our API.
+
+When is a new version number created?
+We’ll add new features and functionality to the latest existing API version so long as the functionality can be added in a backwards-compatible way. You’ll be able to enjoy these features automatically without having to make changes to your integration.
+
+A new version will only be created when we make changes to the API that are not backwards-compatible. Here are a few examples of what might result in a new API version:
+
+The type of an input parameter is changed. For instance, if a parameter that was previously a string representing a URL becomes an object containing more information about the asset referenced by the URL.
+The name of an input parameter is changed. For example, we may restructure an API to better reflect new techniques or model constraints. An input that was previously a boolean to enable a feature may be changed to an object to allow extra configuration to be provided beyond.
+Functionality is removed. If we deprecate a feature, we’ll create a new API version that removes the functionality.
+Version support
+We’ll offer support for old API versions for four months after a new version is created. After that date, API requests with an old API version may be rejected.
+
+Managing versions
+We strongly suggest using one of the official Runway API SDKs. We’ll publish new major versions of each SDK when a new API version is released. Using TypeScript or a Python type checker like MyPy, you’ll be able to easily identify any places where your integration needs to be updated.
+
+/v1 URLs
+While we include /v1/ in our URLs, this is not used for versioning the API. We include this to reserve the ability to offer new functionality concurrently with our /v1/ endpoints in the future.
+
+Outputs

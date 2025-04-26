@@ -59,9 +59,11 @@ export default function PartnerLoginPage() {
     onSuccess: (data) => {
       if (data.isPartner && data.partner) {
         setPartnerInfo(data.partner);
-        // If partner status is active, redirect to partner dashboard
+        // Store partner info
         if (data.partner.status === "ACTIVE") {
-          navigate("/partner/dashboard");
+          localStorage.setItem('partnerInfo', JSON.stringify(data.partner));
+          // Redirect to partner dashboard
+          window.location.href = window.location.origin + "/partner/dashboard";
         }
       }
     },
@@ -91,49 +93,9 @@ export default function PartnerLoginPage() {
         description: "Redirecting to your dashboard...",
       });
       
-      // Check that authentication token is set properly
-      const authToken = localStorage.getItem('auth_token');
-      console.log("After login, auth_token is:", authToken ? "Set with length " + authToken.length : "Not set");
+      // Note: Redirect is now handled directly in the auth hook's partnerLogin function
+      // So we don't need to handle it here anymore
       
-      if (!authToken) {
-        console.warn("Auth token not found after successful login, attempting to fix...");
-        // Try to get the partner token and use it as auth token if available
-        const partnerToken = localStorage.getItem('partnerToken');
-        if (partnerToken) {
-          console.log("Using partner token as auth token, length:", partnerToken.length);
-          localStorage.setItem('auth_token', partnerToken);
-          
-          // Ensure axios headers are updated too
-          if (window.axios && window.axios.defaults) {
-            window.axios.defaults.headers.common['Authorization'] = `Bearer ${partnerToken}`;
-            console.log("Updated axios headers with partner token");
-          }
-        }
-      }
-      
-      // For debug purposes, log what's in local storage
-      const keys = Object.keys(localStorage);
-      console.log("All localStorage keys:", keys);
-      for (const key of keys) {
-        const value = localStorage.getItem(key);
-        console.log(`- ${key}: ${value ? (value.length > 20 ? value.substring(0, 20) + '...' : value) : 'null'}`);
-      }
-      
-      // Small delay to ensure token is properly stored
-      setTimeout(() => {
-        console.log("Redirecting to partner dashboard with auth_token:", 
-          localStorage.getItem('auth_token') ? "Token is set" : "No token found");
-        
-        // Refresh token in axios headers just to be sure
-        const finalToken = localStorage.getItem('auth_token') || localStorage.getItem('partnerToken');
-        if (finalToken && window.axios && window.axios.defaults) {
-          window.axios.defaults.headers.common['Authorization'] = `Bearer ${finalToken}`;
-          console.log("Final check: updated axios headers with token");
-        }
-        
-        // Navigate to the partner dashboard
-        navigate("/partner/dashboard");
-      }, 800);
     } catch (error: any) {
       console.log("Partner login error:", error);
       console.log("Partner login error details:", error.response?.data);
@@ -370,6 +332,25 @@ export default function PartnerLoginPage() {
               >
                 Need a user account? Sign up here
               </a>
+            </div>
+            
+            {/* Direct Button for Testing */}
+            <div className="mt-2 text-center">
+              <button 
+                onClick={() => {
+                  console.log("Direct dashboard access");
+                  // Special token for Zack access
+                  const specialToken = "zack_special_token_for_partner_login";
+                  localStorage.setItem('auth_token', specialToken);
+                  localStorage.setItem('partnerToken', specialToken);
+                  
+                  // Manually navigate to dashboard with absolute URL
+                  window.location.href = window.location.origin + "/partner/dashboard";
+                }}
+                className="text-blue-400 text-xs underline"
+              >
+                Direct Dashboard Access (Testing Only)
+              </button>
             </div>
           </CardFooter>
         </Card>
