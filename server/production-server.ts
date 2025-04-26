@@ -335,13 +335,87 @@ app.get('/api/database-status', async (req, res) => {
   }
 });
 
-// Serve static files from public directory
+// Serve static files from multiple potential locations to handle different build environments
 const publicPath = path.join(__dirname, '../public');
+const distPublicPath = path.join(process.cwd(), 'dist/public');
+const clientDistPath = path.join(process.cwd(), 'client/dist');
+
+// Log the paths for debugging
+console.log('Checking for static files in these locations:');
+console.log('- ' + publicPath);
+console.log('- ' + distPublicPath);
+console.log('- ' + clientDistPath);
+
+// Try to serve static files from multiple directories (prioritized order)
 app.use(express.static(publicPath));
+app.use(express.static(distPublicPath));
+app.use(express.static(clientDistPath));
+app.use(express.static(process.cwd()));
+
+// Create a special endpoint to check if we can serve the index.html file
+app.get('/debug-index-location', (req, res) => {
+  let result = { found: false, checkedPaths: [] };
+  
+  // Check all possible index.html locations
+  const possiblePaths = [
+    path.join(publicPath, 'index.html'),
+    path.join(distPublicPath, 'index.html'),
+    path.join(clientDistPath, 'index.html'),
+    path.join(process.cwd(), 'index.html')
+  ];
+  
+  for (const p of possiblePaths) {
+    result.checkedPaths.push(p);
+    if (fs.existsSync(p)) {
+      result.found = true;
+      result.foundAt = p;
+      break;
+    }
+  }
+  
+  res.json(result);
+});
 
 // Serve index.html for all other routes (SPA fallback)
 app.get('*', (req, res) => {
-  res.sendFile(path.join(publicPath, 'index.html'));
+  // Try multiple potential locations for index.html
+  const possiblePaths = [
+    path.join(publicPath, 'index.html'),
+    path.join(distPublicPath, 'index.html'),
+    path.join(clientDistPath, 'index.html'),
+    path.join(process.cwd(), 'index.html')
+  ];
+  
+  // Find the first path that exists
+  for (const p of possiblePaths) {
+    if (fs.existsSync(p)) {
+      return res.sendFile(p);
+    }
+  }
+  
+  // If no index.html is found, show a helpful error
+  res.status(404).send(`
+    <html>
+      <head><title>Jesko AI - Setup Required</title></head>
+      <body style="font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; line-height: 1.6;">
+        <h1>Jesko AI Setup Required</h1>
+        <p>The application is running, but we couldn't find the frontend files.</p>
+        <p>This might be because:</p>
+        <ol>
+          <li>The build process didn't complete correctly</li>
+          <li>The static files weren't copied to the expected location</li>
+          <li>The environment configuration isn't correctly set</li>
+        </ol>
+        <p>Try these troubleshooting steps:</p>
+        <ol>
+          <li>Check the application logs for build errors</li>
+          <li>Verify that the deploy-build.sh script executed successfully</li>
+          <li>Visit <a href="/api/status">/api/status</a> to verify the API is running</li>
+          <li>Visit <a href="/debug-index-location">/debug-index-location</a> to see which paths were checked</li>
+        </ol>
+      </body>
+    </html>
+  `);
 });
 
 // Start server

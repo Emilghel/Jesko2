@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jesko AI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            color: #4444dd;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        h2 {
+            color: #333;
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .button {
+            display: inline-block;
+            background-color: #4444dd;
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin: 0.5rem;
+        }
+        .button:hover {
+            background-color: #3333aa;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .status-indicator {
+            font-size: 1.2rem;
+            margin: 1rem 0;
+        }
+        .loading {
+            display: inline-block;
+            width: 1.5rem;
+            height: 1.5rem;
+            border: 3px solid rgba(68, 68, 221, 0.3);
+            border-radius: 50%;
+            border-top-color: #4444dd;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 0.5rem;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Jesko AI</h1>
+        <h2>AI-Powered Cloud Platform</h2>
+        
+        <div id="status" class="status-indicator">
+            <div class="loading"></div>
+            Checking application status...
+        </div>
+        
+        <div id="actions" style="margin-top: 2rem;">
+            <a href="/deployment-test.html" class="button">View Deployment Status</a>
+            <a href="/api/status" class="button">Check API</a>
+        </div>
+    </div>
+    
+    <script>
+        // Check if the main application bundle is available
+        async function checkApplicationStatus() {
+            const statusEl = document.getElementById('status');
+            
+            try {
+                // Try to fetch the status endpoint
+                const response = await fetch('/api/status');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    statusEl.innerHTML = `
+                        <span style="color: #28a745; font-weight: bold;">✓ API is online (v${data.version})</span>
+                        <p>Environment: ${data.environment}</p>
+                    `;
+                    
+                    // Wait a bit and then try to redirect to the main app
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 3000);
+                    
+                } else {
+                    statusEl.innerHTML = `
+                        <span style="color: #dc3545; font-weight: bold;">✗ API is not responding correctly</span>
+                        <p>Please check server logs or deployment status.</p>
+                    `;
+                }
+            } catch (error) {
+                statusEl.innerHTML = `
+                    <span style="color: #dc3545; font-weight: bold;">✗ API connection failed</span>
+                    <p>Error: ${error.message}</p>
+                    <p>Server might still be starting up. Please wait or check deployment status.</p>
+                `;
+            }
+        }
+        
+        // Run check on page load
+        window.onload = checkApplicationStatus;
+    </script>
+</body>
+</html>

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jesko AI Deployment Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #4444dd;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border-color: #ffeeba;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        button {
+            background-color: #4444dd;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #3333aa;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Jesko AI Deployment Test</h1>
+    
+    <div class="card">
+        <h2>Static File Serving</h2>
+        <p>This page is being served correctly! ✅</p>
+    </div>
+    
+    <div class="card" id="api-status">
+        <h2>API Status</h2>
+        <p>Checking API status...</p>
+        <button onclick="checkApiStatus()">Check Again</button>
+        <div id="api-result"></div>
+    </div>
+    
+    <div class="card" id="db-status">
+        <h2>Database Connection</h2>
+        <p>Checking database connection...</p>
+        <button onclick="checkDatabaseStatus()">Check Again</button>
+        <div id="db-result"></div>
+    </div>
+    
+    <div class="card">
+        <h2>Environment Information</h2>
+        <p>Current URL: <span id="current-url"></span></p>
+        <p>User Agent: <span id="user-agent"></span></p>
+    </div>
+
+    <script>
+        // Display environment info
+        document.getElementById('current-url').textContent = window.location.href;
+        document.getElementById('user-agent').textContent = navigator.userAgent;
+        
+        // Check API Status
+        async function checkApiStatus() {
+            const apiResult = document.getElementById('api-result');
+            apiResult.innerHTML = '<p>Checking...</p>';
+            
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                apiResult.innerHTML = `
+                    <p class="success">API is running! ✅</p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                apiResult.innerHTML = `
+                    <p class="error">Failed to connect to API ❌</p>
+                    <pre>${error.message}</pre>
+                `;
+            }
+        }
+        
+        // Check Database Status
+        async function checkDatabaseStatus() {
+            const dbResult = document.getElementById('db-result');
+            dbResult.innerHTML = '<p>Checking...</p>';
+            
+            try {
+                const response = await fetch('/api/database-status');
+                const data = await response.json();
+                
+                if (data.status === 'connected') {
+                    dbResult.innerHTML = `
+                        <p class="success">Database connected! ✅</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    dbResult.innerHTML = `
+                        <p class="warning">Database issue: ${data.message} ⚠️</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                dbResult.innerHTML = `
+                    <p class="error">Failed to check database ❌</p>
+                    <pre>${error.message}</pre>
+                `;
+            }
+        }
+        
+        // Run checks on page load
+        window.onload = function() {
+            checkApiStatus();
+            checkDatabaseStatus();
+        };
+    </script>
+</body>
+</html>
