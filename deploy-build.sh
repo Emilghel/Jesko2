@@ -14,8 +14,8 @@ mkdir -p dist/public
 echo "Copying pre-built frontend files..."
 cp -r client/dist/* dist/public/
 
-# Build backend
-echo "Building backend..."
-npx esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+# Build backend (using production-server.ts instead of index.ts to avoid Vite dependencies)
+echo "Building backend using production server..."
+npx esbuild server/production-server.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/index.js
 
 echo "Build completed successfully!"
