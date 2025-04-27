@@ -81,5 +81,5 @@ ls -la dist/public/ || echo "Warning: dist/public directory not created properly
 
 # Build backend (using production-server.ts instead of index.ts to avoid Vite dependencies)
 echo "Building backend using production server..."
-npx esbuild server/production-server.ts --platform=node --external:* --bundle --format=esm --outfile=dist/index.js
+npx esbuild server/index.ts --platform=node --external:* --bundle --format=esm --outfile=dist/index.js
 echo "Build completed successfully!"
