@@ -80,6 +80,46 @@ ls -la dist/
 ls -la dist/public/ || echo "Warning: dist/public directory not created properly"
 
 # Build backend (using production-server.ts instead of index.ts to avoid Vite dependencies)
+echo "Building backend using production server..."# List created directories for verification
+echo "Static file directories after setup:"
+ls -la dist/
+ls -la dist/public/ || echo "Warning: dist/public directory not created properly"
+
+# Copy server files that might be imported
+echo "Copying important server files..."
+mkdir -p dist/server
+
+# Copy routes.ts file (needed for import)
+if [ -f "server/routes.ts" ]; then
+  echo "Copying routes.ts file..."
+  cp server/routes.ts dist/routes.ts
+  cp server/routes.ts dist/server/routes.ts
+fi
+
+# Copy partner-routes.ts if it exists
+if [ -f "server/partner-routes.ts" ]; then
+  echo "Copying partner-routes.ts file..."
+  cp server/partner-routes.ts dist/partner-routes.ts
+  cp server/partner-routes.ts dist/server/partner-routes.ts
+fi
+
+# Copy any other important server files
+if [ -f "server/auth.ts" ]; then
+  echo "Copying auth.ts file..."
+  cp server/auth.ts dist/auth.ts
+  cp server/auth.ts dist/server/auth.ts
+fi
+
+if [ -f "server/db.ts" ]; then
+  echo "Copying db.ts file..."
+  cp server/db.ts dist/db.ts
+  cp server/db.ts dist/server/db.ts
+fi
+
+# Building backend using production server...
 echo "Building backend using production server..."
+npx esbuild server/index.ts --platform=node --external:* --bundle --format=esm --outfile=dist/index.js
+
+echo "Build completed successfully!"
 npx esbuild server/index.ts --platform=node --external:* --bundle --format=esm --outfile=dist/index.js
 echo "Build completed successfully!"
