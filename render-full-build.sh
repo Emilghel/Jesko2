@@ -116,12 +116,34 @@ cat > tsconfig.server.json << 'EOL'
 }
 EOL
 
-# Create a custom server entrypoint
+# Create the simpler bundled version of the routes
+echo "Creating simplified bundled versions of key server files..."
+npx esbuild server/routes.ts --platform=node --bundle --outfile=dist/server/routes.js --external:* --format=esm || echo "Warning: Error bundling routes.ts"
+
+# Use esbuild for key server files in case they have path mappings
+echo "Making some key server files directly importable..."
+if [ -f "server/db.ts" ]; then
+  npx esbuild server/db.ts --platform=node --bundle --outfile=dist/server/db.js --external:* --format=esm || echo "Warning: Error bundling db.ts"
+fi
+
+if [ -f "server/auth.ts" ]; then
+  npx esbuild server/auth.ts --platform=node --bundle --outfile=dist/server/auth.js --external:* --format=esm || echo "Warning: Error bundling auth.ts"
+fi
+
+# Create a production-ready server entrypoint with ES module syntax
 cat > dist/server.js << 'EOL'
-require('dotenv').config();
-const express = require('express');
-const path = require('path');
-const fs = require('fs');
+// Production server entrypoint
+import { config } from 'dotenv';
+import express from 'express';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+config();
+
+// Get __dirname equivalent in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Simple express server for the frontend
 const app = express();
@@ -140,16 +162,22 @@ app.get('/api/status', (req, res) => {
 try {
   console.log('Attempting to load server routes...');
   
-  if (fs.existsSync('./dist/server/routes.js')) {
+  const routesPath = './server/routes.js';
+  if (fs.existsSync(path.join(__dirname, 'server/routes.js'))) {
     console.log('Found server/routes.js, attempting to load...');
-    const routes = require('./server/routes');
-    if (typeof routes.default === 'function') {
-      routes.default(app);
-    } else if (typeof routes.registerRoutes === 'function') {
-      routes.registerRoutes(app);
-    } else {
-      console.error('Routes file exists but does not export expected functions');
-    }
+    import('./server/routes.js')
+      .then(routes => {
+        if (typeof routes.default === 'function') {
+          routes.default(app);
+        } else if (typeof routes.registerRoutes === 'function') {
+          routes.registerRoutes(app);
+        } else {
+          console.error('Routes file exists but does not export expected functions');
+        }
+      })
+      .catch(err => {
+        console.error('Error importing routes:', err);
+      });
   } else {
     console.log('No routes.js file found, using static server only');
   }
@@ -170,20 +198,6 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 EOL
-
-# Create the simpler bundled version of the routes
-echo "Creating simplified bundled versions of key server files..."
-npx esbuild server/routes.ts --platform=node --bundle --outfile=dist/server/routes.js --external:* --format=cjs || echo "Warning: Error bundling routes.ts"
-
-# Use esbuild for key server files in case they have path mappings
-echo "Making some key server files directly importable..."
-if [ -f "server/db.ts" ]; then
-  npx esbuild server/db.ts --platform=node --bundle --outfile=dist/server/db.js --external:* --format=cjs || echo "Warning: Error bundling db.ts"
-fi
-
-if [ -f "server/auth.ts" ]; then
-  npx esbuild server/auth.ts --platform=node --bundle --outfile=dist/server/auth.js --external:* --format=cjs || echo "Warning: Error bundling auth.ts"
-fi
 
 # Create a .env file if it doesn't exist
 if [ ! -f "dist/.env" ]; then
