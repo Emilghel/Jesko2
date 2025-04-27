@@ -79,79 +79,117 @@ echo "Static file directories after setup:"
 ls -la dist/
 ls -la dist/public/ || echo "Warning: dist/public directory not created properly"
 
-# Use TypeScript to properly compile the server files
-echo "Compiling server files with TypeScript..."
+# Skip TypeScript compilation and use direct file copy + simple bundling approach
+echo "Building backend using direct file copying and minimal bundling..."
 
-# Create a proper tsconfig for the build
+# Create server directory structure
+echo "Creating server directory structure..."
+mkdir -p dist/server
+mkdir -p dist/server/lib
+
+# Copy all server files
+echo "Copying server files..."
+cp -r server/* dist/server/
+
+# Copy shared directory if it exists
+if [ -d "shared" ]; then
+  echo "Copying shared directory..."
+  mkdir -p dist/shared
+  cp -r shared/* dist/shared/
+fi
+
+# Create a special tsconfig.json that includes path mappings
 cat > tsconfig.server.json << 'EOL'
 {
   "compilerOptions": {
     "target": "ES2022",
     "module": "CommonJS",
-    "esModuleInterop": true,
     "moduleResolution": "node",
-    "outDir": "dist",
-    "rootDir": ".",
+    "esModuleInterop": true,
     "skipLibCheck": true,
-    "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true
-  },
-  "include": [
-    "server/**/*"
-  ]
+    "outDir": "./dist-server",
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": ["./shared/*"]
+    }
+  }
 }
 EOL
 
-# Install TypeScript
-echo "Installing TypeScript..."
-npm install -g typescript
-
-# Copy entire server directory to keep all imports intact
-echo "Copying server directory..."
-cp -r server dist/server
-
-# Copy any shared files that might be needed
-if [ -d "shared" ]; then
-  echo "Copying shared directory..."
-  cp -r shared dist/shared
-fi
-
-# Compile the TypeScript files
-echo "Compiling TypeScript files..."
-npx tsc -p tsconfig.server.json
-
-# Create a production-ready server entrypoint
+# Create a custom server entrypoint
 cat > dist/server.js << 'EOL'
-// Production server entrypoint
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
 
-// Check if server/index.js exists (compiled from TypeScript)
-if (fs.existsSync(path.join(__dirname, 'server/index.js'))) {
-  // If it exists, use it
-  console.log('Using compiled server/index.js...');
-  require('./server/index.js');
-} else {
-  // Fallback to basic static server
-  console.log('Fallback to basic static server...');
-  const app = express();
-  const PORT = process.env.PORT || 3000;
-  
-  // Serve static files
-  app.use(express.static(path.join(__dirname, 'public')));
-  
-  // For any other route, serve index.html
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// Simple express server for the frontend
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Add basic API health endpoint
+app.get('/api/status', (req, res) => {
+  res.json({
+    status: 'online',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
   });
+});
+
+// Try to import the routes from the compiled/bundled file
+try {
+  console.log('Attempting to load server routes...');
   
-  app.listen(PORT, () => {
-    console.log(`Basic static server running on port ${PORT}`);
-  });
+  if (fs.existsSync('./dist/server/routes.js')) {
+    console.log('Found server/routes.js, attempting to load...');
+    const routes = require('./server/routes');
+    if (typeof routes.default === 'function') {
+      routes.default(app);
+    } else if (typeof routes.registerRoutes === 'function') {
+      routes.registerRoutes(app);
+    } else {
+      console.error('Routes file exists but does not export expected functions');
+    }
+  } else {
+    console.log('No routes.js file found, using static server only');
+  }
+} catch (error) {
+  console.error('Error loading routes:', error);
 }
+
+// Serve static files
+app.use(express.static(path.join(__dirname, 'public')));
+
+// For any other route, serve index.html
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Start the server
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
 EOL
+
+# Create the simpler bundled version of the routes
+echo "Creating simplified bundled versions of key server files..."
+npx esbuild server/routes.ts --platform=node --bundle --outfile=dist/server/routes.js --external:* --format=cjs || echo "Warning: Error bundling routes.ts"
+
+# Use esbuild for key server files in case they have path mappings
+echo "Making some key server files directly importable..."
+if [ -f "server/db.ts" ]; then
+  npx esbuild server/db.ts --platform=node --bundle --outfile=dist/server/db.js --external:* --format=cjs || echo "Warning: Error bundling db.ts"
+fi
+
+if [ -f "server/auth.ts" ]; then
+  npx esbuild server/auth.ts --platform=node --bundle --outfile=dist/server/auth.js --external:* --format=cjs || echo "Warning: Error bundling auth.ts"
+fi
+
+# Create a .env file if it doesn't exist
+if [ ! -f "dist/.env" ]; then
+  echo "Creating basic .env file..."
+  echo "NODE_ENV=production" > dist/.env
+fi
 
 # Update Start Command for Render
 echo "Updating Render start command..."
