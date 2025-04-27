@@ -10,27 +10,11 @@ echo "Creating build directories..."
 mkdir -p dist
 mkdir -p dist/public
 
-# Create more robust copy process for static assets
-echo "Setting up static file directories..."
-mkdir -p dist/public
-mkdir -p dist/public/static
-mkdir -p dist/public/temp
-
 # Instead of using emergency frontend, use the existing frontend files
-echo "Using existing frontend files instead of emergency frontend..."
+echo "Using existing frontend files..."
 
-# Check if client/dist exists and use it
-if [ -d "client/dist" ]; then
-  echo "Found client/dist directory, using it for frontend..."
-  cp -r client/dist/* dist/public/ || echo "Warning: Could not copy from client/dist"
-  # Create an explicit copy in the root dist folder too
-  cp -r client/dist/* dist/ || echo "Warning: Could not copy to root dist folder"
-elif [ -d "dist/public" ]; then
-  echo "Using existing dist/public directory for frontend..."
-else
-  echo "WARNING: No frontend files found! Creating minimal placeholder..."
-  # Create a very minimal placeholder
-  cat > dist/public/index.html << 'EOL'
+# Create a minimal placeholder as fallback if no frontend files are found
+cat > dist/public/index.html << 'EOL'
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -41,46 +25,49 @@ else
 </head>
 <body>
     <h1>Jesko AI</h1>
-    <p>The application is online, but the frontend files were not found.</p>
-    <p>API endpoints are working. Check /api/status for more information.</p>
+    <p>The application is online.</p>
+    <p>API endpoints should be working. Check /api/status for more information.</p>
 </body>
 </html>
 EOL
+
+# Copy from multiple potential frontend sources to ensure we have the files
+if [ -d "client/dist" ]; then
+  echo "Found client/dist directory, copying..."
+  cp -r client/dist/* dist/public/ || echo "Warning: Could not copy from client/dist"
 fi
 
-# Copy index.html to multiple locations to ensure it's found
-echo "Copying index.html to multiple locations for redundancy..."
-find dist -name "index.html" -exec cp {} dist/index.html \; 2>/dev/null || true
-find dist -name "index.html" -exec cp {} index.html \; 2>/dev/null || true
-
-# Copy additional static assets from various locations
-echo "Copying additional static assets..."
-
-# Copy from public directory
 if [ -d "public" ]; then
-  echo "Copying from public directory..."
-  cp -r public/* dist/public/ 2>/dev/null || echo "Warning: Error copying from public directory"
+  echo "Found public directory, copying..."
+  cp -r public/* dist/public/ || echo "Warning: Could not copy from public directory"
 fi
 
-# Copy from static directory
 if [ -d "static" ]; then
-  echo "Copying from static directory..."
-  cp -r static/* dist/public/static/ 2>/dev/null || echo "Warning: Error copying from static directory"
+  echo "Found static directory, copying..."
+  mkdir -p dist/public/static
+  cp -r static/* dist/public/static/ || echo "Warning: Could not copy from static directory"
 fi
 
-# Copy individual important files
+# Copy individual important files with verbose output
 echo "Copying specific important files..."
+mkdir -p dist/public/static
+find . -name "bubble.gif" -exec cp -v {} dist/public/static/bubble.gif \; 2>/dev/null || echo "Warning: bubble.gif not found"
+find . -name "*.css" -exec cp -v {} dist/public/ \; 2>/dev/null || echo "No CSS files found"
+find . -name "*.js" -type f -not -path "*/node_modules/*" -not -path "*/dist/*" -not -path "*/server/*" -exec cp -v {} dist/public/ \; 2>/dev/null || echo "No JS files found"
 
-# Copy bubble.gif (important for chat UI)
-find . -name "bubble.gif" -exec cp {} dist/public/static/bubble.gif \; 2>/dev/null || echo "Warning: bubble.gif not found"
+# Make sure index.html exists in multiple locations for redundancy
+echo "Ensuring index.html exists in all necessary locations..."
+cp -v dist/public/index.html dist/index.html || echo "Warning: Could not copy index.html to dist/"
 
-# List created directories for verification
-echo "Static file directories after setup:"
-ls -la dist/
+# List created directories and files for verification
+echo "Checking frontend files:"
+ls -la dist/ || echo "Warning: dist directory not created properly"
 ls -la dist/public/ || echo "Warning: dist/public directory not created properly"
+ls -la dist/public/static/ 2>/dev/null || echo "Warning: static directory not present"
 
-# Skip TypeScript compilation and use direct file copy + simple bundling approach
-echo "Building backend using direct file copying and minimal bundling..."
+# Find all HTML files to verify we have front-end content
+echo "Checking for HTML files:"
+find dist -name "*.html" | sort || echo "No HTML files found!"
 
 # Create server directory structure
 echo "Creating server directory structure..."
@@ -98,39 +85,7 @@ if [ -d "shared" ]; then
   cp -r shared/* dist/shared/
 fi
 
-# Create a special tsconfig.json that includes path mappings
-cat > tsconfig.server.json << 'EOL'
-{
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "CommonJS",
-    "moduleResolution": "node",
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "outDir": "./dist-server",
-    "baseUrl": ".",
-    "paths": {
-      "@shared/*": ["./shared/*"]
-    }
-  }
-}
-EOL
-
-# Create the simpler bundled version of the routes
-echo "Creating simplified bundled versions of key server files..."
-npx esbuild server/routes.ts --platform=node --bundle --outfile=dist/server/routes.js --external:* --format=esm || echo "Warning: Error bundling routes.ts"
-
-# Use esbuild for key server files in case they have path mappings
-echo "Making some key server files directly importable..."
-if [ -f "server/db.ts" ]; then
-  npx esbuild server/db.ts --platform=node --bundle --outfile=dist/server/db.js --external:* --format=esm || echo "Warning: Error bundling db.ts"
-fi
-
-if [ -f "server/auth.ts" ]; then
-  npx esbuild server/auth.ts --platform=node --bundle --outfile=dist/server/auth.js --external:* --format=esm || echo "Warning: Error bundling auth.ts"
-fi
-
-# Create a production-ready server entrypoint with ES module syntax
+# Create a custom server entrypoint with extra debugging
 cat > dist/server.js << 'EOL'
 // Production server entrypoint
 import { config } from 'dotenv';
@@ -158,44 +113,61 @@ app.get('/api/status', (req, res) => {
   });
 });
 
-// Try to import the routes from the compiled/bundled file
-try {
-  console.log('Attempting to load server routes...');
-  
-  const routesPath = './server/routes.js';
-  if (fs.existsSync(path.join(__dirname, 'server/routes.js'))) {
-    console.log('Found server/routes.js, attempting to load...');
-    import('./server/routes.js')
-      .then(routes => {
-        if (typeof routes.default === 'function') {
-          routes.default(app);
-        } else if (typeof routes.registerRoutes === 'function') {
-          routes.registerRoutes(app);
-        } else {
-          console.error('Routes file exists but does not export expected functions');
-        }
-      })
-      .catch(err => {
-        console.error('Error importing routes:', err);
-      });
-  } else {
-    console.log('No routes.js file found, using static server only');
+// Debug endpoint to list directories
+app.get('/api/debug/files', (req, res) => {
+  try {
+    const publicDir = path.join(__dirname, 'public');
+    const files = fs.readdirSync(publicDir);
+    
+    const result = {
+      currentDirectory: __dirname,
+      publicDirectory: publicDir,
+      publicDirectoryExists: fs.existsSync(publicDir),
+      files: files,
+      indexHtmlExists: fs.existsSync(path.join(publicDir, 'index.html'))
+    };
+    
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message, stack: error.stack });
   }
-} catch (error) {
-  console.error('Error loading routes:', error);
-}
+});
 
-// Serve static files
+// Serve static files with verbose logging
 app.use(express.static(path.join(__dirname, 'public')));
+console.log('Static files directory:', path.join(__dirname, 'public'));
 
 // For any other route, serve index.html
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  const indexPath = path.join(__dirname, 'public', 'index.html');
+  console.log('Attempting to serve:', indexPath);
+  console.log('File exists:', fs.existsSync(indexPath));
+  
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    // If index.html doesn't exist, send a basic HTML response
+    res.send(`
+      <!DOCTYPE html>
+      <html>
+        <head><title>Jesko AI</title></head>
+        <body>
+          <h1>Jesko AI</h1>
+          <p>The index.html file could not be found at ${indexPath}</p>
+          <p>You can check system status at <a href="/api/status">/api/status</a> 
+            or file system details at <a href="/api/debug/files">/api/debug/files</a></p>
+        </body>
+      </html>
+    `);
+  }
 });
 
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  console.log('Current directory:', __dirname);
+  console.log('Public directory:', path.join(__dirname, 'public'));
+  console.log('Index.html exists:', fs.existsSync(path.join(__dirname, 'public', 'index.html')));
 });
 EOL
 
@@ -205,8 +177,9 @@ if [ ! -f "dist/.env" ]; then
   echo "NODE_ENV=production" > dist/.env
 fi
 
-# Update Start Command for Render
-echo "Updating Render start command..."
-echo "node dist/server.js" > dist/start.txt
+# Verify structure before upload
+echo "Final structure overview:"
+find dist -type f | sort | head -n 20
+echo "... and more files"
 
 echo "Build completed successfully!"
