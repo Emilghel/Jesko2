@@ -79,47 +79,82 @@ echo "Static file directories after setup:"
 ls -la dist/
 ls -la dist/public/ || echo "Warning: dist/public directory not created properly"
 
-# Build backend (using production-server.ts instead of index.ts to avoid Vite dependencies)
-echo "Building backend using production server..."# List created directories for verification
-echo "Static file directories after setup:"
-ls -la dist/
-ls -la dist/public/ || echo "Warning: dist/public directory not created properly"
+# Use TypeScript to properly compile the server files
+echo "Compiling server files with TypeScript..."
 
-# Copy server files that might be imported
-echo "Copying important server files..."
-mkdir -p dist/server
+# Create a proper tsconfig for the build
+cat > tsconfig.server.json << 'EOL'
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "outDir": "dist",
+    "rootDir": ".",
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "include": [
+    "server/**/*"
+  ]
+}
+EOL
 
-# Copy routes.ts file (needed for import)
-if [ -f "server/routes.ts" ]; then
-  echo "Copying routes.ts file..."
-  cp server/routes.ts dist/routes.ts
-  cp server/routes.ts dist/server/routes.ts
+# Install TypeScript
+echo "Installing TypeScript..."
+npm install -g typescript
+
+# Copy entire server directory to keep all imports intact
+echo "Copying server directory..."
+cp -r server dist/server
+
+# Copy any shared files that might be needed
+if [ -d "shared" ]; then
+  echo "Copying shared directory..."
+  cp -r shared dist/shared
 fi
 
-# Copy partner-routes.ts if it exists
-if [ -f "server/partner-routes.ts" ]; then
-  echo "Copying partner-routes.ts file..."
-  cp server/partner-routes.ts dist/partner-routes.ts
-  cp server/partner-routes.ts dist/server/partner-routes.ts
-fi
+# Compile the TypeScript files
+echo "Compiling TypeScript files..."
+npx tsc -p tsconfig.server.json
 
-# Copy any other important server files
-if [ -f "server/auth.ts" ]; then
-  echo "Copying auth.ts file..."
-  cp server/auth.ts dist/auth.ts
-  cp server/auth.ts dist/server/auth.ts
-fi
+# Create a production-ready server entrypoint
+cat > dist/server.js << 'EOL'
+// Production server entrypoint
+require('dotenv').config();
+const express = require('express');
+const path = require('path');
+const fs = require('fs');
 
-if [ -f "server/db.ts" ]; then
-  echo "Copying db.ts file..."
-  cp server/db.ts dist/db.ts
-  cp server/db.ts dist/server/db.ts
-fi
+// Check if server/index.js exists (compiled from TypeScript)
+if (fs.existsSync(path.join(__dirname, 'server/index.js'))) {
+  // If it exists, use it
+  console.log('Using compiled server/index.js...');
+  require('./server/index.js');
+} else {
+  // Fallback to basic static server
+  console.log('Fallback to basic static server...');
+  const app = express();
+  const PORT = process.env.PORT || 3000;
+  
+  // Serve static files
+  app.use(express.static(path.join(__dirname, 'public')));
+  
+  // For any other route, serve index.html
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  });
+  
+  app.listen(PORT, () => {
+    console.log(`Basic static server running on port ${PORT}`);
+  });
+}
+EOL
 
-# Building backend using production server...
-echo "Building backend using production server..."
-npx esbuild server/index.ts --platform=node --external:* --bundle --format=esm --outfile=dist/index.js
+# Update Start Command for Render
+echo "Updating Render start command..."
+echo "node dist/server.js" > dist/start.txt
 
-echo "Build completed successfully!"
-npx esbuild server/index.ts --platform=node --external:* --bundle --format=esm --outfile=dist/index.js
 echo "Build completed successfully!"
