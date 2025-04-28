@@ -11,6 +11,11 @@ npm install
 echo "Step 1.1: Installing critical server dependencies..."
 npm install express body-parser cors cookie-parser express-session dotenv
 
+# Install Vite globally
+echo "Step 1.2: Installing Vite globally..."
+npm install -g vite
+echo "Vite version: $(vite --version || echo 'Not installed')"
+
 # Create build directories
 echo "Step 2: Setting up build directories..."
 mkdir -p dist
@@ -228,7 +233,7 @@ console.log('Environment:', process.env.NODE_ENV || 'development');
 // Member count endpoint
 app.get('/api/stats/member-count', (req, res) => {
   res.json({
-    count: 4412, // Updated from logs
+    count: 4437, // Updated from logs
     lastUpdated: new Date().toISOString()
   });
 });
@@ -264,7 +269,7 @@ app.get('/api/admin/system-status', (req, res) => {
 // Dummy users data for admin panel
 app.get('/api/admin/users', (req, res) => {
   res.json({
-    totalUsers: 4412,
+    totalUsers: 4437,
     users: [
       { id: 1, email: 'user1@example.com', role: 'user', status: 'active' },
       { id: 2, email: 'user2@example.com', role: 'user', status: 'active' },
