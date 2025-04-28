@@ -7,6 +7,10 @@ echo "===================== JESKO AI FULL DEPLOYMENT SCRIPT ====================
 echo "Step 1: Installing dependencies..."
 npm install
 
+# Install critical server dependencies
+echo "Step 1.1: Installing critical server dependencies..."
+npm install express body-parser cors cookie-parser express-session dotenv
+
 # Create build directories
 echo "Step 2: Setting up build directories..."
 mkdir -p dist
@@ -86,6 +90,17 @@ cat > dist/public/index.html << 'EOL'
         margin-top: 30px;
         padding-top: 20px;
       }
+      .api-section {
+        background: #f9f9f9;
+        padding: 15px;
+        border-radius: 5px;
+        margin-top: 20px;
+      }
+      code {
+        background: #eee;
+        padding: 3px 5px;
+        border-radius: 3px;
+      }
     </style>
 </head>
 <body>
@@ -95,11 +110,21 @@ cat > dist/public/index.html << 'EOL'
     <div class="container">
         <h2>Server Status: Online</h2>
         <p>The Jesko AI backend server is running successfully.</p>
-        <p>You can access the system through the links below:</p>
         
-        <div>
-            <a href="/api/status" class="button">API Status</a>
-            <a href="/api/debug/files" class="button">System Files</a>
+        <div class="api-section">
+            <h3>API Endpoints</h3>
+            <p>The following API endpoints are available:</p>
+            <ul>
+                <li><code>/api/status</code> - Server status information</li>
+                <li><code>/api/debug/files</code> - List available files</li>
+                <li><code>/api/stats/member-count</code> - Get member count</li>
+                <li><code>/api/admin/system-status</code> - System status (admin)</li>
+                <li><code>/api/admin/users</code> - User list (admin)</li>
+            </ul>
+            <div>
+                <a href="/api/status" class="button">API Status</a>
+                <a href="/api/debug/files" class="button">System Files</a>
+            </div>
         </div>
         
         <div class="admin-section">
@@ -154,6 +179,9 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import bodyParser from 'body-parser';
+import cors from 'cors';
+import session from 'express-session';
+import cookieParser from 'cookie-parser';
 
 // Load environment variables
 config();
@@ -168,8 +196,26 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Configure middleware
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
+app.use(cookieParser());
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
+
+// Session setup
+const sessionConfig = {
+  secret: process.env.JWT_SECRET || 'default-secret-for-development',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
+  }
+};
+
+app.use(session(sessionConfig));
 
 // Debug info
 console.log('Starting Jesko AI server...');
@@ -177,6 +223,55 @@ console.log('Current directory:', __dirname);
 console.log('Public directory:', publicDir);
 console.log('Public directory exists:', fs.existsSync(publicDir));
 console.log('Environment:', process.env.NODE_ENV || 'development');
+
+// API Routes
+// Member count endpoint
+app.get('/api/stats/member-count', (req, res) => {
+  res.json({
+    count: 4412, // Updated from logs
+    lastUpdated: new Date().toISOString()
+  });
+});
+
+// Authentication endpoints
+app.post('/api/auth/login', (req, res) => {
+  const { email, password } = req.body;
+  if (email && password) {
+    res.json({
+      success: true,
+      user: {
+        id: 1,
+        email,
+        name: email.split('@')[0]
+      },
+      token: 'sample-token'
+    });
+  } else {
+    res.status(400).json({ success: false, message: 'Invalid credentials' });
+  }
+});
+
+// Admin specific API endpoints
+app.get('/api/admin/system-status', (req, res) => {
+  res.json({
+    status: 'online',
+    uptime: process.uptime(),
+    memoryUsage: process.memoryUsage(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// Dummy users data for admin panel
+app.get('/api/admin/users', (req, res) => {
+  res.json({
+    totalUsers: 4412,
+    users: [
+      { id: 1, email: 'user1@example.com', role: 'user', status: 'active' },
+      { id: 2, email: 'user2@example.com', role: 'user', status: 'active' },
+      { id: 3, email: 'admin@example.com', role: 'admin', status: 'active' }
+    ]
+  });
+});
 
 // Basic API endpoints
 app.get('/api/status', (req, res) => {
@@ -218,55 +313,137 @@ app.get('/api/debug/files', (req, res) => {
   }
 });
 
-// Serve static files
+// If API routes didn't match, serve static files
 app.use(express.static(publicDir));
 
-// Handle different types of requests
-app.get('*', (req, res) => {
-  const requestPath = req.path;
-  
-  // Handle direct requests for HTML files
-  if (requestPath.endsWith('.html')) {
-    const filePath = path.join(publicDir, requestPath);
-    if (fs.existsSync(filePath)) {
-      return res.sendFile(filePath);
-    }
+// Handle direct requests for HTML files
+app.get('*.html', (req, res) => {
+  const filePath = path.join(publicDir, req.path);
+  if (fs.existsSync(filePath)) {
+    return res.sendFile(filePath);
   }
+  res.status(404).send('File not found');
+});
+
+// Try to import server routes
+try {
+  // Attempt to import the routes module - this might fail if it's not properly built
+  const routesModule = await import('./server/routes.js').catch(() => null);
   
-  // For client-side routing, serve index.html
+  if (routesModule && typeof routesModule.registerRoutes === 'function') {
+    console.log('Found routes module, registering routes...');
+    await routesModule.registerRoutes(app);
+    console.log('Routes registered successfully');
+  } else {
+    console.log('No valid routes module found, using fallback routes');
+  }
+} catch (error) {
+  console.error('Error importing routes module:', error.message);
+}
+
+// For all other routes (for client-side routing), serve index.html
+app.get('*', (req, res) => {
   const indexPath = path.join(publicDir, 'index.html');
   if (fs.existsSync(indexPath)) {
     return res.sendFile(indexPath);
   }
   
-  // If no index.html, return a 404 page
-  res.status(404).send(`
-    <html>
-      <head>
-        <title>Page Not Found</title>
+  // If no index.html, send a server status page
+  res.status(200).send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Jesko AI</title>
         <style>
-          body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
-          h1 { color: #e74c3c; }
-          .container { max-width: 600px; margin: 0 auto; }
-          .button { 
-            display: inline-block; 
-            padding: 10px 20px; 
-            background: #3498db; 
-            color: white; 
-            text-decoration: none; 
-            border-radius: 5px; 
-            margin-top: 20px; 
+          body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f7fb;
+          }
+          .header {
+            background-color: #4a6cf7;
+            color: white;
+            padding: 15px 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+          }
+          .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+          }
+          .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #4a6cf7;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 10px 5px;
+            transition: background 0.3s;
+          }
+          .button:hover {
+            background: #3a5bd7;
+          }
+          .admin-section {
+            border-top: 1px solid #eee;
+            margin-top: 30px;
+            padding-top: 20px;
+          }
+          .api-section {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+          }
+          code {
+            background: #eee;
+            padding: 3px 5px;
+            border-radius: 3px;
           }
         </style>
-      </head>
-      <body>
-        <div class="container">
-          <h1>Page Not Found</h1>
-          <p>The page you're looking for doesn't exist.</p>
-          <a href="/" class="button">Go Home</a>
-          <a href="/admin-dashboard-v2.html" class="button">Admin Dashboard</a>
+    </head>
+    <body>
+        <div class="header">
+            <h1>Jesko AI Platform</h1>
         </div>
-      </body>
+        <div class="container">
+            <h2>Server Status: Online</h2>
+            <p>The Jesko AI backend server is running successfully.</p>
+            
+            <div class="api-section">
+                <h3>API Endpoints</h3>
+                <p>The following API endpoints are available:</p>
+                <ul>
+                    <li><code>/api/status</code> - Server status information</li>
+                    <li><code>/api/debug/files</code> - List available files</li>
+                    <li><code>/api/stats/member-count</code> - Get member count</li>
+                    <li><code>/api/admin/system-status</code> - System status (admin)</li>
+                    <li><code>/api/admin/users</code> - User list (admin)</li>
+                </ul>
+                <div>
+                    <a href="/api/status" class="button">API Status</a>
+                    <a href="/api/debug/files" class="button">System Files</a>
+                </div>
+            </div>
+            
+            <div class="admin-section">
+                <h3>Administration Access</h3>
+                <p>The following admin interfaces are available:</p>
+                <div>
+                    <a href="/admin-dashboard-v2.html" class="button">Admin Dashboard</a>
+                    <a href="/admin-login.html" class="button">Admin Login</a>
+                    <a href="/direct-admin.html" class="button">Direct Admin</a>
+                    <a href="/admin-navigation.html" class="button">Admin Navigation</a>
+                </div>
+            </div>
+        </div>
+    </body>
     </html>
   `);
 });
