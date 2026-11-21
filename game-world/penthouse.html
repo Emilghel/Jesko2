@@ -35,6 +35,7 @@ canvas#scene { position: fixed; inset: 0; width: 100%; height: 100%; display: bl
 #prompt { font-weight: 700; white-space: nowrap; }
 #prompt kbd, #intro kbd { font-family: var(--display); font-size: 11px; background: rgba(255,255,255,0.14); border: 1px solid var(--edge); border-radius: 6px; padding: 1px 6px; margin-right: 6px; }
 #cross { position: fixed; z-index: 4; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: rgba(255,246,236,0.85); box-shadow: 0 0 6px rgba(0,0,0,0.6); pointer-events: none; transition: transform .15s, background .15s; }
+.tl .row { display: flex; gap: 6px; }
 .btn-cine { color: var(--ink); font-family: var(--body); font-weight: 700; cursor: pointer; align-self: flex-start; }
 .btn-cine[aria-pressed="true"] { background: rgba(255, 197, 107, 0.92); color: #2a1406; border-color: transparent; }
 body.cine #cross, body.cine #prompt { display: none; }
@@ -71,7 +72,7 @@ body.cine #cross, body.cine #prompt { display: none; }
 <canvas id="scene" aria-label="First-person penthouse overlooking a city"></canvas>
 <div id="cross"></div>
 
-<div class="hud tl"><div class="chip title">Skyline Penthouse<small id="nowCity">Crimson Rain</small></div><button class="chip btn-cine" id="cineBtn" type="button" aria-pressed="true">Cinematic</button></div>
+<div class="hud tl"><div class="chip title">Skyline Penthouse<small id="nowCity">Crimson Rain</small></div><div class="row"><button class="chip btn-cine" id="cineBtn" type="button" aria-pressed="true">Cinematic</button><button class="chip btn-cine" id="musicBtn" type="button" aria-pressed="false">Music off</button></div></div>
 <div class="hud tr">
   <div class="ask">Which city tonight?</div>
   <div class="cities" id="cities"></div>
@@ -89,7 +90,7 @@ body.cine #cross, body.cine #prompt { display: none; }
     <ul class="desk">
       <li><span><kbd>Click</kbd>look with the mouse (Esc to release)</span></li>
       <li><span><kbd>W A S D</kbd>walk &nbsp;<kbd>Shift</kbd>stroll faster</span></li>
-      <li><span><kbd>E</kbd>play records, switch lamps &nbsp;<kbd>1–4</kbd>cities</span></li>
+      <li><span><kbd>E</kbd>play the record, switch lamps &nbsp;<kbd>1–4</kbd>cities</span></li>
     </ul>
     <ul class="touch">
       <li>Left stick to walk, drag anywhere to look</li>
@@ -407,7 +408,7 @@ function makeLamp(shade, light, name) {
 }
 makeLamp(deskShade, deskLight, 'desk lamp'); makeLamp(floorShade, floorLight, 'floor lamp'); makeLamp(pendShade, pendLight, 'pendant');
 let musicOn = false;
-deck.children.forEach(c => { c.userData = { label: () => musicOn ? 'Stop the record' : 'Play a record', act: () => toggleMusic() }; interactables.push(c); });
+deck.children.forEach(c => { c.userData = { label: () => musicOn ? 'Stop the jazz record' : 'Play a jazz record', act: () => toggleMusic() }; interactables.push(c); });
 platter.children.forEach(c => { c.userData = deck.children[0].userData; interactables.push(c); });
 function applyLamps() {
   const p = PRESETS[cur];
@@ -619,7 +620,7 @@ function applyPreset(i) {
 }
 
 // ---------------- audio ----------------
-let ac = null, master = null, ambGain = null, musicGain = null, crackle = null, nextBar = 0, barIdx = 0, schedTimer = 0;
+let ac = null, master = null, ambGain = null, musicGain = null, crackle = null, schedTimer = 0;
 function ensureAudio() {
   if (ac) { if (ac.state === 'suspended') ac.resume(); return; }
   try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return; }
@@ -629,49 +630,132 @@ function ensureAudio() {
   const noise = ac.createBufferSource(); noise.buffer = buf; noise.loop = true;
   const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 900;
   ambGain = ac.createGain(); ambGain.gain.value = 0; noise.connect(lp).connect(ambGain).connect(master); noise.start();
-  musicGain = ac.createGain(); musicGain.gain.value = 0; const mlp = ac.createBiquadFilter(); mlp.type = 'lowpass'; mlp.frequency.value = 1600; musicGain.connect(mlp).connect(master);
+  musicGain = ac.createGain(); musicGain.gain.value = 0; musicGain.connect(master);
   // vinyl crackle
   const cb = ac.createBuffer(1, ac.sampleRate * 3, ac.sampleRate), cd = cb.getChannelData(0);
   for (let i = 0; i < cd.length; i++) cd[i] = Math.random() < 0.0009 ? (Math.random() * 2 - 1) * 0.8 : (Math.random() * 2 - 1) * 0.012;
-  crackle = ac.createBufferSource(); crackle.buffer = cb; crackle.loop = true; crackle.connect(musicGain); crackle.start();
+  crackle = ac.createBufferSource(); crackle.buffer = cb; crackle.loop = true; const cg = ac.createGain(); cg.gain.value = 0.6; crackle.connect(cg).connect(musicGain); crackle.start();
   updateAmbience();
 }
 function updateAmbience() {
   if (!ac) return; const p = PRESETS[cur];
   ambGain.gain.setTargetAtTime(p.rain ? 0.22 : p.snow ? 0.06 : 0.03, ac.currentTime, 0.4);
 }
-const CHORDS = [[53, 57, 60, 64], [52, 55, 59, 62], [50, 53, 57, 60], [48, 52, 55, 59]];   // Fmaj7 Em7 Dm7 Cmaj7
+// ----- dark jazz band: walking bass, brushes and ride, Rhodes, muted horn, all synthesized -----
 const midi = n => 440 * Math.pow(2, (n - 69) / 12);
-function note(f, t, dur, type, vol) {
-  const o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.value = f;
-  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.08); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-  o.connect(g).connect(musicGain); o.start(t); o.stop(t + dur + 0.05);
+const BEAT = 60 / 64;            // 64 bpm, swung eighths
+const SWING = BEAT * 0.66;
+// 8-bar form in D minor. Each bar: [[chord voicing, bass root, beats], ...]
+const DM9 = [53, 57, 60, 64], GM9 = [58, 62, 65, 69], EM7B5 = [52, 55, 58, 62], A7B9 = [55, 58, 61, 64], BBMAJ = [53, 57, 62, 64], A7ALT = [55, 58, 61, 65];
+const FORM = [
+  [[DM9, 38, 4, 'm']], [[DM9, 38, 4, 'm']], [[GM9, 43, 4, 'm']], [[GM9, 43, 4, 'm']],
+  [[EM7B5, 40, 4, 'h']], [[A7B9, 45, 4, 'd']], [[DM9, 38, 4, 'm']], [[BBMAJ, 46, 2, 'M'], [A7ALT, 45, 2, 'd']],
+];
+// muted-horn melody, [beat, midi, beats] per bar; null bars rest
+const TUNE = [
+  [[0, 74, 1.5], [1.66, 72, 0.34], [2, 69, 2]],
+  [[3, 65, 0.66], [3.66, 67, 0.34]],
+  [[0, 70, 1.5], [1.66, 69, 0.34], [2, 65, 1], [3, 62, 1]],
+  [[0.66, 67, 0.34], [1, 70, 2.8]],
+  [[0, 70, 1], [1, 67, 0.66], [1.66, 64, 0.34], [2, 62, 2]],
+  [[0, 61, 1], [1, 64, 0.66], [1.66, 67, 0.34], [2, 70, 1], [3, 69, 1]],
+  [[0, 65, 1.5], [1.66, 64, 0.34], [2, 62, 2.2]],
+  null,
+];
+let jazz = null, nextBeat = 0, beatNo = 0;
+function jazzRig() {
+  if (jazz) return jazz;
+  const bus = ac.createGain(); bus.gain.value = 1;
+  // small dark room reverb
+  const len = ac.sampleRate * 2.6, ir = ac.createBuffer(2, len, ac.sampleRate);
+  for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.6); }
+  const verb = ac.createConvolver(); verb.buffer = ir; const wet = ac.createGain(); wet.gain.value = 0.32;
+  const tone = ac.createBiquadFilter(); tone.type = 'lowpass'; tone.frequency.value = 5200;
+  bus.connect(tone); tone.connect(musicGain); tone.connect(verb); verb.connect(wet).connect(musicGain);
+  // electric piano bus with tremolo
+  const ep = ac.createGain(); const trem = ac.createOscillator(), tremAmt = ac.createGain(); trem.frequency.value = 4.2; tremAmt.gain.value = 0.22; trem.connect(tremAmt).connect(ep.gain); trem.start(); ep.gain.value = 0.78;
+  const epTone = ac.createBiquadFilter(); epTone.type = 'lowpass'; epTone.frequency.value = 2400; ep.connect(epTone).connect(bus);
+  // shared noise for drums
+  const nb = ac.createBuffer(1, ac.sampleRate, ac.sampleRate), nd = nb.getChannelData(0); for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+  jazz = { bus, ep, noise: nb };
+  return jazz;
 }
-function drum(t, kind) {
-  if (kind === 'kick') { const o = ac.createOscillator(), g = ac.createGain(); o.frequency.setValueAtTime(120, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.18); g.gain.setValueAtTime(0.5, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.3); o.connect(g).connect(musicGain); o.start(t); o.stop(t + 0.32); return; }
-  const len = kind === 'snare' ? 0.18 : 0.04, b = ac.createBuffer(1, ac.sampleRate * len, ac.sampleRate), d = b.getChannelData(0);
-  for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
-  const s = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain(); s.buffer = b; f.type = kind === 'snare' ? 'bandpass' : 'highpass'; f.frequency.value = kind === 'snare' ? 1800 : 7000; g.gain.value = kind === 'snare' ? 0.16 : 0.05;
-  s.connect(f).connect(g).connect(musicGain); s.start(t);
+function rhodes(n, t, dur, vel) {
+  const f = midi(n), g = ac.createGain();
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.06 * vel, t + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  for (const [mult, amp, type] of [[1, 1, 'sine'], [2, 0.18, 'sine'], [1, 0.12, 'triangle']]) {
+    const o = ac.createOscillator(), a = ac.createGain(); o.type = type; o.frequency.value = f * mult; a.gain.value = amp; o.connect(a).connect(g); o.start(t); o.stop(t + dur + 0.05);
+  }
+  const tine = ac.createOscillator(), tg = ac.createGain(); tine.frequency.value = f * 7; tg.gain.setValueAtTime(0.012 * vel, t); tg.gain.exponentialRampToValueAtTime(0.0001, t + 0.12); tine.connect(tg).connect(jazz.ep); tine.start(t); tine.stop(t + 0.15);
+  g.connect(jazz.ep);
 }
-function schedule() {
-  const BAR = 3.2;   // 75 bpm, 4/4
-  while (nextBar < ac.currentTime + 0.4) {
-    const ch = CHORDS[barIdx % 4], t = nextBar;
-    ch.forEach((n, i) => { note(midi(n), t + i * 0.02, BAR * 0.95, 'triangle', 0.05); note(midi(n + 12), t + 0.4 + i * 0.2, 1.2, 'sine', 0.018); });
-    note(midi(ch[0] - 12), t, BAR * 0.5, 'sine', 0.16); note(midi(ch[2] - 12), t + BAR * 0.5, BAR * 0.45, 'sine', 0.12);
-    for (let b = 0; b < 4; b++) { const bt = t + b * BAR / 4; drum(bt + (b % 2 ? 0.02 : 0), b % 2 ? 'snare' : 'kick'); drum(bt + BAR / 8 + 0.03, 'hat'); drum(bt, 'hat'); }
-    if (barIdx % 2 === 1) drum(t + BAR * 0.69, 'kick');
-    nextBar += BAR; barIdx++;
+function bass(n, t, dur) {
+  const f = midi(n), g = ac.createGain(), lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.setValueAtTime(900, t); lp.frequency.exponentialRampToValueAtTime(380, t + 0.25);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.32, t + 0.012); g.gain.exponentialRampToValueAtTime(0.12, t + 0.2); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  for (const [type, amp] of [['triangle', 1], ['sine', 0.8]]) { const o = ac.createOscillator(), a = ac.createGain(); o.type = type; o.frequency.value = f; a.gain.value = amp; o.connect(a).connect(lp); o.start(t); o.stop(t + dur + 0.05); }
+  lp.connect(g).connect(jazz.bus);
+}
+function horn(n, t, dur) {
+  const f = midi(n), o = ac.createOscillator(), o2 = ac.createOscillator(), lp = ac.createBiquadFilter(), g = ac.createGain();
+  o.type = 'sawtooth'; o2.type = 'square'; o.frequency.value = f; o2.frequency.value = f; o2.detune.value = -6;
+  const vib = ac.createOscillator(), va = ac.createGain(); vib.frequency.value = 5.2; va.gain.setValueAtTime(0, t); va.gain.linearRampToValueAtTime(9, t + Math.min(dur, 0.6)); vib.connect(va); va.connect(o.detune); va.connect(o2.detune);
+  lp.type = 'lowpass'; lp.Q.value = 3; lp.frequency.setValueAtTime(500, t); lp.frequency.linearRampToValueAtTime(1300, t + 0.12);
+  const end = t + dur * BEAT;
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.045, t + 0.07); g.gain.setValueAtTime(0.045, Math.max(t + 0.07, end - 0.12)); g.gain.exponentialRampToValueAtTime(0.0001, end + 0.15);
+  const mix = ac.createGain(); mix.gain.value = 0.5; o.connect(lp); o2.connect(mix).connect(lp); lp.connect(g).connect(jazz.bus);
+  for (const x of [o, o2, vib]) { x.start(t); x.stop(end + 0.2); }
+}
+function hit(t, kind, vel = 1) {
+  const s = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain(); s.buffer = jazz.noise;
+  let dec = 0.3, amp = 0.05;
+  if (kind === 'ride') { f.type = 'bandpass'; f.frequency.value = 7200; f.Q.value = 0.9; dec = 0.42; amp = 0.07; }
+  else if (kind === 'brush') { f.type = 'lowpass'; f.frequency.value = 2600; dec = 0.32; amp = 0.07; }
+  else if (kind === 'chick') { f.type = 'highpass'; f.frequency.value = 6500; dec = 0.05; amp = 0.05; }
+  amp *= vel;
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(amp, t + (kind === 'brush' ? 0.03 : 0.004)); g.gain.exponentialRampToValueAtTime(0.0001, t + dec);
+  s.connect(f).connect(g).connect(jazz.bus); s.start(t, Math.random() * 0.5, dec + 0.05);
+  if (kind === 'ride') { const o = ac.createOscillator(), og = ac.createGain(); o.frequency.value = 3150; og.gain.setValueAtTime(0.006 * vel, t); og.gain.exponentialRampToValueAtTime(0.0001, t + 0.6); o.connect(og).connect(jazz.bus); o.start(t); o.stop(t + 0.65); }
+}
+function feather(t) { const o = ac.createOscillator(), g = ac.createGain(); o.frequency.setValueAtTime(70, t); o.frequency.exponentialRampToValueAtTime(45, t + 0.15); g.gain.setValueAtTime(0.07, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22); o.connect(g).connect(jazz.bus); o.start(t); o.stop(t + 0.25); }
+// which chord is under a given beat of the form
+function chordAt(bar, beat) { let b = 0; for (const c of FORM[bar]) { if (beat < b + c[2]) return c; b += c[2]; } return FORM[bar][0]; }
+const fitBass = n => { while (n > 50) n -= 12; while (n < 33) n += 12; return n; };
+function playBeat(t, n) {
+  const bar = Math.floor(n / 4) % 8, beat = n % 4, chorus = Math.floor(n / 32);
+  const [voicing, root, , q] = chordAt(bar, beat);
+  // walking bass: root on chord changes, chord tones in between, a half-step lead into the next chord
+  const next = chordAt(Math.floor((n + 1) / 4) % 8, (n + 1) % 4);
+  let b;
+  if (beat === 0 || (FORM[bar].length > 1 && beat === 2)) b = root;
+  else if (next[1] !== root || beat === 3) b = next[1] + (Math.random() < 0.5 ? 1 : -1);
+  else { const third = q === 'd' || q === 'M' ? 4 : 3, fifth = q === 'h' ? 6 : 7; b = root + [third, fifth, 10, 12][Math.floor(Math.random() * 4)]; }
+  bass(fitBass(b), t, BEAT * 0.95);
+  // ride: ding, ding-a, ding, ding-a
+  hit(t, 'ride', beat % 2 ? 0.85 : 1);
+  if (beat % 2 === 1) { hit(t + SWING, 'ride', 0.55); hit(t, 'chick'); hit(t, 'brush', 0.9); }
+  feather(t);
+  // Rhodes comping: on 1, sometimes the and-of-2, sometimes anticipating 4
+  const comp = (beat === 0 && Math.random() < 0.85) || (beat === 1 && Math.random() < 0.5) || (beat === 3 && Math.random() < 0.3);
+  if (comp) { const at = beat === 0 ? t : t + SWING; voicing.forEach((v, i) => rhodes(v, at + i * 0.012, BEAT * (beat === 0 ? 2.2 : 1.1), 0.7 + Math.random() * 0.3)); }
+  // melody: two choruses of the tune, then one chorus of sparse piano answers
+  if (beat === 0) {
+    if (chorus % 3 !== 2) { const ph = TUNE[bar]; if (ph) ph.forEach(([bt, m, d]) => horn(m, t + bt * BEAT, d)); }
+    else if (bar % 2 === 1) [0, 1.66, 2].forEach((bt, i) => rhodes(voicing[(i + 2) % 4] + 12, t + bt * BEAT, BEAT * 1.2, 0.8));
   }
 }
-function toggleMusic() {
+function schedule() {
+  while (nextBeat < ac.currentTime + 0.35) { playBeat(nextBeat, beatNo); nextBeat += BEAT; beatNo++; }
+}
+function toggleMusic(force) {
   ensureAudio(); if (!ac) return;
-  musicOn = !musicOn;
-  musicGain.gain.setTargetAtTime(musicOn ? 0.9 : 0, ac.currentTime, 0.3);
-  if (musicOn) { nextBar = ac.currentTime + 0.3; schedTimer = setInterval(schedule, 120); schedule(); }
-  else clearInterval(schedTimer);
+  const want = typeof force === 'boolean' ? force : !musicOn;
+  if (want === musicOn) return;
+  musicOn = want; jazzRig();
+  musicGain.gain.setTargetAtTime(musicOn ? 0.95 : 0, ac.currentTime, 0.4);
+  clearInterval(schedTimer);
+  if (musicOn) { nextBeat = ac.currentTime + 0.25; beatNo = 0; schedTimer = setInterval(schedule, 100); schedule(); }
   arm.rotation.y = musicOn ? 0.62 : 0.35;
+  const mb = document.getElementById('musicBtn'); if (mb) { mb.setAttribute('aria-pressed', String(musicOn)); mb.textContent = musicOn ? 'Music on' : 'Music off'; }
 }
 function click() { if (!ac) return; const o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = 1800; g.gain.setValueAtTime(0.05, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + 0.05); o.connect(g).connect(master); o.start(); o.stop(ac.currentTime + 0.06); }
 
@@ -722,7 +806,8 @@ function moveStick(e) {
 document.getElementById('use').addEventListener('click', () => { if (cine.on) exitCine(); interact(); });
 
 const intro = document.getElementById('intro');
-document.getElementById('enter').addEventListener('click', () => { intro.hidden = true; ensureAudio(); exitCine(); tryLock(); });
+document.getElementById('enter').addEventListener('click', () => { intro.hidden = true; ensureAudio(); toggleMusic(true); exitCine(); tryLock(); });
+document.getElementById('musicBtn').addEventListener('click', e => { toggleMusic(); e.currentTarget.blur(); });
 document.getElementById('cineBtn').addEventListener('click', e => { cine.on ? exitCine() : enterCine(); e.currentTarget.blur(); });
 
 // ---------------- cinematic reel ----------------

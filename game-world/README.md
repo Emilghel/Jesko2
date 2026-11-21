@@ -18,7 +18,8 @@ A first-person walk through a glass penthouse loft above a procedural city.
 
 - Wood-beamed loft with tile floors, a red sofa, palms, a bar table, bookshelf and a balcony with loungers
 - Four city moods outside the windows: Crimson Rain (rain, moon, searchlights), Amber Midnight, Golden Bay (sunset, bay, mountains), Neon Snow
-- Play a record on the turntable (generated lo-fi music with vinyl crackle), switch the lamps on and off
+- Dark noir-jazz soundtrack synthesized live (walking bass, brushes and ride, Rhodes, muted horn, reverb, vinyl crackle): starts on "Step inside", toggled by the turntable or the Music button
+- Switch the lamps on and off
 - Desktop: click to look (pointer lock), WASD to walk, E to interact, 1-4 to switch cities. Phone: joystick, drag to look, Use button
 
 Open `penthouse-standalone.html` in a browser. `penthouse.html` is the artifact version.
